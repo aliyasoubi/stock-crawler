@@ -1,0 +1,7 @@
+# Active company list: one KAP ticker per line. Lines starting with # are ignored.
+# Removing a ticker stops future fetching; stored data is never deleted.
+THYAO
+ASELS
+TUPRS
+BIMAS
+EREGL

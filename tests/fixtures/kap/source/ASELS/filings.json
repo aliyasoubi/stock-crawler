@@ -1,0 +1,15 @@
+[
+  {
+    "notification_id": "1400101",
+    "published_at": "2025-03-06T18:00:00+03:00",
+    "fiscal_year": 2024,
+    "period_end_date": "2024-12-31",
+    "period_label": "Yıllık",
+    "is_annual": true,
+    "consolidation_scope": "consolidated",
+    "statement_type": "general",
+    "source_url": "fixture://ASELS/1400101",
+    "document_url": "fixture://ASELS/1400101/source.html",
+    "files": {"source.html": "1400101/source.html"}
+  }
+]

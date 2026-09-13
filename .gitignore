@@ -1,0 +1,24 @@
+# secrets and runtime state
+.env
+data/raw/
+data/state/
+data/runs/
+imports/*
+!imports/.gitkeep
+config/companies_candidates.txt
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# editors
+.idea/
+.vscode/
+.DS_Store

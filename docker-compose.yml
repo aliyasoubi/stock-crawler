@@ -1,0 +1,64 @@
+# Three services: SQL Server, the one-shot crawler CLI, and Grafana.
+# Start order: docker compose up -d mssql -> run crawler init-db -> run crawler sync -> up -d grafana
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-CU16-ubuntu-22.04
+    # The SQL Server image is amd64 only. On Apple Silicon enable "Use Rosetta for x86_64/amd64
+    # emulation" in Docker Desktop; expect slower startup.
+    platform: linux/amd64
+    environment:
+      ACCEPT_EULA: ${ACCEPT_EULA:-Y}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?set MSSQL_SA_PASSWORD in .env}
+      MSSQL_PID: Developer
+    volumes:
+      - mssql-data:/var/opt/mssql
+    ports:
+      # Published on loopback only, for a consumer running on the developer host. Remove for deployment.
+      - "127.0.0.1:1433:1433"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' -b"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 40s
+    restart: unless-stopped
+
+  crawler:
+    build: .
+    image: stock-crawler:local
+    profiles: ["tools"]        # never started by `docker compose up`; use `docker compose run --rm crawler <command>`
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+      - ./imports:/app/imports:ro
+      - ./tests/fixtures:/app/tests/fixtures:ro
+    depends_on:
+      mssql:
+        condition: service_healthy
+    restart: "no"
+
+  grafana:
+    image: grafana/grafana-oss:11.3.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD:?set GF_SECURITY_ADMIN_PASSWORD in .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      MSSQL_DATABASE: ${MSSQL_DATABASE:-StockFundamentals}
+      MSSQL_GRAFANA_PASSWORD: ${MSSQL_GRAFANA_PASSWORD:?set MSSQL_GRAFANA_PASSWORD in .env}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      mssql:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mssql-data:
+  grafana-data:
