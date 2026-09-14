@@ -57,7 +57,8 @@ def classify(before: dict[str, Any], after: dict[str, Any]) -> str:
 
 
 def _row_key(row: dict[str, Any]) -> tuple:
-    return tuple(row[name] for name in ROW_KEY_FIELDS)
+    # vw_fundamentals rows carry no is_comparative column: they are current-period by contract.
+    return (row["fiscal_year"], row["fiscal_period"], bool(row.get("is_comparative", False)))
 
 
 def _as_decimal(value: Any) -> Decimal | None:

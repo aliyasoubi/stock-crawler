@@ -128,7 +128,9 @@ class InMemoryRepository:
             return (report["published_at"], numeric, report["notification_id"], report["retrieved_at"], report["parsed_at"] or datetime.min.replace(tzinfo=report["retrieved_at"].tzinfo), report["report_id"])
 
         report, row = max(candidates, key=key)
-        return {**row, **{k: v for k, v in report.items() if k not in row}}
+        merged = {**row, **{k: v for k, v in report.items() if k not in row}}
+        merged.pop("is_comparative", None)  # vw_fundamentals exposes current rows only, without this column
+        return merged
 
     # helpers for assertions
     def view_rows(self, company_id: int) -> list[dict[str, Any]]:

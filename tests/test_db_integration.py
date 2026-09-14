@@ -1,8 +1,10 @@
-"""SQL Server integration checks. Skipped unless STOCK_CRAWLER_TEST_MSSQL_URL points at a disposable
-database whose schema was created with `stock-crawler init-db` (or by applying sql/schema.sql).
+"""SQL Server integration checks. Skipped unless STOCK_CRAWLER_TEST_MSSQL_URL points at a DISPOSABLE
+database whose schema was created with `stock-crawler init-db`. The test truncates the three tables, so
+the URL must use an account with DELETE rights (the bootstrap account) - crawler_writer deliberately
+cannot delete. Run it inside the crawler container, where the ODBC driver is installed:
 
-Example (inside the Compose network, after init-db):
-  STOCK_CRAWLER_TEST_MSSQL_URL='mssql+pyodbc:///?odbc_connect=DRIVER%3D%7BODBC+Driver+18+for+SQL+Server%7D%3BSERVER%3Dmssql%2C1433%3B...'
+  docker compose run --rm -e STOCK_CRAWLER_TEST_MSSQL_URL="$URL" -v "$PWD/tests:/app/tests:ro" \
+      --entrypoint sh crawler -c "pip install -q --user pytest && python -m pytest tests/test_db_integration.py"
 """
 
 import os

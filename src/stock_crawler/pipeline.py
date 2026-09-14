@@ -242,9 +242,18 @@ class Pipeline:
             entry["status"] = "published"
             current = parsed.current_period()
             if previous_row is not None and current is not None and outcome != "exists":
-                diffs = compare_rows([previous_row], [{**current.model_dump(), "is_comparative": False}])
-                entry["changed_fields"] = [d.field for row in diffs for d in row.diffs]
-                entry["previous_report_id"] = previous_row.get("report_id")
+                try:
+                    now_current = self.repo.current_view_row(company.company_id, parsed.filing_fiscal_year, report.consolidation_scope)
+                    if now_current is not None and now_current.get("report_id") != report_id:
+                        # A later publication already stored for this year/scope still wins in the view.
+                        entry["superseded_by_report_id"] = now_current.get("report_id")
+                    else:
+                        diffs = compare_rows([previous_row], [{**current.model_dump(), "is_comparative": False}])
+                        entry["changed_fields"] = [d.field for row in diffs for d in row.diffs]
+                        entry["previous_report_id"] = previous_row.get("report_id")
+                except Exception as exc:  # the publish is committed; a summary problem must not hide it
+                    log.warning("change summary failed for report %s: %s", report_id, exc)
+                    entry["change_summary_error"] = str(exc)
         else:
             self.repo.record_discovery(
                 company.company_id, at=parsed_at, notification_id=ref.notification_id,

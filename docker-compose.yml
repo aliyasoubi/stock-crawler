@@ -29,6 +29,9 @@ services:
     image: stock-crawler:local
     profiles: ["tools"]        # never started by `docker compose up`; use `docker compose run --rm crawler <command>`
     env_file: .env
+    # On Linux, bind mounts keep host ownership. Run as the host user so ./data and ./config are
+    # writable: put CRAWLER_UID=$(id -u) and CRAWLER_GID=$(id -g) in .env (scripts/setup-linux.sh does this).
+    user: "${CRAWLER_UID:-10001}:${CRAWLER_GID:-10001}"
     volumes:
       - ./data:/app/data
       - ./config:/app/config

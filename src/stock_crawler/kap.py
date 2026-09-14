@@ -203,3 +203,87 @@ def build_source_client(settings, fetcher_factory, *, clock: Clock = utcnow) -> 
     if settings.source_mode == "fixture":
         return FixtureSourceClient(settings.fixture_source_dir, clock=clock)
     return KapClient(fetcher_factory())
+
+
+# -- live smoke checks (explicitly invoked, tiny request counts) ------------------------------
+
+
+@dataclass(frozen=True)
+class ProbeResult:
+    url: str
+    status: int | None
+    outcome: str
+    detail: str
+    robots_excerpt: str = ""
+
+
+def probe_source(fetcher: PacedClient, base_url: str = "https://www.kap.org.tr") -> list[ProbeResult]:
+    """Two paced GETs (robots.txt, then the site root) to establish reachability and stop
+    signals before any crawling is attempted. Never parses financial data."""
+    from .fetch import AccessBlocked, FetchError, HostCoolingDown, HostThrottled, SourceHTTPError
+
+    results: list[ProbeResult] = []
+    for path in ("/robots.txt", "/"):
+        url = base_url.rstrip("/") + path
+        try:
+            result = fetcher.get(url, accept="text/plain, text/html;q=0.9, */*;q=0.1")
+        except AccessBlocked as exc:
+            results.append(ProbeResult(url, None, "blocked", str(exc)))
+            break
+        except (HostCoolingDown, HostThrottled) as exc:
+            results.append(ProbeResult(url, None, "throttled", str(exc)))
+            break
+        except SourceHTTPError as exc:
+            results.append(ProbeResult(url, exc.status, "http_error", str(exc)))
+            continue
+        except FetchError as exc:
+            results.append(ProbeResult(url, None, "error", str(exc)))
+            break
+        excerpt = ""
+        if path == "/robots.txt" and result.status == 200:
+            excerpt = result.content[:4000].decode("utf-8", errors="replace")
+        results.append(ProbeResult(url, result.status, "ok", f"{len(result.content)} bytes, {result.content_type}", excerpt))
+    return results
+
+
+def capture_fixture(
+    fetcher: PacedClient,
+    *,
+    url: str,
+    output_dir: Path,
+    identity: CompanyIdentity,
+    candidate: FilingCandidate,
+    filename: str | None = None,
+    clock: Clock = utcnow,
+) -> Path:
+    """Download one filing URL (supplied by the operator, not guessed) into the
+    FixtureSourceClient layout so it can be parsed offline and reviewed as a test fixture."""
+    result = fetcher.get(url)
+    if result.not_modified:
+        raise SourceError("server answered 304; pass a URL without stored validators")
+    content_type = (result.content_type or "").lower()
+    if filename is None:
+        extension = "json" if "json" in content_type else "xml" if "xml" in content_type else "html" if "html" in content_type else "bin"
+        filename = f"source.{extension}"
+    ticker_dir = output_dir / identity.ticker
+    filing_dir = ticker_dir / candidate.notification_id
+    filing_dir.mkdir(parents=True, exist_ok=True)
+    (filing_dir / filename).write_bytes(result.content)
+
+    companies_path = output_dir / "companies.json"
+    companies = json.loads(companies_path.read_text("utf-8")) if companies_path.is_file() else []
+    if not any(entry.get("ticker") == identity.ticker for entry in companies):
+        companies.append(identity.model_dump())
+        companies_path.write_text(json.dumps(companies, ensure_ascii=False, indent=2) + "\n", "utf-8")
+
+    filings_path = ticker_dir / "filings.json"
+    filings = json.loads(filings_path.read_text("utf-8")) if filings_path.is_file() else []
+    filings = [entry for entry in filings if entry.get("notification_id") != candidate.notification_id]
+    entry = candidate.model_dump(mode="json")
+    entry["source_url"] = entry.get("source_url") or url
+    entry["files"] = {filename: f"{candidate.notification_id}/{filename}"}
+    entry["captured_at"] = clock().isoformat()
+    entry["content_type"] = result.content_type
+    filings.append(entry)
+    filings_path.write_text(json.dumps(filings, ensure_ascii=False, indent=2) + "\n", "utf-8")
+    return filing_dir / filename

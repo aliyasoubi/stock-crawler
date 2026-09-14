@@ -16,10 +16,12 @@ This repository implements the specification in `README_Stock_Fundamental_Crawle
 | Paced/budgeted HTTP client, cooldowns, access stops (§6) | Implemented, tested with a mock transport |
 | Raw snapshots, manifests, state, run lock, run summaries (§7) | Implemented, tested |
 | Parser: KAP-style HTML → canonical fields, units, derived metrics (§9, §10) | Implemented against a **synthetic reference fixture**; label dictionary must be reviewed against real captured filings |
-| SQL schema, views, least-privilege roles, `init-db` (§8, §14) | Written; **not yet executed against a live SQL Server** (none reachable in the authoring environment) |
+| SQL schema, views, least-privilege roles, `init-db` (§8, §14) | Implemented; verified against SQL Server 2022 in Docker (idempotent re-run, version ordering, withdrawal exclusion, reader cannot write) |
 | Sync / reprocess / compare orchestration (§11, §13) | Implemented, tested end-to-end offline with a fixture source and in-memory repository |
-| Docker Compose, Grafana provisioning + dashboard (§14) | Written; not yet started on a host |
-| **Live KAP retrieval** (§6) | **Pending an access route.** `KapClient` network methods raise `SourceAccessNotConfigured`. `SOURCE_MODE=fixture` runs the full pipeline offline. |
+| Docker Compose, Grafana provisioning + dashboard (§14) | Verified: clean startup, datasource health OK via `grafana_reader`, dashboard provisioned and querying the views |
+| Backup / restore (§15) | `scripts/backup.sh` + `scripts/restore.sh`; one full destroy-and-restore cycle verified |
+| Live smoke check and fixture capture (§6, §15) | `probe-source` (2 paced GETs) and `capture-fixture` (one operator-supplied URL) implemented, tested with a mock transport |
+| **Live KAP retrieval** (§6) | **Pending an access route.** `KapClient` discovery/download methods raise `SourceAccessNotConfigured`. `SOURCE_MODE=fixture` runs the full pipeline offline; `probe-source` and `capture-fixture` are the first two live steps. |
 
 ## Layout
 
@@ -40,7 +42,8 @@ src/stock_crawler/
   db.py         SQLAlchemy/pyodbc repository, readiness check, init-db bootstrap
 sql/schema.sql  idempotent tables, views, roles, schema version
 config/companies.txt
-tests/          106 offline tests; fixtures under tests/fixtures/kap/source
+tests/          110 offline tests + 2 SQL Server integration tests; fixtures under tests/fixtures/kap/source
+scripts/        setup-linux.sh, backup.sh, restore.sh
 grafana/        datasource + dashboard provisioning
 ```
 
@@ -56,16 +59,36 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/python -m pytest
 ```
 
-## Running with Docker
+## Running with Docker (Ubuntu)
+
+Three containers: `mssql` (SQL Server 2022, data in a named volume), `crawler` (a one-shot CLI
+image invoked with `docker compose run`, never left running), and `grafana`. Requirements:
+Docker Engine with the compose plugin, x86-64 host (the SQL Server image is amd64-only; on an
+ARM host it runs under emulation), and at least 2 GB RAM free for SQL Server.
 
 ```bash
-cp .env.example .env            # set every REPLACE_WITH_* value
-docker compose up -d mssql
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin   # per docs.docker.com/engine/install/ubuntu
+sudo usermod -aG docker "$USER" && newgrp docker
+
+git clone <this repo> && cd trading
+scripts/setup-linux.sh          # creates .env, sets CRAWLER_UID/GID to your user, creates data dirs
+nano .env                       # replace every REPLACE_WITH_* value (sa password must satisfy SQL Server policy)
+
+docker compose build crawler
+docker compose up -d --wait mssql
 docker compose run --rm crawler init-db
 docker compose run --rm crawler sync --tickers THYAO
 docker compose run --rm crawler sync
-docker compose up -d grafana     # http://127.0.0.1:3000
+docker compose up -d grafana     # http://127.0.0.1:3000 (admin / GF_SECURITY_ADMIN_PASSWORD)
 ```
+
+`CRAWLER_UID`/`CRAWLER_GID` matter on Linux: bind mounts keep host ownership, so the crawler
+container runs as your user to write `./data` and `./config`. Ports are published on
+`127.0.0.1` only; use an SSH tunnel or a reverse proxy for remote access, never expose `sa`.
+
+Recurring refresh: a host cron entry such as
+`0 6 * * * cd /opt/trading && docker compose run --rm crawler sync >> data/cron.log 2>&1`
+is enough; the run lock rejects overlaps and cooldowns persist under `data/state`.
 
 `SOURCE_MODE=fixture` (the default in `.env.example`) replays `tests/fixtures/kap/source`
 with zero network requests, which is enough to prove the database, views, Grafana, reruns,
@@ -80,10 +103,29 @@ docker compose run --rm crawler compare --before-report-id 1 --after-report-id 2
 docker compose run --rm crawler companies-from-csv --input /app/imports/kap_fundamentals.csv --ticker-column stock_code --output /app/config/companies_candidates.txt
 ```
 
-Exit codes: `0` success, `1` configuration/database error, `2` run stopped early
-(budget, throttling, or access block; pending tickers are listed), `3` another run holds the lock.
+Live-source commands (explicitly invoked, tiny request counts, all pacing/stop rules apply):
 
-Apple Silicon: the SQL Server image is amd64-only; enable Rosetta emulation in Docker Desktop.
+```bash
+docker compose run --rm crawler probe-source                       # robots.txt + site root, 2 GETs
+docker compose run --rm crawler capture-fixture --url <exact notification URL from your browser> \
+    --ticker THYAO --source-company-id <KAP company id> --notification-id <id> \
+    --published-at "05.03.2025 18:45:00" --fiscal-year 2024 --period-end 2024-12-31 --scope consolidated
+```
+
+`capture-fixture` saves the response under `data/captures/` in the fixture layout; point
+`FIXTURE_SOURCE_DIR` at it and run `sync --tickers THYAO` to parse it offline. That is how the
+real KAP layout gets reviewed before any discovery code is written.
+
+Exit codes: `0` success, `1` configuration/database/source error, `2` run stopped early or probe
+not fully OK (budget, throttling, or access block; pending tickers are listed), `3` another run
+holds the lock.
+
+Backup and restore: `scripts/backup.sh` writes `backups/<timestamp>/` (native `.bak` plus a
+tarball of `data/raw` and `data/state` with checksums); `scripts/restore.sh backups/<timestamp>`
+replaces the database and raw directories and re-runs `init-db`. Verify with `reprocess`
+(expect `already_parsed`).
+
+Apple Silicon (development only): the SQL Server image is amd64-only; enable Rosetta emulation in Docker Desktop.
 
 ## Wiring live KAP access (the remaining Phase-1 step)
 
@@ -113,18 +155,19 @@ zero. `*_method` columns say how derived values were obtained (`direct`, `sum_bo
 
 ## Backup and restore
 
-- Raw evidence: back up `./data/raw` (immutable snapshot directories) and `./data/state` together
-  with the SQL backup; `data/runs` is disposable.
-- SQL: `BACKUP DATABASE StockFundamentals TO DISK = '/var/opt/mssql/backup/StockFundamentals.bak'`
-  inside the `mssql` container (`docker compose exec mssql /opt/mssql-tools18/bin/sqlcmd -C -U sa -Q "..."`),
-  then copy the file out with `docker compose cp`. Restore with `RESTORE DATABASE ... WITH REPLACE`
-  on a fresh volume and run `init-db` again (idempotent) to recreate logins on the new server.
-- Restore check: after restoring, `reprocess --tickers THYAO` must report `already_parsed` and
-  `compare` between the two most recent report ids must show no differences.
+`scripts/backup.sh` and `scripts/restore.sh` implement this; the notes below explain what they do.
+
+- Raw evidence: `./data/raw` (immutable snapshot directories) and `./data/state` are archived
+  together with the SQL backup; `data/runs` and `backups/` themselves are disposable/offsite.
+- SQL: native `BACKUP DATABASE ... WITH CHECKSUM` inside the `mssql` container, copied out with
+  `docker compose cp`. Restore uses `RESTORE DATABASE ... WITH REPLACE`, then `init-db` (idempotent)
+  recreates logins on a new server. Keep backups off the Docker host.
+- Restore check (verified once locally): `reprocess --tickers THYAO` reports `already_parsed`
+  and `vw_latest_fundamentals` returns the pre-backup rows.
 
 ## Acceptance checklist (§15) — current standing
 
-- [ ] Clean Docker startup initialises SQL Server and runs the CLI — *not yet executed on a host*
+- [x] Clean Docker startup initialises SQL Server and runs the CLI (verified; `init-db` idempotent)
 - [ ] Five companies resolve and yield selected annual filings — *blocked on live access; two synthetic fixtures prove the path*
 - [x] Every published result has durable raw provenance and a parser version
 - [ ] Required concepts and units checked against the exact source notification — *needs a real captured filing*
@@ -134,5 +177,5 @@ zero. `*_method` columns say how derived values were obtained (`direct`, `sum_bo
 - [x] Failed/unsupported records remain visible; no fabricated rows (tested)
 - [x] Adding a company is list configuration only for a supported layout
 - [x] Request limits and stop behaviour work under mocked failures (tested)
-- [ ] Application and Grafana read stored values without KAP connectivity — *design complete; needs the Docker run*
-- [ ] SQL and raw-file backup/restore instructions with one local restore check — *instructions written; check pending*
+- [x] Application and Grafana read stored values without KAP connectivity (fixture mode, zero HTTP attempts)
+- [x] SQL and raw-file backup/restore scripts with one local restore check

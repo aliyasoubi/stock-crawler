@@ -22,3 +22,7 @@ dist/
 .idea/
 .vscode/
 .DS_Store
+
+# local backups and captured live filings
+backups/
+data/captures/

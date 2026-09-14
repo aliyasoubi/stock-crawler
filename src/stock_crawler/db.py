@@ -6,11 +6,11 @@ import logging
 import re
 import time
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.exc import DBAPIError, IntegrityError, OperationalError
 
@@ -289,14 +289,36 @@ class Repository:
                 ),
                 {"c": company_id, "y": fiscal_year, "s": consolidation_scope},
             ).mappings().first()
-        return dict(row) if row else None
+        return {**dict(row), "is_comparative": False} if row else None
 
 
 # -- engine, readiness, bootstrap --------------------------------------------------------------
 
 
+def _utc_bind_params(conn, cursor, statement, parameters, context, executemany):
+    """pyodbc binds datetimes without their offset and SQL Server stores them as +00:00, so
+    every aware datetime is converted to UTC wall-clock time first. Naive datetimes are a bug."""
+
+    def convert(value):
+        if isinstance(value, datetime):
+            if value.tzinfo is None:
+                raise DatabaseError("refusing to bind a naive datetime; use timezone-aware UTC values")
+            return value.astimezone(timezone.utc).replace(tzinfo=None)
+        return value
+
+    if isinstance(parameters, (list, tuple)) and executemany:
+        parameters = [tuple(convert(v) for v in row) if isinstance(row, tuple) else row for row in parameters]
+    elif isinstance(parameters, tuple):
+        parameters = tuple(convert(v) for v in parameters)
+    elif isinstance(parameters, dict):
+        parameters = {k: convert(v) for k, v in parameters.items()}
+    return statement, parameters
+
+
 def make_engine(settings: Settings, **overrides: Any) -> Engine:
-    return create_engine(settings.sqlalchemy_url(**overrides), pool_pre_ping=True, future=True)
+    engine = create_engine(settings.sqlalchemy_url(**overrides), pool_pre_ping=True, future=True)
+    event.listen(engine, "before_cursor_execute", _utc_bind_params, retval=True)
+    return engine
 
 
 def wait_for_database(engine: Engine, *, timeout_seconds: float = 120.0, interval_seconds: float = 3.0) -> None:
