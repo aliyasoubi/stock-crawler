@@ -1,7 +1,3 @@
-# Active company list: one KAP ticker per line. Lines starting with # are ignored.
-# Removing a ticker stops future fetching; stored data is never deleted.
-THYAO
+# Active pilot issuers. Verify registry and calendar-year settings before adding more.
 ASELS
-TUPRS
-BIMAS
-EREGL
+THYAO

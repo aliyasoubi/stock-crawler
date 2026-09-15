@@ -1,4 +1,4 @@
-"""Command-line interface: init-db, sync, reprocess, compare, companies-from-csv."""
+"""Command-line interface: init-db, sync, import-kap-export, reprocess, compare, probe-source, ..."""
 
 from __future__ import annotations
 
@@ -20,7 +20,9 @@ from .kap import KAP_HOSTS, SourceError, build_source_client, capture_fixture, p
 from .models import CompanyIdentity, ConsolidationScope, FilingCandidate
 from .units import parse_source_timestamp
 from .pipeline import Pipeline, SyncOptions
-from .storage import RawStore, RunLocked, RunLock, StateStore, dump_json
+from .storage import RawStore, RunLocked, RunLock, StateStore, StorageError, dump_json
+from pydantic import ValidationError
+from sqlalchemy.exc import SQLAlchemyError
 
 import os
 
@@ -29,6 +31,7 @@ def _resolve_schema_path() -> Path:
     """sql/schema.sql from SCHEMA_PATH, the source checkout, or the working directory (/app in Docker)."""
     candidates = [
         Path(os.environ["SCHEMA_PATH"]) if os.environ.get("SCHEMA_PATH") else None,
+        Path(__file__).resolve().parent / "sql" / "schema.sql",
         Path(__file__).resolve().parents[2] / "sql" / "schema.sql",
         Path.cwd() / "sql" / "schema.sql",
     ]
@@ -85,6 +88,18 @@ def build_parser() -> argparse.ArgumentParser:
     capture.add_argument("--annual", action="store_true", default=True)
     capture.add_argument("--statement-type", type=str, default="general")
     capture.add_argument("--output-dir", type=Path, default=None, help="default: DATA_DIR/captures")
+    imp = sub.add_parser("import-kap-export", help="import legacy/v6 manifests or English KAP XLSX files (zero HTTP)")
+    imp.add_argument("--input", type=Path, required=True, nargs="+", help="one or more manifest .json / export .xlsx files")
+    imp.add_argument("--tickers", help="for a standalone XLSX: exact requested ticker list")
+    imp.add_argument("--dry-run", action="store_true", help="archive and validate; do not open SQL Server")
+    imp.add_argument("--output", type=Path, help="write validation/values as JSON")
+    generate = sub.add_parser("build-kap-script", help="generate a resumable browser exporter from the company registry")
+    generate.add_argument("--tickers")
+    generate.add_argument("--company-file", type=Path)
+    generate.add_argument("--years", required=True, help="comma-separated, maximum five years")
+    generate.add_argument("--output", type=Path, required=True)
+    generate.add_argument("--max-requests", type=int, default=5)
+    generate.add_argument("--batch-size", type=int, default=25)
     return parser
 
 
@@ -100,7 +115,7 @@ def _tickers(args: argparse.Namespace, settings: Settings) -> list[str]:
     return load_company_file(getattr(args, "company_file", None) or settings.company_file)
 
 
-def _pipeline(settings: Settings, repo: Repository) -> tuple[Pipeline, PacedClient | None]:
+def _pipeline(settings: Settings, repo: Repository, *, offline: bool = False) -> tuple[Pipeline, PacedClient | None]:
     state = StateStore(settings.data_dir)
     holder: dict[str, PacedClient] = {}
 
@@ -109,7 +124,11 @@ def _pipeline(settings: Settings, repo: Repository) -> tuple[Pipeline, PacedClie
         holder["fetcher"] = PacedClient(client, settings, state, allowed_hosts=KAP_HOSTS)
         return holder["fetcher"]
 
-    source = build_source_client(settings, fetcher_factory)
+    if offline:
+        from types import SimpleNamespace
+        source = SimpleNamespace(market_source="kap_compare" if settings.source_mode == "kap-export" else "kap")
+    else:
+        source = build_source_client(settings, fetcher_factory)
     pipeline = Pipeline(
         settings, repo, RawStore(settings.data_dir), state, source,
         request_attempts=lambda: holder["fetcher"].attempts if "fetcher" in holder else 0,
@@ -122,7 +141,7 @@ def _print_summary(summary) -> None:
     print(f"run {summary.run_id}: {len(rows)} companies, {summary.data['request_attempts']} HTTP attempts")
     for row in rows:
         extras = []
-        for key in ("notification_id", "report_id", "persist", "snapshot", "error"):
+        for key in ("fiscal_year", "notification_id", "report_id", "persist", "snapshot", "error"):
             if row.get(key) not in (None, ""):
                 extras.append(f"{key}={row[key]}")
         if row.get("changed_fields"):
@@ -148,10 +167,15 @@ def cmd_sync(args: argparse.Namespace) -> int:
     wait_for_database(engine)
     repo = Repository(engine)
     with RunLock(settings.data_dir):
-        pipeline, _ = _pipeline(settings, repo)
-        summary = pipeline.sync(SyncOptions(tickers=tickers, refresh=args.refresh, limit=args.limit))
+        pipeline, fetcher = _pipeline(settings, repo)
+        try:
+            summary = pipeline.sync(SyncOptions(tickers=tickers, refresh=args.refresh, limit=args.limit))
+        finally:
+            if fetcher is not None:
+                fetcher.close()
+            engine.dispose()
     _print_summary(summary)
-    return 2 if summary.data.get("stopped_reason") else 0
+    return summary_exit_code(summary)
 
 
 def cmd_reprocess(args: argparse.Namespace) -> int:
@@ -161,10 +185,13 @@ def cmd_reprocess(args: argparse.Namespace) -> int:
     wait_for_database(engine)
     repo = Repository(engine)
     with RunLock(settings.data_dir):
-        pipeline, _ = _pipeline(settings, repo)
-        summary = pipeline.reprocess(tickers)
+        pipeline, _ = _pipeline(settings, repo, offline=True)
+        try:
+            summary = pipeline.reprocess(tickers)
+        finally:
+            engine.dispose()
     _print_summary(summary)
-    return 0
+    return summary_exit_code(summary)
 
 
 def cmd_compare(args: argparse.Namespace) -> int:
@@ -197,7 +224,11 @@ def _fetcher(settings: Settings) -> PacedClient:
 def cmd_probe_source(args: argparse.Namespace) -> int:
     settings = _settings(args)
     fetcher = _fetcher(settings)
-    results = probe_source(fetcher, args.base_url)
+    try:
+        with RunLock(settings.data_dir):
+            results = probe_source(fetcher, args.base_url)
+    finally:
+        fetcher.close()
     for item in results:
         print(f"{item.outcome:<10} {item.status if item.status is not None else '-':>4}  {item.url}  {item.detail}")
         if item.robots_excerpt:
@@ -205,7 +236,9 @@ def cmd_probe_source(args: argparse.Namespace) -> int:
             print(item.robots_excerpt)
             print("---------------------------------------")
     print(f"HTTP attempts used: {fetcher.attempts}")
-    return 0 if results and all(r.outcome == "ok" for r in results) else 2
+    # robots.txt is informational (KAP answers it with a non-standard status); reachability is judged on the site root.
+    reachable = any(r.outcome == "ok" and not r.url.endswith("/robots.txt") for r in results)
+    return 0 if reachable else 2
 
 
 def cmd_capture_fixture(args: argparse.Namespace) -> int:
@@ -226,8 +259,11 @@ def cmd_capture_fixture(args: argparse.Namespace) -> int:
         source_url=args.url,
     )
     output_dir = args.output_dir or (settings.data_dir / "captures")
-    with RunLock(settings.data_dir):
-        path = capture_fixture(fetcher, url=args.url, output_dir=output_dir, identity=identity, candidate=candidate)
+    try:
+        with RunLock(settings.data_dir):
+            path = capture_fixture(fetcher, url=args.url, output_dir=output_dir, identity=identity, candidate=candidate)
+    finally:
+        fetcher.close()
     print(f"captured {path} ({path.stat().st_size} bytes); HTTP attempts used: {fetcher.attempts}")
     print(f"next: set SOURCE_MODE=fixture and FIXTURE_SOURCE_DIR={output_dir} then run `sync --tickers {identity.ticker}` to parse it offline")
     return 0
@@ -240,8 +276,86 @@ def cmd_companies_from_csv(args: argparse.Namespace) -> int:
     return 0
 
 
+def summary_exit_code(summary) -> int:
+    if summary.data.get("stopped_reason"):
+        return 2
+    errors = {"error", "unresolved", "failed", "unsupported", "cache_miss", "no_filing"}
+    return 1 if any(c.get("status") in errors for c in summary.data["companies"]) else 0
+
+
+def cmd_import_kap_export(args: argparse.Namespace) -> int:
+    import base64
+    import hashlib
+    from .kap_export import CompanyRegistry, load_manifest, parse_export_row
+    from .storage import write_atomic
+    from .parser import PARSER_VERSION
+
+    settings = _settings(args)
+    registry = CompanyRegistry(settings.kap_company_registry)
+    raw = RawStore(settings.data_dir)
+    exit_code = 0
+    with RunLock(settings.data_dir):
+        entries, errors = [], []
+        for path in args.input:
+            if path.suffix.lower() == ".xlsx":
+                if not args.tickers:
+                    raise SettingsError("a standalone XLSX requires --tickers so company identities can be verified")
+                if path.stat().st_size > 20 * 1024 * 1024:
+                    raise SettingsError("XLSX exceeds 20 MiB")
+                data = path.read_bytes()
+                wrapped = [{"tickers": parse_ticker_argument(args.tickers), "base64": base64.b64encode(data).decode()}]
+                path = settings.data_dir / "imports" / (hashlib.sha256(data).hexdigest() + ".json")
+                write_atomic(path, dump_json(wrapped).encode())
+            file_entries, file_errors = load_manifest(path, registry, raw)
+            print(f"{path}: {len(file_entries)} rows, {len(file_errors)} import errors")
+            entries.extend(file_entries)
+            errors.extend({"file": str(path), **e} for e in file_errors)
+        validation = [{"ticker": e.identity.ticker, "notification_id": e.row["Notification ID"],
+            "retrieved_at_basis": "source_capture" if e.retrieved_at_known else "import_time_original_capture_unknown",
+            **parse_export_row(e.row, calendar_year_confirmed=settings.calendar_year_confirmed(e.identity.ticker),
+                parser_version=PARSER_VERSION).model_dump(mode="json")} for e in entries]
+        payload = {"rows": len(entries), "errors": errors, "records": validation}
+        if args.output:
+            write_atomic(args.output, dump_json(payload).encode())
+        print(f"total: {len(entries)} rows; {len(errors)} import errors; {sum(v['parse_status'] == 'valid' for v in validation)} valid annual records")
+        for error in errors:
+            print(dump_json(error), file=sys.stderr)
+        if args.dry_run:
+            for row in validation:
+                print(f"{row['ticker']} {row['notification_id']}: {row['parse_status']} {'; '.join(row['errors'])}")
+            return 0 if entries and not errors and all(v["parse_status"] == "valid" for v in validation) else 1
+        engine = make_engine(settings)
+        try:
+            wait_for_database(engine)
+            pipeline, _ = _pipeline(settings, Repository(engine), offline=True)
+            summary = pipeline.ingest_export_entries(entries)
+            summary.data["import_errors"] = errors
+            summary.finish()
+            _print_summary(summary)
+            exit_code = max(summary_exit_code(summary), int(bool(errors) or not entries))
+        finally:
+            engine.dispose()
+    return exit_code
+
+
+def cmd_build_kap_script(args: argparse.Namespace) -> int:
+    from .kap_export import CompanyRegistry
+    from .browser_export import build_browser_script
+    from .storage import write_atomic
+    settings = _settings(args)
+    years = [int(y.strip()) for y in args.years.split(",")]
+    registry = CompanyRegistry(settings.kap_company_registry)
+    identities = [registry.resolve(t) for t in _tickers(args, settings)]
+    script = build_browser_script(identities, years, max_requests=args.max_requests, batch_size=args.batch_size)
+    write_atomic(args.output, script.encode())
+    print(f"wrote {args.output}: {len(identities)} companies, {len(years)} years; no HTTP requests")
+    return 0
+
+
 COMMANDS = {
     "init-db": cmd_init_db,
+    "import-kap-export": cmd_import_kap_export,
+    "build-kap-script": cmd_build_kap_script,
     "sync": cmd_sync,
     "reprocess": cmd_reprocess,
     "compare": cmd_compare,
@@ -263,7 +377,10 @@ def main(argv: list[str] | None = None) -> int:
     except RunLocked as exc:
         print(f"refusing to overlap another run: {exc}", file=sys.stderr)
         return 3
-    except (SettingsError, CsvError, DatabaseError, SourceError, FetchError) as exc:
+    except SQLAlchemyError as exc:
+        print(f"database operation failed ({type(exc).__name__}); check connectivity, credentials, permissions and schema", file=sys.stderr)
+        return 1
+    except (SettingsError, CsvError, DatabaseError, SourceError, FetchError, StorageError, ValidationError, ValueError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 

@@ -76,7 +76,10 @@ def parse_structured_number(value: object) -> Decimal | None:
     if _DASH_ONLY.match(text):
         return None
     try:
-        return Decimal(text)
+        parsed = Decimal(text)
+        if not parsed.is_finite():
+            raise UnitError(f"non-finite number: {value!r}")
+        return parsed
     except InvalidOperation as exc:
         raise UnitError(f"not a number: {value!r}") from exc
 
@@ -127,7 +130,7 @@ def istanbul_to_utc(naive_or_aware: datetime) -> datetime:
 def parse_source_timestamp(text: str) -> datetime:
     """Parse `31.12.2024 18:05:12` or ISO-8601 into an aware UTC datetime."""
     cleaned = text.strip()
-    for fmt in ("%d.%m.%Y %H:%M:%S", "%d.%m.%Y %H:%M", "%d.%m.%Y"):
+    for fmt in ("%d-%m-%Y %H:%M:%S", "%d.%m.%Y %H:%M:%S", "%d.%m.%Y %H:%M", "%d.%m.%Y"):
         try:
             return istanbul_to_utc(datetime.strptime(cleaned, fmt))
         except ValueError:

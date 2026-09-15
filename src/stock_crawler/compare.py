@@ -43,6 +43,8 @@ def classify(before: dict[str, Any], after: dict[str, Any]) -> str:
     """Name the kind of difference between two report rows (not their values)."""
     if before["company_id"] != after["company_id"]:
         return "different_company"
+    if before["consolidation_scope"] != after["consolidation_scope"]:
+        return "different_scope"
     if before["notification_id"] == after["notification_id"]:
         if before["content_hash"] == after["content_hash"]:
             if before["parser_version"] != after["parser_version"]:
@@ -101,7 +103,7 @@ def compare_rows(
                 diffs.append(FieldDiff(name, old, None, None, "became_null"))
             else:
                 diffs.append(FieldDiff(name, old, new, (new - old) if row_delta_ok else None, "changed"))
-        for name in METHOD_FIELDS:
+        for name in (*METHOD_FIELDS, "currency_code", "currency_scale", "period_start_date", "period_end_date"):
             if before.get(name) != after.get(name):
                 diffs.append(FieldDiff(name, before.get(name), after.get(name), None, "changed"))
         comparisons.append(RowComparison(key_dict, "matched", diffs))

@@ -57,6 +57,8 @@ class Pipeline:
         summary.data["requested_tickers"] = options.tickers
         summary.data["refresh"] = options.refresh
         now = self.clock()
+        if options.limit is not None and options.limit <= 0:
+            raise ValueError("--limit must be positive")
 
         eligible: list[tuple[str, CompanyIdentity, Any]] = []
         for position, ticker in enumerate(options.tickers):
@@ -81,10 +83,12 @@ class Pipeline:
         for ticker, _, _ in deferred:
             summary.add_company({"ticker": ticker, "status": "deferred", "reason": f"company cap {cap} reached"})
         eligible = eligible[:cap]
+        if hasattr(self.source, "plan"):
+            self.source.plan([identity for _, identity, _ in eligible])
 
         for index, (ticker, identity, company) in enumerate(eligible):
             try:
-                entry = self._sync_company(identity, company)
+                entries = self._sync_company(identity, company)
             except RUN_STOPPING_ERRORS as exc:
                 summary.data["stopped_reason"] = str(exc)
                 summary.data["pending"] = [t for t, _, _ in eligible[index:]] + [t for t, _, _ in deferred]
@@ -94,8 +98,9 @@ class Pipeline:
             except (SourceError, FetchError, StorageError) as exc:
                 log.warning("%s: %s", ticker, exc)
                 self.repo.record_discovery(company.company_id, at=self.clock(), notification_id=None, error=str(exc))
-                entry = {"ticker": ticker, "status": "error", "error": str(exc)}
-            summary.add_company(entry)
+                entries = [{"ticker": ticker, "status": "error", "error": str(exc)}]
+            for entry in entries:
+                summary.add_company(entry)
         return self._finish(summary)
 
     def _finish(self, summary: RunSummary) -> RunSummary:
@@ -117,43 +122,58 @@ class Pipeline:
         return identity, company
 
     def _is_fresh(self, company: Any, now: datetime) -> bool:
-        if company.last_discovery_at is None:
+        if company.last_discovery_at is None or company.last_error:
             return False
         return now - company.last_discovery_at < timedelta(hours=self.settings.discovery_interval_hours)
 
-    def _sync_company(self, identity: CompanyIdentity, company: Any) -> dict[str, Any]:
-        entry: dict[str, Any] = {"ticker": identity.ticker}
+    def _sync_company(self, identity: CompanyIdentity, company: Any) -> list[dict[str, Any]]:
+        """One summary entry per published record: a single latest annual filing for
+        notification-style sources, or one per fiscal year for comparison exports."""
         candidates = self.source.list_financial_filings(identity)
-        selection = select_latest_annual(candidates)
-        entry["candidates"] = selection.considered
-        for withdrawn in selection.withdrawn:
-            affected = self.repo.mark_withdrawn(identity.market_source, withdrawn.notification_id)
-            if affected:
-                entry.setdefault("withdrawn", []).append(withdrawn.notification_id)
-        if selection.selected is None:
-            self.repo.record_discovery(company.company_id, at=self.clock(), notification_id=None, error=selection.reason)
-            entry.update(status="no_filing", error=selection.reason)
-            return entry
-        selected = selection.selected
-        self.repo.record_discovery(company.company_id, at=self.clock(), notification_id=selected.notification_id, error=None)
-        entry["notification_id"] = selected.notification_id
+        if getattr(self.source, "publishes_all_years", False):
+            by_year: dict[int, list[FilingCandidate]] = {}
+            for candidate in candidates:
+                by_year.setdefault(candidate.fiscal_year, []).append(candidate)
+            selections = [select_latest_annual(group) for _, group in sorted(by_year.items())] or [select_latest_annual([])]
+        else:
+            selections = [select_latest_annual(candidates)]
 
-        ref, snapshot_status = self._ensure_snapshot(identity, selected)
-        entry["snapshot"] = snapshot_status
-        entry.update(self._parse_and_persist(company, identity, ref))
-        return entry
+        entries: list[dict[str, Any]] = []
+        for selection in selections:
+            entry: dict[str, Any] = {"ticker": identity.ticker, "candidates": selection.considered}
+            for withdrawn in selection.withdrawn:
+                affected = self.repo.mark_withdrawn(identity.market_source, withdrawn.notification_id)
+                if affected:
+                    entry.setdefault("withdrawn", []).append(withdrawn.notification_id)
+            if selection.selected is None:
+                self.repo.record_discovery(company.company_id, at=self.clock(), notification_id=None, error=selection.reason)
+                entry.update(status="no_filing", error=selection.reason)
+                entries.append(entry)
+                continue
+            selected = selection.selected
+            self.repo.record_discovery(company.company_id, at=self.clock(), notification_id=selected.notification_id, error=None)
+            entry["notification_id"] = selected.notification_id
+            entry["fiscal_year"] = selected.fiscal_year
+            ref, snapshot_status = self._ensure_snapshot(identity, selected, force_download=bool(company.last_error))
+            entry["snapshot"] = snapshot_status
+            entry.update(self._parse_and_persist(company, identity, ref))
+            entries.append(entry)
+        return entries
 
-    def _ensure_snapshot(self, identity: CompanyIdentity, candidate: FilingCandidate) -> tuple[SnapshotRef, str]:
+    def _ensure_snapshot(self, identity: CompanyIdentity, candidate: FilingCandidate, *, force_download: bool = False) -> tuple[SnapshotRef, str]:
         existing = self.raw.snapshots_for_notification(identity.market_source, identity.source_company_id, candidate.notification_id)
         latest = self._latest_by_retrieval(existing)
         state_key = f"{identity.market_source}/{identity.source_company_id}/{candidate.notification_id}"
         now = self.clock()
-        if latest is not None and not candidate.is_correction:
+        if latest is not None and not candidate.is_correction and not force_download and identity.market_source != "kap_compare":
             reval = self.state.revalidation(state_key)
             last = reval.get("last_revalidated_at") or self.raw.read_manifest(latest).get("first_retrieved_at")
             if last and now - datetime.fromisoformat(last) < timedelta(hours=self.settings.report_revalidate_hours):
                 return latest, "reused (revalidation not due)"
 
+        validator_map = self.state.revalidation(state_key).get("validators", {})
+        if hasattr(self.source, "set_validators"):
+            self.source.set_validators(candidate.notification_id, validator_map)
         download = self.source.fetch_filing(identity, candidate)
         if download.not_modified:
             if latest is None:
@@ -162,6 +182,7 @@ class Pipeline:
             return latest, "revalidated (304)"
 
         manifest = {
+            **download.provenance,
             "primary_file": next((n for n in sorted(download.files) if n.endswith(".html")), sorted(download.files)[0]),
             "published_at": candidate.published_at.isoformat(),
             "first_retrieved_at": download.retrieved_at.isoformat(),
@@ -203,13 +224,21 @@ class Pipeline:
     # -- parse and persist (shared by sync and reprocess) ----------------------------------------
 
     def _parse_and_persist(self, company: Any, identity: CompanyIdentity, ref: SnapshotRef) -> dict[str, Any]:
+        if self.repo.notification_is_withdrawn(identity.market_source, ref.notification_id):
+            return {"status": "withdrawn", "notification_id": ref.notification_id}
         existing = self.repo.find_report_version(identity.market_source, ref.notification_id, ref.content_hash, self.parser_version)
-        if existing is not None and existing.parse_status == ParseStatus.VALID.value:
-            return {"status": "already_parsed", "report_id": existing.report_id, "parser_version": self.parser_version}
-
         manifest = self.raw.read_manifest(ref)
         files = self.raw.read_files(ref)
+        if manifest.get("data_product") == "kap_compare":
+            from .kap_export import read_export_blob
+            files["source.xlsx"] = read_export_blob(self.raw, manifest["export_blob_sha256"])
+            manifest["calendar_year_confirmed"] = self.settings.calendar_year_confirmed(identity.ticker)
+        if existing is not None and existing.parse_status == ParseStatus.VALID.value:
+            self.repo.record_success(company.company_id, at=self.clock())
+            return {"status": "already_parsed", "report_id": existing.report_id, "parser_version": self.parser_version}
         parsed = parse_snapshot(files, manifest, parser_version=self.parser_version)
+        if manifest.get("retrieved_at_basis") == "import_time_original_capture_unknown":
+            parsed.warnings.append("Original export retrieval timestamp is unknown; retrieved_at is import time, not point-in-time market availability.")
         parsed_at = self.clock()
         self.raw.write_parsed(
             ref,
@@ -291,10 +320,33 @@ class Pipeline:
             validation_summary=dump_json(parsed.validation_summary()),
         )
 
+    def ingest_export_entries(self, entries) -> RunSummary:
+        summary = RunSummary(self.settings.data_dir, "import-kap-export", clock=self.clock)
+        for item in entries:
+            identity = item.identity
+            try:
+                company = self.repo.upsert_company(identity)
+                download = item.download(self.settings.calendar_year_confirmed(identity.ticker))
+                candidate = download.candidate
+                manifest = {**download.provenance, "primary_file": "source.json", "ticker": identity.ticker,
+                    "published_at": candidate.published_at.isoformat(), "first_retrieved_at": download.retrieved_at.isoformat(),
+                    "fiscal_year": candidate.fiscal_year, "period_end_date": candidate.period_end_date.isoformat(),
+                    "consolidation_scope": candidate.consolidation_scope.value if candidate.consolidation_scope else None,
+                    "statement_type": candidate.statement_type, "source_url": candidate.source_url,
+                    "source_urls": download.source_urls, "content_types": download.content_types}
+                ref, created = self.raw.write_snapshot(market_source=identity.market_source,
+                    source_company_id=identity.source_company_id, notification_id=candidate.notification_id,
+                    files=download.files, manifest=manifest)
+                result = self._parse_and_persist(company, identity, ref)
+                summary.add_company({"ticker": identity.ticker, "notification_id": candidate.notification_id, **result})
+            except (SourceError, StorageError, IdentityConflict) as exc:
+                summary.add_company({"ticker": identity.ticker, "status": "error", "error": str(exc)})
+        return self._finish(summary)
+
     # -- reprocess -----------------------------------------------------------------------------
 
     def reprocess(self, tickers: list[str]) -> RunSummary:
-        """Zero HTTP requests: re-parse the latest stored snapshot per company."""
+        """Zero HTTP requests: re-parse every stored snapshot, preserving withdrawals."""
         summary = RunSummary(self.settings.data_dir, "reprocess", clock=self.clock)
         summary.data["requested_tickers"] = tickers
         for ticker in tickers:
@@ -306,13 +358,14 @@ class Pipeline:
                 market_source=company.market_source, source_company_id=company.source_company_id, ticker=company.ticker,
                 company_name=company.company_name, yahoo_ticker=company.yahoo_ticker,
             )
-            ref = self.raw.latest_snapshot(identity.market_source, identity.source_company_id)
-            if ref is None:
+            refs = self.raw.list_snapshots(identity.market_source, identity.source_company_id)
+            if not refs:
                 summary.add_company({"ticker": ticker, "status": "cache_miss", "error": "no raw snapshot stored"})
                 continue
-            try:
-                entry = {"ticker": ticker, "notification_id": ref.notification_id, **self._parse_and_persist(company, identity, ref)}
-            except (SnapshotMissing, StorageError) as exc:
-                entry = {"ticker": ticker, "status": "cache_miss", "error": str(exc)}
-            summary.add_company(entry)
+            for ref in sorted(refs, key=lambda r: (r.notification_id, r.content_hash)):
+                try:
+                    entry = {"ticker": ticker, "notification_id": ref.notification_id, **self._parse_and_persist(company, identity, ref)}
+                except (SnapshotMissing, StorageError) as exc:
+                    entry = {"ticker": ticker, "status": "cache_miss", "error": str(exc)}
+                summary.add_company(entry)
         return self._finish(summary)

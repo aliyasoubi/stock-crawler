@@ -84,19 +84,37 @@ def test_state_store_cooldowns_survive_restart_and_expire(tmp_path):
     assert state.revalidation("missing") == {}
 
 
-def test_run_lock_rejects_overlap_and_reclaims_stale(tmp_path):
+def test_run_lock_rejects_overlap_even_after_six_hours(tmp_path):
     clock = FakeClock()
     with RunLock(tmp_path, clock=clock):
+        clock.advance(hours=7)
         with pytest.raises(RunLocked):
             RunLock(tmp_path, clock=clock).acquire()
     assert not (tmp_path / "state" / "crawler.lock").exists()
-    lock_path = tmp_path / "state" / "crawler.lock"
-    lock_path.write_text(json.dumps({"pid": 999999999, "hostname": os.uname().nodename, "acquired_at": clock().isoformat()}))
+    # Diagnostic metadata never blocks recovery once the OS owner has exited.
+    (tmp_path / "state" / "crawler.lock").write_text("corrupt old metadata")
     with RunLock(tmp_path, clock=clock):
         pass
-    lock_path.write_text(json.dumps({"pid": os.getpid(), "hostname": "elsewhere", "acquired_at": (clock() - timedelta(hours=7)).isoformat()}))
-    with RunLock(tmp_path, clock=clock):
+
+
+def test_run_lock_is_released_when_owner_process_dies(tmp_path):
+    import subprocess, sys
+    source = "from pathlib import Path; import os; from stock_crawler.storage import RunLock; lock=RunLock(Path(__import__('sys').argv[1])); lock.acquire(); os._exit(0)"
+    result = subprocess.run([sys.executable, "-c", source, str(tmp_path)], timeout=10)
+    assert result.returncode == 0
+    with RunLock(tmp_path):
         pass
-    lock_path.write_text(json.dumps({"pid": os.getpid(), "hostname": "elsewhere", "acquired_at": clock().isoformat()}))
-    with pytest.raises(RunLocked):
-        RunLock(tmp_path, clock=clock).acquire()
+
+
+def test_corrupt_host_state_fails_closed(tmp_path):
+    state = StateStore(tmp_path)
+    state.root.mkdir(parents=True)
+    (state.root / "hosts.json").write_text("broken json")
+    with pytest.raises(StorageError, match="corrupt operational state"):
+        state.host_cooldown("www.kap.org.tr")
+
+
+@pytest.mark.parametrize("bad", ["../outside", "/tmp/out", "a/b", "a\\b"])
+def test_snapshot_identifier_cannot_escape_root(tmp_path, bad):
+    with pytest.raises(StorageError):
+        RawStore(tmp_path).write_snapshot(market_source="kap", source_company_id=bad, notification_id="1", files={"a": b"data"}, manifest={})

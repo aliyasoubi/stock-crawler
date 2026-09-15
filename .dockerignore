@@ -1,0 +1,14 @@
+# Keep the build context small and secrets out of it. The image only COPYs pyproject.toml, README.md, src/, sql/.
+.env
+.env.*
+!.env.example
+.git
+.venv*
+.pytest_cache
+__pycache__
+*.egg-info
+backups
+data
+imports
+node_modules
+validation

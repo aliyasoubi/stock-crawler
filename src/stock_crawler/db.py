@@ -67,6 +67,8 @@ class RepositoryLike(Protocol):
 
     def save_report(self, report: ReportRecord, fundamentals: list[FundamentalRecord]) -> tuple[int, str]: ...
 
+    def notification_is_withdrawn(self, market_source: str, notification_id: str) -> bool: ...
+
     def mark_withdrawn(self, market_source: str, notification_id: str) -> int: ...
 
     def get_report(self, report_id: int) -> dict[str, Any] | None: ...
@@ -260,6 +262,10 @@ class Repository:
             params["is_comparative"] = 1 if record.is_comparative else 0
             conn.execute(text(_insert_sql("fundamentals", _FUNDAMENTAL_COLUMNS)), params)
 
+    def notification_is_withdrawn(self, market_source: str, notification_id: str) -> bool:
+        with self.engine.connect() as conn:
+            return bool(conn.execute(text("SELECT TOP 1 1 FROM dbo.reports WHERE market_source=:s AND notification_id=:n AND is_withdrawn=1"), {"s": market_source, "n": notification_id}).scalar())
+
     def mark_withdrawn(self, market_source: str, notification_id: str) -> int:
         with self.engine.begin() as conn:
             result = conn.execute(
@@ -316,7 +322,7 @@ def _utc_bind_params(conn, cursor, statement, parameters, context, executemany):
 
 
 def make_engine(settings: Settings, **overrides: Any) -> Engine:
-    engine = create_engine(settings.sqlalchemy_url(**overrides), pool_pre_ping=True, future=True)
+    engine = create_engine(settings.sqlalchemy_url(**overrides), pool_pre_ping=True, future=True, hide_parameters=True)
     event.listen(engine, "before_cursor_execute", _utc_bind_params, retval=True)
     return engine
 
@@ -377,7 +383,7 @@ def init_db(settings: Settings, schema_path: Path) -> None:
     }
     for name, (password, _) in logins.items():
         _identifier(name)
-        if not password:
+        if not password or "REPLACE_WITH" in password:
             raise DatabaseError(f"password for login {name} is empty; set it in .env before init-db")
 
     master = make_engine(settings, database="master", **bootstrap).execution_options(isolation_level="AUTOCOMMIT")

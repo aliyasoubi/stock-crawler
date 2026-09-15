@@ -136,6 +136,17 @@ class PacedClient:
         return max(0, self.budget - self.attempts)
 
     def get(self, url: str, *, validators: dict[str, str] | None = None, accept: str | None = None) -> FetchResult:
+        return self._request("GET", url, validators=validators, accept=accept)
+
+    def post_json(self, url: str, payload: dict) -> FetchResult:
+        """Only for read-only export/search requests, never mutating API operations."""
+        return self._request("POST", url, json_body=payload)
+
+    def close(self) -> None:
+        self._client.close()
+
+    def _request(self, method: str, url: str, *, json_body: dict | None = None,
+                 validators: dict[str, str] | None = None, accept: str | None = None) -> FetchResult:
         headers = {"User-Agent": self._settings.http_user_agent}
         if accept:
             headers["Accept"] = accept
@@ -148,8 +159,10 @@ class PacedClient:
         while True:
             host = self._check_host(url)
             self._check_cooldown(host)
-            response = self._request_with_retries(url, host, headers)
+            response = self._request_with_retries(url, host, headers, method=method, json_body=json_body)
             if response.status_code in REDIRECT_STATUSES:
+                if method == "POST":
+                    raise SourceHTTPError(url, response.status_code, "export POST redirected; verify the endpoint before retrying")
                 redirects += 1
                 location = response.headers.get("location")
                 if not location or redirects > MAX_REDIRECTS:
@@ -194,16 +207,16 @@ class PacedClient:
         schedule = self._settings.retry_backoff_seconds or (10.0,)
         return schedule[min(attempt, len(schedule) - 1)]
 
-    def _request_with_retries(self, url: str, host: str, headers: dict[str, str]) -> httpx.Response:
+    def _request_with_retries(self, url: str, host: str, headers: dict[str, str], *, method: str = "GET", json_body: dict | None = None) -> httpx.Response:
         retries = 0
         while True:
             self._pace(host)
             self._consume_budget()
             try:
-                response = self._client.get(
-                    url, headers=headers, timeout=self._settings.request_timeout_seconds, follow_redirects=False
+                response = self._client.request(
+                    method, url, json=json_body, headers=headers, timeout=self._settings.request_timeout_seconds, follow_redirects=False
                 )
-            except (httpx.TimeoutException, httpx.NetworkError) as exc:
+            except (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError) as exc:
                 self._schedule_next(host)
                 if retries < self._settings.max_retries:
                     self._sleep(self._backoff(retries))
@@ -224,20 +237,22 @@ class PacedClient:
                 now = self._clock()
                 delay = parse_retry_after(response.headers.get("retry-after"), now=now)
                 delay = self._settings.retry_after_fallback_seconds if delay is None else delay
-                if retries < self._settings.max_retries:
-                    self._sleep(delay)
-                    retries += 1
-                    continue
+                # Persist immediately: interruption/restart must not erase Retry-After.
                 cooldown = max(delay, self._settings.throttle_cooldown_seconds)
-                self._state.set_host_cooldown(host, now + timedelta(seconds=cooldown), f"HTTP 429 persisted for {url}")
-                raise HostThrottled(f"HTTP 429 persisted from {host}; cooldown {cooldown:.0f}s recorded")
+                self._state.set_host_cooldown(host, now + timedelta(seconds=cooldown), f"HTTP 429 for {url}")
+                raise HostThrottled(f"HTTP 429 from {host}; cooldown {cooldown:.0f}s recorded")
             if status in RETRYABLE_STATUSES:
                 if retries < self._settings.max_retries:
                     delay = parse_retry_after(response.headers.get("retry-after"), now=self._clock())
+                    if delay is not None and delay > 60:
+                        self._state.set_host_cooldown(host, self._clock() + timedelta(seconds=delay), f"HTTP {status} Retry-After for {url}")
+                        raise HostThrottled(f"{host} requested {delay:.0f}s cooldown")
                     self._sleep(self._backoff(retries) if delay is None else delay)
                     retries += 1
                     continue
                 raise SourceHTTPError(url, status, f"server error persisted after {retries} retries")
             if status >= 400 and status != 304:
                 raise SourceHTTPError(url, status, "client error")
+            if status not in (200, 304) and status not in REDIRECT_STATUSES:
+                raise SourceHTTPError(url, status, "unexpected response status")
             return response

@@ -1,5 +1,5 @@
 # Three services: SQL Server, the one-shot crawler CLI, and Grafana.
-# Start order: docker compose up -d mssql -> run crawler init-db -> run crawler sync -> up -d grafana
+# Quick start: `make setup` then `make sync` (or `make import`) then `make grafana`. See README.
 
 services:
   mssql:
@@ -10,12 +10,9 @@ services:
     environment:
       ACCEPT_EULA: ${ACCEPT_EULA:-Y}
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?set MSSQL_SA_PASSWORD in .env}
-      MSSQL_PID: Developer
+      MSSQL_PID: ${MSSQL_PID:-Express}
     volumes:
       - mssql-data:/var/opt/mssql
-    ports:
-      # Published on loopback only, for a consumer running on the developer host. Remove for deployment.
-      - "127.0.0.1:1433:1433"
     healthcheck:
       test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' -b"]
       interval: 10s
@@ -32,6 +29,9 @@ services:
     # On Linux, bind mounts keep host ownership. Run as the host user so ./data and ./config are
     # writable: put CRAWLER_UID=$(id -u) and CRAWLER_GID=$(id -g) in .env (scripts/setup-linux.sh does this).
     user: "${CRAWLER_UID:-10001}:${CRAWLER_GID:-10001}"
+    # Lets HTTPS_PROXY=...://host.docker.internal:PORT in .env reach a proxy running on the Linux host.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./data:/app/data
       - ./config:/app/config

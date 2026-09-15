@@ -6,7 +6,11 @@ cd "$(dirname "$0")/.."
 SRC="${1:?usage: scripts/restore.sh backups/<timestamp>}"
 env_value() { grep -E "^$1=" .env | head -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//'; }
 MSSQL_DATABASE="$(env_value MSSQL_DATABASE)"; MSSQL_SA_PASSWORD="$(env_value MSSQL_SA_PASSWORD)"
+[[ "${MSSQL_DATABASE}" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || { echo "Invalid database name"; exit 1; }
 [ -n "${MSSQL_SA_PASSWORD}" ] || { echo "MSSQL_SA_PASSWORD missing in .env"; exit 1; }
+mkdir -p data/state
+exec 9>data/state/crawler.guard
+flock -n 9 || { echo "Crawler or backup/restore is active; retry after it finishes."; exit 3; }
 (cd "${SRC}" && sha256sum -c SHA256SUMS)
 
 docker compose exec -T mssql mkdir -p /var/opt/mssql/backup
@@ -18,7 +22,9 @@ IF DB_ID(N'${MSSQL_DATABASE}') IS NOT NULL ALTER DATABASE [${MSSQL_DATABASE}] SE
 RESTORE DATABASE [${MSSQL_DATABASE}] FROM DISK = N'/var/opt/mssql/backup/${MSSQL_DATABASE}.bak' WITH REPLACE, CHECKSUM;
 ALTER DATABASE [${MSSQL_DATABASE}] SET MULTI_USER;"
 
-rm -rf data/raw data/state
-tar -xzf "${SRC}/raw-and-state.tgz" -C data
+# Keep the guard inode stable while the restore holds it.
+rm -rf data/raw
+find data/state -mindepth 1 -maxdepth 1 ! -name crawler.guard -exec rm -rf -- {} +
+tar -xzf "${SRC}/raw-and-state.tgz" --exclude=state/crawler.guard --exclude=state/crawler.lock -C data
 docker compose run --rm crawler init-db
 echo "restored ${SRC}; verify with: docker compose run --rm crawler reprocess"

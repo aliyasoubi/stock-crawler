@@ -6,8 +6,9 @@ from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Any
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 MARKET_SOURCE_KAP = "kap"
 ANNUAL_PERIOD = 4  # legacy KAP contract: period 4 == twelve-month annual statement
@@ -64,6 +65,14 @@ class CompanyIdentity(BaseModel):
     company_name: str | None = None
     yahoo_ticker: str | None = None
 
+    @field_validator("source_company_id", "market_source", "ticker")
+    @classmethod
+    def safe_identity(cls, value: str) -> str:
+        import re
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", value):
+            raise ValueError("invalid source identity")
+        return value
+
 
 class FilingCandidate(BaseModel):
     """Metadata for one financial-statement notification as listed by the source."""
@@ -83,6 +92,21 @@ class FilingCandidate(BaseModel):
     source_url: str | None = None
     document_url: str | None = None
 
+    @field_validator("notification_id")
+    @classmethod
+    def safe_notification(cls, value: str) -> str:
+        import re
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,32}", value):
+            raise ValueError("invalid notification ID")
+        return value
+
+    @field_validator("published_at")
+    @classmethod
+    def aware_publication(cls, value: datetime) -> datetime:
+        if value.tzinfo is None:
+            raise ValueError("publication timestamp must include an offset")
+        return value
+
 
 class FilingDownload(BaseModel):
     """Bytes and provenance for one filing, before it is written as an immutable snapshot."""
@@ -95,6 +119,7 @@ class FilingDownload(BaseModel):
     source_urls: dict[str, str] = Field(default_factory=dict)
     validators: dict[str, dict[str, str]] = Field(default_factory=dict)
     retrieved_at: datetime
+    provenance: dict[str, Any] = Field(default_factory=dict)
     not_modified: bool = False  # conditional request answered 304: reuse the stored snapshot
 
 

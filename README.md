@@ -1,181 +1,206 @@
-# Stock Fundamental Crawler
+# Stock Fundamental Crawler — KAP annual fundamentals → SQL Server → Grafana
 
-Batch Python CLI that captures the latest annual financial statement notification per Turkish
-company from KAP, stores immutable raw snapshots, extracts validated fundamentals, and writes
-them to Microsoft SQL Server. Consumers and Grafana read SQL views only.
+A batch Python CLI that downloads KAP's **comparison export** (the same
+`/en/api/export/compareItems` XLSX the v4/v5 browser scripts use), keeps every
+source workbook, parses it locally, and publishes validated annual records to SQL
+Server. Grafana reads SQL views; nothing downstream calls KAP.
 
-This repository implements the specification in `README_Stock_Fundamental_Crawler_MVP_v8`
-(kept outside the repo). Section numbers below refer to that document.
+Ten fields per company-year come from the export (revenue, net profit, owners'/NCI
+profit, total assets, total equity, current/non-current liabilities, liabilities+equity,
+finance-sector revenue). Values are stored in base currency units (already scaled).
 
-## Status
+## Quick start (Linux host with Docker)
 
-| Area | State |
-| --- | --- |
-| Config, company list, CSV candidate utility (§4, §13) | Implemented, tested |
-| Filing selection rule (§5) | Implemented as pure logic, tested |
-| Paced/budgeted HTTP client, cooldowns, access stops (§6) | Implemented, tested with a mock transport |
-| Raw snapshots, manifests, state, run lock, run summaries (§7) | Implemented, tested |
-| Parser: KAP-style HTML → canonical fields, units, derived metrics (§9, §10) | Implemented against a **synthetic reference fixture**; label dictionary must be reviewed against real captured filings |
-| SQL schema, views, least-privilege roles, `init-db` (§8, §14) | Implemented; verified against SQL Server 2022 in Docker (idempotent re-run, version ordering, withdrawal exclusion, reader cannot write) |
-| Sync / reprocess / compare orchestration (§11, §13) | Implemented, tested end-to-end offline with a fixture source and in-memory repository |
-| Docker Compose, Grafana provisioning + dashboard (§14) | Verified: clean startup, datasource health OK via `grafana_reader`, dashboard provisioned and querying the views |
-| Backup / restore (§15) | `scripts/backup.sh` + `scripts/restore.sh`; one full destroy-and-restore cycle verified |
-| Live smoke check and fixture capture (§6, §15) | `probe-source` (2 paced GETs) and `capture-fixture` (one operator-supplied URL) implemented, tested with a mock transport |
-| **Live KAP retrieval** (§6) | **Pending an access route.** `KapClient` discovery/download methods raise `SourceAccessNotConfigured`. `SOURCE_MODE=fixture` runs the full pipeline offline; `probe-source` and `capture-fixture` are the first two live steps. |
+```bash
+git clone <this repo> ~/projects/stock-crawler && cd ~/projects/stock-crawler
+make setup          # writes .env with unique passwords, builds the image, starts SQL Server, creates schema + logins
+```
+
+Then get data in, one of:
+
+```bash
+# A) You already have downloads from the v4/v5 browser scripts (kap_fundamentals_manifest*.json):
+cp ~/Downloads/kap_fundamentals_manifest*.json imports/
+make import         # zero HTTP; imports every year in every manifest
+
+# B) Fetch live. Put tickers in config/companies.txt (one per line), set KAP_YEARS in .env, then:
+make sync           # 25 companies per request, 5-10 s between requests
+```
+
+```bash
+make grafana        # http://127.0.0.1:3000  (admin / GF_SECURITY_ADMIN_PASSWORD from .env)
+```
+
+That is the whole setup. `make` with no target lists everything; every `make` target is a
+one-line `docker compose run --rm crawler <command>` you can also type yourself.
+
+Before running `sync`, review `HTTP_USER_AGENT` in `.env` (operator contact) and KAP's
+current access terms; the export endpoint is public but undocumented.
+
+## Getting data
+
+### A) Import existing browser downloads (no KAP access needed)
+
+The v4/v5 scripts save a JSON manifest of base64 XLSX workbooks. Copy them into
+`imports/` and import; nothing is sent to KAP:
+
+```bash
+docker compose run --rm crawler import-kap-export --input imports/kap_fundamentals_manifest.json imports/kap_fundamentals_manifest_2016_2020.json
+```
+
+- Add `--dry-run --output data/validation.json` first to see what would be published
+  without opening SQL Server.
+- Every annual row in the file is imported (all years). Re-importing the same file is a
+  no-op; a byte-different workbook with identical values does not create new versions.
+- Companies are matched by **exact title** against `config/kap_companies.json` (754
+  ticker/ID/title entries recovered from the scripts). A renamed issuer shows up as
+  `unmatched export company ...` — add its old title to that entry's `aliases` list.
+- Manifests have no original download timestamp, so `retrieved_at` is the import time
+  and the record says so in its provenance.
+
+### B) Live sync
+
+```bash
+docker compose run --rm crawler sync                      # config/companies.txt, KAP_YEARS from .env
+docker compose run --rm crawler sync --tickers THYAO,ASELS
+docker compose run --rm crawler sync --company-file config/companies_candidates.txt   # all 754
+```
+
+- One POST covers 25 companies × up to 5 years (`KAP_YEARS`, a KAP limit). All requested
+  years are published, not just the latest.
+- A company is "fresh" for `DISCOVERY_INTERVAL_HOURS` (24) after a successful sync and is
+  skipped; `--refresh` overrides that. Failed companies stay due.
+- `MAX_COMPANIES_PER_RUN` (250 ≈ 10 requests) and `MAX_REQUESTS_PER_RUN` bound a run;
+  companies over the cap are reported as `deferred` and picked up by the next run, so a
+  daily cron entry walks through the full list:
+
+```cron
+0 6 * * * cd /path/to/stock-crawler && docker compose run --rm crawler sync >> data/cron.log 2>&1
+```
+
+- HTTP 429 records a cooldown (≥ 1 h or `Retry-After`); 401/403 or a challenge page
+  stops the host until you clear `data/state/` deliberately. No retries evade these.
+
+### C) Make a new browser export
+
+If the server cannot reach KAP but your browser can:
+
+```bash
+docker compose run --rm crawler build-kap-script --company-file config/companies_candidates.txt --years 2021,2022,2023,2024,2025 --output config/export_2021_2025.js
+```
+
+Open <https://www.kap.org.tr/en/kalem-karsilastirma>, paste the script into the
+developer console, and let it run (`kapProgressStatus()`, `kapStop()`, `kapResume()`,
+`kapDownloadSoFar()` are available). It resumes across runs, honours 429 cooldowns, and
+downloads a manifest you import with (A).
+
+## "ConnectTimeout" from `probe-source` — KAP unreachable from the container
+
+`probe-source` doing two GETs and reporting `transport failure ... ConnectTimeout` means DNS
+resolved but TCP to kap.org.tr never answered from inside Docker. Find out where it breaks:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' --connect-timeout 10 https://www.kap.org.tr/en
+```
+
+```bash
+docker run --rm curlimages/curl -sS -o /dev/null -w '%{http_code}\n' --connect-timeout 10 https://www.kap.org.tr/en
+```
+
+- **Host 200, container timeout** → Docker egress. Typical causes: the host reaches KAP only
+  through a VPN/proxy that containers don't use (set `HTTPS_PROXY=socks5://host.docker.internal:PORT`
+  in `.env`; the crawler service maps `host.docker.internal` to the host), a firewall
+  dropping the `docker0` FORWARD chain (`sudo ufw status`, DOCKER-USER rules), or an MTU
+  mismatch on VPN links (`"mtu": 1400` in `/etc/docker/daemon.json`).
+- **Both time out** → the network itself can't reach KAP (KAP drops ICMP, so `ping` proves
+  nothing; use the curl above). Use route (A) or (C) — they only need a browser that works.
+- **Both 200** → rerun `make probe`. It exits 0 when the site root answers; KAP returns a
+  non-standard status for `robots.txt`, which is reported but not treated as failure.
+
+Related: `docker compose ps` shows only the services you started — Grafana appears after
+`make grafana`. `systemctl status grafana-server` always says "not found" because Grafana runs
+in Docker here, and containers from other projects in `docker ps` are unrelated.
+
+## Configuration (`.env`)
+
+`.env.example` is complete and commented; `scripts/setup-linux.sh` copies it with unique
+passwords. Paths are relative to the checkout and work identically in Docker (`/app`).
+
+| Key | Default | Meaning |
+|---|---|---|
+| `SOURCE_MODE` | `kap-export` | `kap-export` = live KAP export; `fixture` = replay `tests/fixtures/kap/source` offline (tests only, stored under `market_source='kap'`, hidden in Grafana) |
+| `COMPANY_FILE` | `config/companies.txt` | active tickers, one per line, `#` comments |
+| `KAP_COMPANY_REGISTRY` | `config/kap_companies.json` | ticker → KAP member id + exact title (+ optional `aliases`) |
+| `KAP_YEARS` | `[2024,2025]` | 1–5 years per request |
+| `KAP_NON_CALENDAR_YEAR_TICKERS` | `[]` | issuers whose financial year is not Jan–Dec; they are skipped (the export has no period dates, so Jan 1–Dec 31 is inferred for everyone else and flagged in the record's warnings) |
+| `MAX_COMPANIES_PER_RUN` / `MAX_REQUESTS_PER_RUN` | `250` / `50` | per-run bounds |
+| `REQUEST_DELAY_MIN/MAX_SECONDS` | `5` / `10` | pacing between requests |
+| `DISCOVERY_INTERVAL_HOURS` | `24` | how long a successful sync counts as fresh |
+| `HTTPS_PROXY` | unset | optional proxy for the crawler container only |
+| `MSSQL_*`, `GF_*` | — | SQL Server / Grafana credentials; see the template |
+
+`init-db` creates the database, schema, and the `crawler_writer` / `reader` /
+`grafana_reader` logins. It does **not** rotate passwords of logins that already exist —
+changing `.env` alone does not change SQL credentials.
+
+## Operations
+
+| Command | What it does |
+|---|---|
+| `sync` | fetch + publish due companies (exit `0` ok, `1` some company failed, `2` stopped by budget/cooldown/block, `3` another run holds the lock) |
+| `import-kap-export --input f1 [f2 ...]` | import manifests/XLSX; `--dry-run` validates without SQL |
+| `reprocess [--tickers ...]` | re-parse every stored workbook with the current parser, no HTTP |
+| `compare --before-report-id A --after-report-id B` | field-level diff of two stored versions |
+| `probe-source` | reachability check (two GETs) |
+| `build-kap-script` | generate a browser exporter for a company/year selection |
+| `companies-from-csv --input x.csv --output y.txt` | extract unique tickers from a CSV column |
+| `scripts/backup.sh` / `scripts/restore.sh backups/<ts>` | SQL `.bak` + raw workbooks + state (restore is destructive) |
+
+Run summaries land in `data/runs/<run>/summary.json`. Raw workbooks are kept once by
+SHA-256 under `data/raw/_exports/`; per-record snapshots and parser output under
+`data/raw/kap_compare/`. A changed value creates a new report version — old rows are never
+overwritten. `sync`, backup and restore share one OS lock (`data/state/crawler.guard`).
+
+## Reading the data
+
+- `dbo.vw_fundamentals` — every valid version per company/year/scope.
+- `dbo.vw_latest_fundamentals` — one latest annual row per company.
+- Filter `market_source = 'kap_compare'` (Grafana's dashboard already does). Monetary values
+  are already in base units — do **not** multiply by `currency_scale` again. Missing = `NULL`.
+- The comparison page is delayed and shows current-period columns only: no prior-period
+  restatements, no withdrawal detection, no exact period dates. Suitable for periodic
+  fundamentals screens, not for point-in-time backtests. EPS, operating income, cash, debt,
+  EBITDA, FCF and shares are `NULL` for this ten-item product.
+
+## Native development (no Docker)
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+pytest                                    # 140 offline tests
+node --test tests/browser_core.test.cjs   # optional, Node 18+
+cp .env.example .env                      # relative paths; SQL is not needed for the commands below
+stock-crawler import-kap-export --input tests/fixtures/kap/exports/two_companies_2023_2024.xlsx --tickers THYAO,ASELS --dry-run
+```
+
+Expected: 4 rows, 0 import errors, 4 valid annual records. The opt-in SQL integration test
+needs `STOCK_CRAWLER_TEST_MSSQL_URL` pointing at a **disposable** database.
+
+See [REVIEW.md](REVIEW.md) for the 2026-09-14 review findings and the data-quality
+decisions behind the design.
 
 ## Layout
 
+```text
+src/stock_crawler/kap_export.py     KAP export client (batched POST), XLSX parsing, registry, manifest import
+src/stock_crawler/kap.py            source interface, fixture client, annual-selection rule, probe
+src/stock_crawler/fetch.py          paced/budgeted HTTP with cooldown + block handling
+src/stock_crawler/pipeline.py       sync, import, reprocess orchestration
+src/stock_crawler/parser.py         HTML fixture parser + export dispatch
+src/stock_crawler/storage.py        raw store, run summaries, state, OS lock
+src/stock_crawler/db.py             SQL Server repository + init-db
+src/stock_crawler/browser/          generated browser exporter (v6)
+sql/schema.sql                      tables and views
+config/kap_companies.json           754 ticker/ID/title identities from the supplied scripts
+config/companies.txt                active list (start small); companies_candidates.txt = all 754
 ```
-src/stock_crawler/
-  main.py       CLI (init-db, sync, reprocess, compare, companies-from-csv)
-  pipeline.py   sync/reprocess orchestration (injected repository + source client)
-  config.py     validated settings, company-file loading
-  models.py     typed records (CompanyIdentity, FilingCandidate, FundamentalRecord, ...)
-  kap.py        SourceClient protocol, selection rule, FixtureSourceClient, KapClient stub
-  fetch.py      PacedClient: pacing, global budget, retries, Retry-After, cooldowns, access stops
-  storage.py    RawStore (atomic snapshots), StateStore, RunLock, RunSummary
-  parser.py     HTML → StatementFacts (IR) → ParsedReport; concept dictionary; validation
-  metrics.py    pure derived-metric functions with explicit methods/reasons
-  units.py      Turkish numerals, presentation currency/scale, dates, Istanbul→UTC
-  compare.py    normalized report/row comparison and classification
-  csvtools.py   candidate tickers from the shared CSV (no network)
-  db.py         SQLAlchemy/pyodbc repository, readiness check, init-db bootstrap
-sql/schema.sql  idempotent tables, views, roles, schema version
-config/companies.txt
-tests/          110 offline tests + 2 SQL Server integration tests; fixtures under tests/fixtures/kap/source
-scripts/        setup-linux.sh, backup.sh, restore.sh
-grafana/        datasource + dashboard provisioning
-```
-
-Deviations from the spec's file table, all deliberate: the HTTP pacing layer lives in
-`fetch.py` (source-agnostic, separately testable) rather than inside `kap.py`; orchestration
-lives in `pipeline.py` so it can be tested with fakes; `compare.py`, `csvtools.py`, and
-`units.py` are small pure modules split out of `db.py`/`parser.py`.
-
-## Running locally (offline, no SQL Server)
-
-```bash
-python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
-.venv/bin/python -m pytest
-```
-
-## Running with Docker (Ubuntu)
-
-Three containers: `mssql` (SQL Server 2022, data in a named volume), `crawler` (a one-shot CLI
-image invoked with `docker compose run`, never left running), and `grafana`. Requirements:
-Docker Engine with the compose plugin, x86-64 host (the SQL Server image is amd64-only; on an
-ARM host it runs under emulation), and at least 2 GB RAM free for SQL Server.
-
-```bash
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin   # per docs.docker.com/engine/install/ubuntu
-sudo usermod -aG docker "$USER" && newgrp docker
-
-git clone <this repo> && cd trading
-scripts/setup-linux.sh          # creates .env, sets CRAWLER_UID/GID to your user, creates data dirs
-nano .env                       # replace every REPLACE_WITH_* value (sa password must satisfy SQL Server policy)
-
-docker compose build crawler
-docker compose up -d --wait mssql
-docker compose run --rm crawler init-db
-docker compose run --rm crawler sync --tickers THYAO
-docker compose run --rm crawler sync
-docker compose up -d grafana     # http://127.0.0.1:3000 (admin / GF_SECURITY_ADMIN_PASSWORD)
-```
-
-`CRAWLER_UID`/`CRAWLER_GID` matter on Linux: bind mounts keep host ownership, so the crawler
-container runs as your user to write `./data` and `./config`. Ports are published on
-`127.0.0.1` only; use an SSH tunnel or a reverse proxy for remote access, never expose `sa`.
-
-Recurring refresh: a host cron entry such as
-`0 6 * * * cd /opt/trading && docker compose run --rm crawler sync >> data/cron.log 2>&1`
-is enough; the run lock rejects overlaps and cooldowns persist under `data/state`.
-
-`SOURCE_MODE=fixture` (the default in `.env.example`) replays `tests/fixtures/kap/source`
-with zero network requests, which is enough to prove the database, views, Grafana, reruns,
-reprocessing, and comparisons. Switch to `SOURCE_MODE=kap` only after wiring `KapClient`.
-
-Other commands:
-
-```bash
-docker compose run --rm crawler sync --company-file /app/config/companies.txt --limit 25 --refresh
-docker compose run --rm crawler reprocess --tickers THYAO
-docker compose run --rm crawler compare --before-report-id 1 --after-report-id 2
-docker compose run --rm crawler companies-from-csv --input /app/imports/kap_fundamentals.csv --ticker-column stock_code --output /app/config/companies_candidates.txt
-```
-
-Live-source commands (explicitly invoked, tiny request counts, all pacing/stop rules apply):
-
-```bash
-docker compose run --rm crawler probe-source                       # robots.txt + site root, 2 GETs
-docker compose run --rm crawler capture-fixture --url <exact notification URL from your browser> \
-    --ticker THYAO --source-company-id <KAP company id> --notification-id <id> \
-    --published-at "05.03.2025 18:45:00" --fiscal-year 2024 --period-end 2024-12-31 --scope consolidated
-```
-
-`capture-fixture` saves the response under `data/captures/` in the fixture layout; point
-`FIXTURE_SOURCE_DIR` at it and run `sync --tickers THYAO` to parse it offline. That is how the
-real KAP layout gets reviewed before any discovery code is written.
-
-Exit codes: `0` success, `1` configuration/database/source error, `2` run stopped early or probe
-not fully OK (budget, throttling, or access block; pending tickers are listed), `3` another run
-holds the lock.
-
-Backup and restore: `scripts/backup.sh` writes `backups/<timestamp>/` (native `.bak` plus a
-tarball of `data/raw` and `data/state` with checksums); `scripts/restore.sh backups/<timestamp>`
-replaces the database and raw directories and re-runs `init-db`. Verify with `reprocess`
-(expect `already_parsed`).
-
-Apple Silicon (development only): the SQL Server image is amd64-only; enable Rosetta emulation in Docker Desktop.
-
-## Wiring live KAP access (the remaining Phase-1 step)
-
-1. Decide the route (§6): KAP's REST service (Borsa İstanbul agreement, MKK authorization,
-   registered IP, API key) or a permitted public-web pilot after checking the terms and the
-   live `robots.txt` for the exact host and paths. From the authoring machine `kap.org.tr`
-   did not answer at the TCP level, so expect network-level restrictions to be part of this step.
-2. Capture one THYAO annual notification response in its native format and save it under
-   `tests/fixtures/kap/` (small, permitted, with a `filings.json` entry).
-3. Implement the three `KapClient` methods in `kap.py` (the docstring lists what each must
-   populate) using `self.fetcher.get(...)`; pass stored validators for conditional requests.
-4. If the payload is JSON/XML rather than HTML, add an extractor that produces the same
-   `StatementFacts` IR; `build_report` and everything after it stay unchanged.
-5. Review `parser.CONCEPTS` labels against the captured filing; extend `tests/test_parser.py`
-   with the real fixture's expected values.
-
-## Consumer contract
-
-Read `dbo.vw_fundamentals` (one latest valid version per company/year/scope, current periods
-only) or `dbo.vw_latest_fundamentals` (one row per company). Monetary columns are normalized
-to base `currency_code` units — never multiply by `currency_scale` again. `eps` is currency per
-share; `shares_outstanding` is a count. `NULL` means unavailable or not safely derivable, never
-zero. `*_method` columns say how derived values were obtained (`direct`, `sum_borrowings`,
-`sum_borrowings_and_leases`, `operating_income_plus_da`, `operating_cf_minus_capex`,
-`capital_less_treasury`, `missing`). Freshness: `published_at`, `retrieved_at`, `parsed_at`,
-`last_discovery_at`, `last_success_at`, `last_error`, `latest_discovered_notification_id`.
-
-## Backup and restore
-
-`scripts/backup.sh` and `scripts/restore.sh` implement this; the notes below explain what they do.
-
-- Raw evidence: `./data/raw` (immutable snapshot directories) and `./data/state` are archived
-  together with the SQL backup; `data/runs` and `backups/` themselves are disposable/offsite.
-- SQL: native `BACKUP DATABASE ... WITH CHECKSUM` inside the `mssql` container, copied out with
-  `docker compose cp`. Restore uses `RESTORE DATABASE ... WITH REPLACE`, then `init-db` (idempotent)
-  recreates logins on a new server. Keep backups off the Docker host.
-- Restore check (verified once locally): `reprocess --tickers THYAO` reports `already_parsed`
-  and `vw_latest_fundamentals` returns the pre-backup rows.
-
-## Acceptance checklist (§15) — current standing
-
-- [x] Clean Docker startup initialises SQL Server and runs the CLI (verified; `init-db` idempotent)
-- [ ] Five companies resolve and yield selected annual filings — *blocked on live access; two synthetic fixtures prove the path*
-- [x] Every published result has durable raw provenance and a parser version
-- [ ] Required concepts and units checked against the exact source notification — *needs a real captured filing*
-- [x] Canonical names, normalized amounts, scope, NULL, freshness documented
-- [x] Repeating a run does not duplicate snapshots or redownload fresh data (tested)
-- [x] Simulated correction and parser change retain earlier results with classified differences (tested)
-- [x] Failed/unsupported records remain visible; no fabricated rows (tested)
-- [x] Adding a company is list configuration only for a supported layout
-- [x] Request limits and stop behaviour work under mocked failures (tested)
-- [x] Application and Grafana read stored values without KAP connectivity (fixture mode, zero HTTP attempts)
-- [x] SQL and raw-file backup/restore scripts with one local restore check

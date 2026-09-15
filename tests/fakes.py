@@ -91,6 +91,9 @@ class InMemoryRepository:
         self.fundamentals[report_id] = [{**f.model_dump(), "report_id": report_id} for f in fundamentals]
         return report_id, "inserted"
 
+    def notification_is_withdrawn(self, market_source: str, notification_id: str) -> bool:
+        return any(r["market_source"] == market_source and r["notification_id"] == notification_id and r["is_withdrawn"] for r in self.reports.values())
+
     def mark_withdrawn(self, market_source: str, notification_id: str) -> int:
         count = 0
         for data in self.reports.values():

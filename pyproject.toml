@@ -4,18 +4,21 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stock-crawler"
-version = "0.1.0"
+version = "0.2.0"
 description = "Batch crawler that stores KAP annual financial statements and validated fundamentals in SQL Server."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Proprietary" }
 dependencies = [
-    "httpx==0.28.1",
+    "httpx[socks]==0.28.1",
     "lxml==5.3.0",
     "pydantic==2.12.4",
     "pydantic-settings==2.11.0",
     "SQLAlchemy==2.0.44",
     "pyodbc==5.2.0",
+    "openpyxl==3.1.5",
+    "defusedxml==0.7.1",
+    "tzdata>=2025.1",
 ]
 
 [project.optional-dependencies]
@@ -37,3 +40,6 @@ markers = [
     "integration: needs a reachable SQL Server (set STOCK_CRAWLER_TEST_MSSQL_URL)",
     "live: makes real network requests to the source (opt-in smoke check)",
 ]
+
+[tool.setuptools.package-data]
+stock_crawler = ["sql/*.sql", "browser/*.js"]

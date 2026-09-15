@@ -1,15 +1,11 @@
 """Source access for KAP: identity resolution, filing discovery, selection, and download.
 
-Two implementations share one small interface:
+Source implementations share one small interface (`SourceClient`):
 
+* `KapExportClient` in kap_export.py is the live route: the public comparison-export
+  endpoint (one XLSX per POST, up to 25 companies and 5 years).
 * `FixtureSourceClient` replays captured filings from a local directory with zero network
   requests. It drives the full sync pipeline offline and in tests.
-* `KapClient` is the live implementation. Its network methods are deliberately unimplemented
-  until the access route is established (README section 6): KAP's REST service requires a
-  Borsa Istanbul data agreement, MKK authorization, registered IPs and an API key, and the
-  public site's terms/robots rules must be checked for the exact host and paths. Inventing
-  endpoint URLs here would violate that rule, so the methods raise `SourceAccessNotConfigured`
-  with the steps that remain.
 """
 
 from __future__ import annotations
@@ -33,10 +29,6 @@ class SourceError(RuntimeError):
 
 class UnknownTicker(SourceError):
     """The ticker could not be resolved to exactly one stable source company id."""
-
-
-class SourceAccessNotConfigured(SourceError):
-    """Live retrieval is not wired to a verified access route yet."""
 
 
 class SourceClient(Protocol):
@@ -154,55 +146,13 @@ class FixtureSourceClient:
         raise SourceError(f"fixture filing {candidate.notification_id} not found for {identity.ticker}")
 
 
-# -- live client -----------------------------------------------------------------------------
-
-
-class KapClient:
-    """Live KAP retrieval behind the paced client. See module docstring for why the network
-    methods are not implemented yet.
-
-    Implementation checklist once the access route is confirmed:
-      1. resolve_company: map ticker -> stable company id from the authorized company list
-         endpoint; refuse ambiguous or missing matches (never guess from a similar name).
-      2. list_financial_filings: query financial-statement notifications for that company,
-         following pagination within the request budget; populate `is_annual`,
-         `period_end_date`, `consolidation_scope`, `is_withdrawn`, and `is_correction` from
-         source metadata, and convert Istanbul wall-clock timestamps with
-         units.parse_source_timestamp.
-      3. fetch_filing: download the notification payload in its native format (JSON/XML/HTML)
-         plus only the assets the parser needs, passing stored validators for conditional GETs.
-    Capture each response as a test fixture under tests/fixtures/kap/ before parsing it.
-    """
-
-    market_source = MARKET_SOURCE_KAP
-
-    def __init__(self, fetcher: PacedClient, *, base_url: str = "https://www.kap.org.tr") -> None:
-        self.fetcher = fetcher
-        self.base_url = base_url.rstrip("/")
-
-    def _not_configured(self, step: str) -> SourceAccessNotConfigured:
-        return SourceAccessNotConfigured(
-            f"KAP {step} is not wired to a verified access route. Establish REST access or confirm "
-            "permitted public-web endpoints and robots rules, capture a fixture, then implement "
-            f"KapClient.{step} (README section 6). Use SOURCE_MODE=fixture for offline runs."
-        )
-
-    def resolve_company(self, ticker: str) -> CompanyIdentity:
-        raise self._not_configured("resolve_company")
-
-    def list_financial_filings(self, identity: CompanyIdentity) -> list[FilingCandidate]:
-        raise self._not_configured("list_financial_filings")
-
-    def fetch_filing(self, identity: CompanyIdentity, candidate: FilingCandidate) -> FilingDownload:
-        raise self._not_configured("fetch_filing")
-
-
 def build_source_client(settings, fetcher_factory, *, clock: Clock = utcnow) -> SourceClient:
     """Choose the client from settings. `fetcher_factory()` builds a PacedClient lazily so the
     fixture mode never opens an HTTP client."""
     if settings.source_mode == "fixture":
         return FixtureSourceClient(settings.fixture_source_dir, clock=clock)
-    return KapClient(fetcher_factory())
+    from .kap_export import KapExportClient
+    return KapExportClient(fetcher_factory(), settings, clock=clock)
 
 
 # -- live smoke checks (explicitly invoked, tiny request counts) ------------------------------

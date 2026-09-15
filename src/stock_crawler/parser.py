@@ -30,7 +30,7 @@ from .models import (
 )
 from .units import UnitError, decode_presentation_currency, is_twelve_month_span, parse_dmy_date, parse_turkish_number
 
-PARSER_VERSION = "1.0.0"
+PARSER_VERSION = "1.1.0"
 
 StatementKind = Literal["balance_sheet", "income_statement", "cash_flow", "notes", "other"]
 Unit = Literal["monetary", "per_share", "shares"]
@@ -650,7 +650,7 @@ def _build_period(
         )
     derivations["total_debt"] = {**debt.as_dict(), "lease_policy": "leases inside borrowing subtotals are counted once; leases outside are added"}
 
-    ebitda = metrics.ebitda(pull("reported_ebitda"), values["operating_income"], pull("depreciation_and_amortisation"))
+    ebitda = metrics.ebitda(pull("reported_ebitda"), values["operating_income"], pull("depreciation_and_amortisation"), da_deducted_in_operating_income=False)
     if ebitda.method == "operating_income_plus_da":
         resolver.warnings.append("ebitda: D&A taken from cash-flow adjustments and assumed fully within operating income")
     derivations["ebitda"] = ebitda.as_dict()
@@ -723,6 +723,18 @@ def _lease_components(resolver: _Resolver, instant: PeriodContext, scale: int) -
 
 def parse_snapshot(files: dict[str, bytes], manifest: dict[str, Any], *, parser_version: str = PARSER_VERSION) -> ParsedReport:
     """Parse a stored snapshot. The manifest names the primary file and expected scope."""
+    if manifest.get("data_product") == "kap_compare":
+        import json
+        from .kap_export import read_export, parse_export_row
+        from .kap import SourceError
+        try:
+            original = json.loads(files["source.json"])
+            matches = [r for r in read_export(files["source.xlsx"]) if str(r["Notification ID"]) == str(manifest["notification_id"]) and r["Company"] == original["Company"]]
+            if len(matches) != 1:
+                raise SourceError("native export must contain exactly one matching company/notification row")
+            return parse_export_row(matches[0], calendar_year_confirmed=bool(manifest.get("calendar_year_confirmed")), parser_version=parser_version)
+        except (SourceError, ValueError, KeyError) as exc:
+            return ParsedReport(parser_version=parser_version, parse_status=ParseStatus.FAILED, errors=[str(exc)])
     primary = manifest.get("primary_file") or next((name for name in sorted(files) if name.endswith(".html")), None)
     if primary is None or primary not in files:
         report = ParsedReport(parser_version=parser_version, parse_status=ParseStatus.FAILED)
@@ -730,6 +742,10 @@ def parse_snapshot(files: dict[str, bytes], manifest: dict[str, Any], *, parser_
         return report
     facts = extract_facts_from_html(files[primary])
     report = build_report(facts, parser_version=parser_version)
+    for field, actual in (("fiscal_year", report.filing_fiscal_year), ("period_end_date", report.filing_period_end_date)):
+        if manifest.get(field) is not None and actual is not None and str(manifest[field]) != str(actual):
+            report.errors.append(f"{field} mismatch: listing said {manifest[field]}, statement says {actual}")
+            report.parse_status = ParseStatus.FAILED
     expected_scope = manifest.get("consolidation_scope")
     if expected_scope and report.consolidation_scope and report.consolidation_scope.value != expected_scope:
         report.errors.append(f"scope mismatch: listing said {expected_scope}, statement says {report.consolidation_scope.value}")

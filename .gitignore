@@ -3,6 +3,7 @@
 data/raw/
 data/state/
 data/runs/
+data/imports/
 imports/*
 !imports/.gitkeep
 config/companies_candidates.txt

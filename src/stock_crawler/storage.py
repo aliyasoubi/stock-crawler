@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import socket
 import tempfile
 import uuid
@@ -100,6 +101,9 @@ class RawStore:
         self._tmp = self.root / ".tmp"
 
     def snapshot_dir(self, market_source: str, source_company_id: str, notification_id: str, content_hash: str) -> Path:
+        for value in (market_source, source_company_id, notification_id, content_hash):
+            if not re.fullmatch(r"[A-Za-z0-9_-]+", value):
+                raise StorageError(f"invalid snapshot identifier {value!r}")
         return self.root / market_source / source_company_id / notification_id / content_hash
 
     def exists(self, market_source: str, source_company_id: str, notification_id: str, content_hash: str) -> bool:
@@ -120,7 +124,7 @@ class RawStore:
         if not files:
             raise StorageError("refusing to write a snapshot with no files")
         for name in files:
-            if name.startswith("/") or ".." in Path(name).parts or name == self.MANIFEST or name.startswith("parsed/"):
+            if "\\" in name or ":" in name or name in ("", ".") or name.startswith("/") or ".." in Path(name).parts or name == self.MANIFEST or name.startswith("parsed/"):
                 raise StorageError(f"illegal snapshot filename {name!r}")
         file_hashes = {name: sha256_bytes(data) for name, data in files.items()}
         content_hash = combined_content_hash(file_hashes)
@@ -184,6 +188,8 @@ class RawStore:
         return files
 
     def write_parsed(self, ref: SnapshotRef, parser_version: str, payload: dict[str, Any]) -> Path:
+        if not re.fullmatch(r"[A-Za-z0-9_.-]+", parser_version) or ".." in parser_version:
+            raise StorageError("invalid parser version")
         target = ref.path / "parsed" / f"{parser_version}.json"
         write_atomic(target, dump_json(payload).encode("utf-8"))
         return target
@@ -241,8 +247,8 @@ class StateStore:
             return {}
         try:
             return json.loads(path.read_text("utf-8"))
-        except json.JSONDecodeError:
-            return {}
+        except json.JSONDecodeError as exc:
+            raise StorageError(f"corrupt operational state: {path}; restore or review it before retrying") from exc
 
     def _save(self, path: Path, payload: dict[str, Any]) -> None:
         write_atomic(path, dump_json(payload).encode("utf-8"))
@@ -283,55 +289,47 @@ class StateStore:
 
 
 class RunLock:
-    """Exclusive run lock created with O_EXCL on the shared data volume (works on bind mounts
-    where flock is unreliable). A lock older than `stale_after` whose owner PID is dead on this
-    host is reclaimed."""
+    """OS lock on a stable guard file; compatible with shell flock on Linux.
 
+    Keep the guard inode in place. Metadata is diagnostic only. Process death releases
+    the lock; elapsed time and container hostnames never authorize stealing it.
+    """
     def __init__(self, data_dir: Path, *, stale_after: timedelta = timedelta(hours=6), clock: Clock = utcnow) -> None:
         self.path = data_dir / "state" / "crawler.lock"
-        self.stale_after = stale_after
+        self.guard = self.path.with_name("crawler.guard")
         self.clock = clock
-
-    def _owner_alive(self, info: dict[str, Any]) -> bool:
-        if info.get("hostname") != socket.gethostname():
-            return True  # cannot check another host's PID; assume alive until stale
-        try:
-            os.kill(int(info["pid"]), 0)
-        except (ProcessLookupError, ValueError):
-            return False
-        except PermissionError:
-            return True
-        return True
+        self._handle = None
 
     def acquire(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        payload = dump_json({"pid": os.getpid(), "hostname": socket.gethostname(), "acquired_at": self.clock().isoformat()}).encode()
-        for _ in range(2):
-            try:
-                fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
-            except FileExistsError:
-                info = self._load()
-                acquired = datetime.fromisoformat(info["acquired_at"]) if info.get("acquired_at") else None
-                stale = acquired is not None and self.clock() - acquired > self.stale_after
-                if info and (stale or not self._owner_alive(info)):
-                    self.path.unlink(missing_ok=True)
-                    continue
-                raise RunLocked(f"another crawler run holds {self.path} ({info or 'unreadable lock'})")
-            with os.fdopen(fd, "wb") as handle:
-                handle.write(payload)
-            return
-        raise RunLocked(f"could not acquire {self.path}")
-
-    def _load(self) -> dict[str, Any]:
+        handle = self.guard.open("a+b")
         try:
-            return json.loads(self.path.read_text("utf-8"))
-        except (OSError, json.JSONDecodeError):
-            return {}
+            if os.name == "nt":
+                import msvcrt
+                handle.seek(0)
+                if not handle.read(1):
+                    handle.write(b"0")
+                    handle.flush()
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as exc:
+            handle.close()
+            raise RunLocked(f"another crawler or backup holds {self.guard}") from exc
+        self._handle = handle
+        try:
+            write_atomic(self.path, dump_json({"pid": os.getpid(), "hostname": socket.gethostname(), "acquired_at": self.clock()}).encode())
+        except BaseException:
+            self.release()
+            raise
 
     def release(self) -> None:
-        info = self._load()
-        if info.get("pid") == os.getpid():
+        if self._handle is not None:
             self.path.unlink(missing_ok=True)
+            self._handle.close()
+            self._handle = None
 
     def __enter__(self) -> "RunLock":
         self.acquire()

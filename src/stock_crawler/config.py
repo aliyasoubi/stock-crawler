@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from datetime import date
 from typing import Iterable, Literal
 
 from pydantic import Field, SecretStr, field_validator, model_validator
@@ -25,8 +26,15 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     http_user_agent: str = "StockFundamentalsMVP/0.1"
 
-    source_mode: Literal["fixture", "kap"] = "fixture"
-    fixture_source_dir: Path | None = None
+    # kap-export: live KAP comparison XLSX (the real data product). fixture: replay local HTML
+    # fixtures with zero HTTP, used by the test-suite and for exercising SQL/Grafana offline.
+    source_mode: Literal["fixture", "kap-export"] = "kap-export"
+    kap_company_registry: Path = Path("config/kap_companies.json")
+    kap_years: list[int] = Field(default_factory=lambda: [date.today().year - 1, date.today().year])
+    # Issuers whose financial year is NOT the calendar year. Everyone else gets Jan 1-Dec 31 inferred
+    # from the export's Year column (BIST issuers overwhelmingly report on calendar years).
+    kap_non_calendar_year_tickers: list[str] = Field(default_factory=list)
+    fixture_source_dir: Path | None = Path("tests/fixtures/kap/source")
 
     mssql_host: str = "mssql"
     mssql_port: int = 1433
@@ -48,8 +56,9 @@ class Settings(BaseSettings):
     retry_backoff_seconds: tuple[float, ...] = (10.0, 30.0)
     discovery_interval_hours: float = Field(default=24.0, ge=0)
     report_revalidate_hours: float = Field(default=168.0, ge=0)
-    max_companies_per_run: int = Field(default=25, gt=0)
-    max_requests_per_run: int = Field(default=200, gt=0)
+    # kap-export requests 25 companies per POST, so 250 companies is about ten requests.
+    max_companies_per_run: int = Field(default=250, gt=0)
+    max_requests_per_run: int = Field(default=50, gt=0)
     throttle_cooldown_seconds: float = Field(default=3600.0, gt=0)
     retry_after_fallback_seconds: float = Field(default=60.0, gt=0)
 
@@ -63,21 +72,30 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _check_delays(self) -> "Settings":
+        if not self.kap_years or len(self.kap_years) > 5 or len(set(self.kap_years)) != len(self.kap_years) or any(y < 2000 or y > 2100 for y in self.kap_years):
+            raise ValueError("KAP_YEARS must contain 1-5 unique years between 2000 and 2100")
         if self.request_delay_max_seconds < self.request_delay_min_seconds:
             raise ValueError("REQUEST_DELAY_MAX_SECONDS must be >= REQUEST_DELAY_MIN_SECONDS")
         if self.source_mode == "fixture" and self.fixture_source_dir is None:
             raise ValueError("FIXTURE_SOURCE_DIR is required when SOURCE_MODE=fixture")
         return self
 
+    def calendar_year_confirmed(self, ticker: str) -> bool:
+        return ticker.upper() not in {t.upper() for t in self.kap_non_calendar_year_tickers}
+
     def sqlalchemy_url(self, *, user: str | None = None, password: str | None = None, database: str | None = None) -> URL:
         """Build a pyodbc URL. Credentials default to the runtime crawler_writer account."""
+        def quoted(value: str) -> str:
+            return "{" + value.replace("}", "}}") + "}"
+
+        server = f"{self.mssql_host},{self.mssql_port}"
         odbc = ";".join(
             [
                 f"DRIVER={{{self.mssql_driver}}}",
-                f"SERVER={self.mssql_host},{self.mssql_port}",
-                f"DATABASE={database or self.mssql_database}",
-                f"UID={user or self.mssql_user}",
-                f"PWD={password if password is not None else self.mssql_password.get_secret_value()}",
+                f"SERVER={quoted(server)}",
+                f"DATABASE={quoted(database or self.mssql_database)}",
+                f"UID={quoted(user or self.mssql_user)}",
+                f"PWD={quoted(password if password is not None else self.mssql_password.get_secret_value())}",
                 f"Encrypt={'yes' if self.mssql_encrypt else 'no'}",
                 f"TrustServerCertificate={'yes' if self.mssql_trust_server_certificate else 'no'}",
             ]

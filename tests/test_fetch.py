@@ -76,7 +76,7 @@ def test_429_honours_retry_after_and_persists_cooldown(tmp_path):
     client, _, state = make_client(tmp_path, [(429, {"retry-after": "7"}, b""), (429, {}, b""), (429, {}, b"")], clock, sleeps)
     with pytest.raises(HostThrottled):
         client.get(URL)
-    assert 7.0 in sleeps and 60.0 in sleeps
+    assert sleeps == [] and client.attempts == 1
     until, reason = state.host_cooldown(HOST)
     assert until - clock() == timedelta(seconds=3600) and "429" in reason
     fresh_client, _, _ = make_client(tmp_path, [(200, {}, b"ok")], clock, sleeps)
@@ -147,3 +147,21 @@ def test_client_errors_are_not_retried(tmp_path):
     with pytest.raises(SourceHTTPError):
         client.get(URL)
     assert len(script.requests) == 1
+
+
+def test_export_post_counts_budget_and_preserves_payload(tmp_path):
+    clock, sleeps = FakeClock(), []
+    client, script, _ = make_client(tmp_path, [(503, {}, b''), (200, {}, b'xlsx')], clock, sleeps)
+    payload = {'yearList': ['2024'], 'mkkMemberIdList': ['c1']}
+    assert client.post_json(URL, payload).content == b'xlsx'
+    import json
+    assert client.attempts == 2
+    assert all(r.method == 'POST' and json.loads(r.content) == payload for r in script.requests)
+
+
+def test_long_retry_after_persists_without_blocking_sleep(tmp_path):
+    clock, sleeps = FakeClock(), []
+    client, _, state = make_client(tmp_path, [(503, {'retry-after': '7200'}, b'')], clock, sleeps)
+    with pytest.raises(HostThrottled):
+        client.get(URL)
+    assert sleeps == [] and state.host_cooldown(HOST)[0] == clock() + timedelta(hours=2)

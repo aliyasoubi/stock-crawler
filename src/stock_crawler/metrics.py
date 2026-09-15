@@ -53,6 +53,8 @@ def total_debt(components: DebtComponents) -> MetricResult:
     if components.borrowings_total is not None:
         if components.borrowings_total_includes_leases or not components.lease_lines_reported:
             return MetricResult(components.borrowings_total, "direct", None, inputs)
+        if any(item is None for item in leases):
+            return MetricResult(None, "missing", "lease liabilities reported but one maturity bucket is unresolved", inputs)
         return MetricResult(components.borrowings_total + lease_sum, "direct_plus_leases", None, inputs)
 
     borrowings = [

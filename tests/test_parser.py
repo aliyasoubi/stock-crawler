@@ -41,7 +41,7 @@ def test_reference_fixture_baseline_and_additional_fields(thyao_html):
     assert current.operating_income == D(150_000_000)
     assert current.cash_and_cash_equivalents == D(120_000_000)
     assert (current.total_debt, current.total_debt_method) == (D(430_000_000), "sum_borrowings")
-    assert (current.ebitda, current.ebitda_method) == (D(210_000_000), "operating_income_plus_da")
+    assert (current.ebitda, current.ebitda_method) == (None, "missing")
     assert (current.free_cash_flow, current.free_cash_flow_method) == (D(95_000_000), "operating_cf_minus_capex")
     assert (current.shares_outstanding, current.shares_outstanding_method) == (None, "missing")
     assert not any("identity check" in w for w in report.warnings)
@@ -192,3 +192,9 @@ def test_english_labels_map_to_the_same_concepts():
     report = parse(html)
     assert report.parse_status is ParseStatus.VALID, report.errors
     assert report.current_period().revenue == D(80) and report.current_period().net_profit == D(9)
+
+
+def test_listing_period_mismatch_blocks_publication(thyao_html):
+    report = parse_snapshot({'source.html': thyao_html.encode()}, {'primary_file': 'source.html', 'fiscal_year': 2025, 'period_end_date': '2025-12-31'})
+    assert report.parse_status is ParseStatus.FAILED
+    assert 'fiscal_year mismatch' in ' '.join(report.errors)

@@ -1,0 +1,31 @@
+{
+  "command": "sync",
+  "companies": [
+    {
+      "candidates": 2,
+      "errors": [],
+      "notification_id": "1565996",
+      "parse_status": "valid",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 1,
+      "snapshot": "captured",
+      "status": "published",
+      "ticker": "THYAO",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+        "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+      ]
+    }
+  ],
+  "finished_at": "2026-09-14T13:09:52.411597+00:00",
+  "pending": [],
+  "refresh": false,
+  "request_attempts": 1,
+  "requested_tickers": [
+    "THYAO"
+  ],
+  "run_id": "20260914T130941Z-cbea765b",
+  "started_at": "2026-09-14T13:09:41.703694+00:00",
+  "stopped_reason": null
+}
