@@ -8,6 +8,7 @@ from __future__ import annotations
 import base64
 import binascii
 import json
+import logging
 import re
 import warnings
 from dataclasses import dataclass
@@ -25,6 +26,8 @@ from .models import CompanyIdentity, ConsolidationScope, FilingCandidate, Filing
 from .metrics import identity_checks
 from .storage import RawStore, StorageError, dump_json, sha256_bytes, utcnow, write_atomic
 from .units import decode_presentation_currency, parse_source_timestamp, parse_structured_number, parse_turkish_number
+
+log = logging.getLogger(__name__)
 
 SOURCE = "kap_compare"
 EXPORT_URL = "https://www.kap.org.tr/en/api/export/compareItems"
@@ -47,6 +50,14 @@ MAX_WORKBOOK_BYTES = 20 * 1024 * 1024
 MAX_MANIFEST_BYTES = 200 * 1024 * 1024
 MAX_ROWS = 20000
 LIMITATION = "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+# KAP financial statement formats whose ten exported items carry the same meaning. The HOLDING
+# format splits turnover into "Revenue" (non-finance operations) and "Revenue from Finance Sector
+# Operations"; both are kept as reported. Bank, insurance and finance formats are not mapped.
+SUPPORTED_STATEMENT_TYPES = ("general", "holding")
+HOLDING_REVENUE_SPLIT = ("HOLDING format: revenue is non-finance turnover only; finance-sector turnover is reported "
+                         "separately in finance_sector_revenue and is not added in.")
+REVENUE_FINANCE_ONLY = ("Revenue is not reported; the issuer's turnover appears only under "
+                        "finance_sector_revenue (GENERAL-format investment/brokerage holding).")
 
 
 def name_key(value: str) -> str:
@@ -54,12 +65,36 @@ def name_key(value: str) -> str:
     return " ".join(value.replace("İ", "i").replace("I", "ı").casefold().split())
 
 
+_LOOSE_TRANSLATE = str.maketrans({"ı": "i", "ö": "o", "ü": "u", "ş": "s", "ç": "c", "ğ": "g", "â": "a", "î": "i", "û": "u"})
+_LEGAL_FORM = re.compile(r"\s*\b(t\.?\s*a\.?\s*ş\.?|a\.?\s*ş\.?|anonim\s+şirketi|anonim\s+ortaklığı)\s*$")
+
+
+def loose_key(value: str) -> str:
+    """Spelling-insensitive title key, used only when the exact key finds nothing.
+
+    KAP's own export writes the title as it stood on each notification, and those differ from
+    the registry seed by orthography rather than identity: SANAYİ/SANAYİİ, MAMÜLLERİ/MAMULLERİ,
+    BRİDGESTONE/BRIDGESTONE, FEDERAL-MOGUL/FEDERAL MOGUL, a dropped "VE" or legal form. The key
+    folds diacritics and punctuation, drops "ve" and a trailing legal form, and collapses a
+    doubled final i. It never drops or reorders name words, so it cannot merge two issuers whose
+    names differ in substance; the registry loader refuses a seed where two tickers share a key.
+    """
+    text = _LEGAL_FORM.sub("", name_key(value)).translate(_LOOSE_TRANSLATE)
+    text = re.sub(r"[^\w\s]", " ", text)
+    return " ".join(re.sub(r"ii$", "i", token) for token in text.split() if token != "ve")
+
+
 class CompanyRegistry:
-    """A dated identity seed, not a guarantee that all companies remain listed."""
-    def __init__(self, path: Path):
+    """A dated identity seed, not a guarantee that all companies remain listed.
+
+    `aliases_path` is the file `verify-aliases` writes: historical titles proven by a
+    single-company export, kept apart from the hand-maintained seed.
+    """
+    def __init__(self, path: Path, aliases_path: Path | None = None):
         self.entries = json.loads(path.read_text("utf-8-sig"))
         self.by_ticker = {}
         self.names = {}
+        self.loose_names = {}
         ids = set()
         for entry in self.entries:
             ticker, sid = entry["ticker"], entry["source_company_id"]
@@ -70,10 +105,25 @@ class CompanyRegistry:
             ids.add(sid)
             self.by_ticker[ticker] = entry
             for title in [entry["company_name"], *entry.get("aliases", [])]:
-                key = name_key(title)
-                if key in self.names and self.names[key] != ticker:
-                    raise SourceError(f"ambiguous company title in registry: {title}")
-                self.names[key] = ticker
+                self._add_title(title, ticker)
+        self.verified_aliases: list[dict] = []
+        if aliases_path is not None and aliases_path.is_file():
+            document = json.loads(aliases_path.read_text("utf-8-sig"))
+            for alias in document.get("aliases", []):
+                if alias["ticker"] not in self.by_ticker:
+                    raise SourceError(f"verified alias for unknown ticker {alias['ticker']}")
+                self._add_title(alias["title"], alias["ticker"])
+                self.verified_aliases.append(alias)
+
+    def _add_title(self, title: str, ticker: str) -> None:
+        key = name_key(title)
+        if key in self.names and self.names[key] != ticker:
+            raise SourceError(f"ambiguous company title in registry: {title}")
+        self.names[key] = ticker
+        loose = loose_key(title)
+        if loose in self.loose_names and self.loose_names[loose] != ticker:
+            raise SourceError(f"ambiguous company title in registry after normalization: {title}")
+        self.loose_names[loose] = ticker
 
     def resolve(self, ticker: str) -> CompanyIdentity:
         entry = self.by_ticker.get(ticker)
@@ -82,10 +132,17 @@ class CompanyRegistry:
         return CompanyIdentity(market_source=SOURCE, **{k: entry[k] for k in ("ticker", "source_company_id", "company_name")})
 
     def match(self, title: str, allowed_tickers: list[str] | None = None) -> CompanyIdentity:
-        ticker = self.names.get(name_key(title))
-        if ticker is None or (allowed_tickers is not None and ticker not in allowed_tickers):
-            raise UnknownTicker(f"unmatched export company {title!r}; verify its historical title and add an alias to the registry")
+        ticker, _ = self.match_with_basis(title, allowed_tickers)
         return self.resolve(ticker)
+
+    def match_with_basis(self, title: str, allowed_tickers: list[str] | None = None) -> tuple[str, str]:
+        """Return (ticker, basis) where basis is 'exact' or 'normalized'."""
+        ticker, basis = self.names.get(name_key(title)), "exact"
+        if ticker is None:
+            ticker, basis = self.loose_names.get(loose_key(title)), "normalized"
+        if ticker is None or (allowed_tickers is not None and ticker not in allowed_tickers):
+            raise UnknownTicker(f"unmatched export company {title!r}; run verify-aliases or add a verified alias to the registry")
+        return ticker, basis
 
 
 def export_payload(identities: list[CompanyIdentity], years: list[int]) -> dict:
@@ -177,9 +234,9 @@ def parse_export_row(row: dict, *, calendar_year_confirmed: bool, parser_version
         report.filing_fiscal_year = candidate.fiscal_year
         report.consolidation_scope = candidate.consolidation_scope
         report.statement_type = candidate.statement_type
-        if not candidate.is_annual or candidate.statement_type != "general":
+        if not candidate.is_annual or candidate.statement_type not in SUPPORTED_STATEMENT_TYPES:
             report.parse_status = ParseStatus.UNSUPPORTED
-            report.errors.append("only annual GENERAL comparison exports have a reviewed mapping")
+            report.errors.append("only annual GENERAL and HOLDING comparison exports have a reviewed mapping")
             return report
         if not calendar_year_confirmed:
             report.parse_status = ParseStatus.UNSUPPORTED
@@ -196,16 +253,25 @@ def parse_export_row(row: dict, *, calendar_year_confirmed: bool, parser_version
                 raise SourceError(f"non-finite {field}")
             values[field] = None if amount is None else amount * scale
             sources[field] = {"label": header, "item_id": item_id, "raw_value": raw, "scaled_by": scale}
-        required = ("total_assets", "total_liabilities_and_equity", "current_liabilities", "non_current_liabilities", "total_equity", "revenue", "net_profit")
+        required = ("total_assets", "total_liabilities_and_equity", "current_liabilities", "non_current_liabilities", "total_equity", "net_profit")
         absent = [f for f in required if values[f] is None]
+        # Brokerage/investment holdings filed in the GENERAL format report their turnover only
+        # under "Revenue from Finance Sector Operations"; that is their revenue line, not a gap.
+        # It stays in its own column so the client mapping can say which one it used.
+        if values["revenue"] is None and values["finance_sector_revenue"] is None:
+            absent.append("revenue")
         if absent:
             raise SourceError("missing required values: " + ", ".join(absent))
         end, start = candidate.period_end_date, date(candidate.fiscal_year, 1, 1)
         report.filing_period_start_date, report.filing_period_end_date = start, end
         report.warnings.append("Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer.")
+        if values["revenue"] is None:
+            report.warnings.append(REVENUE_FINANCE_ONLY)
+        if candidate.statement_type == "holding":
+            report.warnings.append(HOLDING_REVENUE_SPLIT)
         report.warnings.extend(identity_checks(values, tolerance=Decimal(scale) * 3))
         report.periods = [FundamentalRecord(fiscal_year=candidate.fiscal_year, period_start_date=start, period_end_date=end,
-            is_comparative=False, currency_code=currency, currency_scale=scale,
+            is_comparative=False, currency_code=currency, currency_scale=scale, measuring_unit_date=end,
             presentation_currency_raw=str(row["Presentation Currency"]),
             total_debt_method="missing", ebitda_method="missing", free_cash_flow_method="missing", shares_outstanding_method="missing", **values)]
         report.field_sources = {f"{candidate.fiscal_year}:current": sources}
@@ -269,19 +335,44 @@ class KapExportClient:
 
     def __init__(self, fetcher: PacedClient, settings, *, clock=utcnow):
         self.fetcher, self.settings, self.clock = fetcher, settings, clock
-        self.registry = CompanyRegistry(settings.kap_company_registry)
+        self.registry = CompanyRegistry(settings.kap_company_registry, settings.kap_alias_file)
         self.raw = RawStore(settings.data_dir)
         self._entries: dict[str, ExportEntry] = {}
         self._candidates: dict[str, list[FilingCandidate]] = {}
         self._batch_of: dict[str, tuple[CompanyIdentity, ...]] = {}
         self._failed: dict[str, str] = {}
+        # Export rows that could not be matched or decoded. Surfaced in the run summary so a
+        # renamed issuer shows up as a work item instead of disappearing from coverage.
+        self.rejected_rows: list[dict[str, str | list[str]]] = []
+        # Issuers excluded before any request: the GENERAL-sector export has no reviewed
+        # mapping for them. Also surfaced in the run summary.
+        self.excluded_tickers: list[dict[str, str]] = []
+        # Rows matched through loose_key rather than the exact title; surfaced so an operator
+        # can promote the observed spelling to a verified alias.
+        self.normalized_matches: list[dict[str, str]] = []
 
     def resolve_company(self, ticker: str) -> CompanyIdentity:
         return self.registry.resolve(ticker)
 
     def plan(self, identities: list[CompanyIdentity]) -> None:
         """Group the run's companies into export batches; unsupported issuers are left out."""
-        supported = [i for i in identities if self.settings.calendar_year_confirmed(i.ticker)]
+        # A client may be reused for another run or year window. Refresh must issue a new
+        # request, and prior failures/rejections must not leak into the next summary.
+        self._entries.clear()
+        self._candidates.clear()
+        self._batch_of.clear()
+        self._failed.clear()
+        self.rejected_rows.clear()
+        self.excluded_tickers.clear()
+        self.normalized_matches.clear()
+        supported = []
+        for identity in identities:
+            if self.settings.calendar_year_confirmed(identity.ticker):
+                supported.append(identity)
+            else:
+                self.excluded_tickers.append(
+                    {"ticker": identity.ticker, "reason": "listed in KAP_NON_CALENDAR_YEAR_TICKERS; export omits exact period dates"}
+                )
         for start in range(0, len(supported), self.BATCH_SIZE):
             batch = tuple(supported[start:start + self.BATCH_SIZE])
             for identity in batch:
@@ -305,15 +396,59 @@ class KapExportClient:
             digest = archive_export(self.raw, result.content)
             rows = read_export(result.content)
             found: dict[str, list[FilingCandidate]] = {t: [] for t in tickers}
+            # Quarantine EVERY occurrence of a conflicting notification, including the
+            # first. Keeping the first row would publish an arbitrary financial value.
+            first_rows: dict[str, dict] = {}
+            conflicts: set[str] = set()
             for row in rows:
-                mapped = self.registry.match(str(row["Company"]), tickers)
-                candidate = row_candidate(row)
-                if candidate.fiscal_year not in self.settings.kap_years:
-                    raise SourceError("export returned an unrequested year")
-                if candidate.notification_id in self._entries and self._entries[candidate.notification_id].row != row:
-                    raise SourceError("conflicting duplicate notification rows")
-                self._entries[candidate.notification_id] = ExportEntry(mapped, row, digest, self.clock())
-                found[mapped.ticker].append(candidate)
+                nid = str(row["Notification ID"])
+                previous = first_rows.setdefault(nid, row)
+                if previous != row or (nid in self._entries and self._entries[nid].row != row):
+                    conflicts.add(nid)
+            for row in rows:
+                try:
+                    if str(row["Notification ID"]) in conflicts:
+                        raise SourceError("conflicting duplicate notification rows; all occurrences in this batch rejected")
+                    matched_ticker, basis = self.registry.match_with_basis(str(row["Company"]), tickers)
+                    mapped = self.registry.resolve(matched_ticker)
+                    if basis == "normalized":
+                        self.normalized_matches.append({"company": str(row["Company"])[:256], "ticker": matched_ticker,
+                                                        "registry_title": mapped.company_name})
+
+                    candidate = row_candidate(row)
+
+                    if candidate.fiscal_year not in self.settings.kap_years:
+                        raise SourceError("export returned an unrequested year")
+
+                    if candidate.notification_id in self._entries:
+                        if self._entries[candidate.notification_id].row != row:
+                            raise SourceError("conflicting duplicate notification rows")
+                        continue
+
+                    self._entries[candidate.notification_id] = ExportEntry(
+                        mapped,
+                        row,
+                        digest,
+                        self.clock()
+                    )
+
+                    found[mapped.ticker].append(candidate)
+
+                except (UnknownTicker, SourceError, ValueError, TypeError, KeyError) as exc:
+                    # One unusable row must not discard the other 24 companies in the batch,
+                    # but a silently dropped row is invisible coverage loss: record it too.
+                    self.rejected_rows.append(
+                        {
+                            "company": str(row.get("Company"))[:256],
+                            "notification_id": str(row.get("Notification ID"))[:32],
+                            "year": str(row.get("Year"))[:8],
+                            "reason": f"{type(exc).__name__}: {exc}"[:500],
+                            "batch_tickers": list(tickers),
+                        }
+                    )
+                    log.warning("Rejected export row company=%s error=%s", row.get("Company"), exc)
+                    continue
+
         except Exception as exc:
             for t in tickers:
                 self._failed[t] = str(exc)

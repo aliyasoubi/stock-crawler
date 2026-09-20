@@ -91,7 +91,8 @@ def compare_rows(
             comparisons.append(RowComparison(key_dict, "only_before"))
             continue
         before, after = before_index[key], after_index[key]
-        row_delta_ok = numeric_delta_allowed and before.get("currency_code") == after.get("currency_code")
+        row_delta_ok = (numeric_delta_allowed and before.get("currency_code") == after.get("currency_code")
+                        and before.get("measuring_unit_date") == after.get("measuring_unit_date"))
         diffs: list[FieldDiff] = []
         for name in FINANCIAL_FIELDS:
             old, new = _as_decimal(before.get(name)), _as_decimal(after.get(name))
@@ -103,7 +104,7 @@ def compare_rows(
                 diffs.append(FieldDiff(name, old, None, None, "became_null"))
             else:
                 diffs.append(FieldDiff(name, old, new, (new - old) if row_delta_ok else None, "changed"))
-        for name in (*METHOD_FIELDS, "currency_code", "currency_scale", "period_start_date", "period_end_date"):
+        for name in (*METHOD_FIELDS, "currency_code", "currency_scale", "period_start_date", "period_end_date", "measuring_unit_date"):
             if before.get(name) != after.get(name):
                 diffs.append(FieldDiff(name, before.get(name), after.get(name), None, "changed"))
         comparisons.append(RowComparison(key_dict, "matched", diffs))

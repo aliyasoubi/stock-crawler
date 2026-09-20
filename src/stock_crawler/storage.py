@@ -275,6 +275,50 @@ class StateStore:
         if payload.pop(host, None) is not None:
             self._save(self._hosts, payload)
 
+    def coverage(self, key: str) -> list[int]:
+        """Fiscal years already collected for this company, across every past run."""
+        entry = self._load(self._revalidation).get(f"coverage:{key}", {})
+        return sorted(int(year) for year in entry.get("years", []))
+
+    def add_coverage(self, key: str, years: list[int], statuses: dict[int, str] | None = None) -> None:
+        """Union `years` into this company's checked set. Freshness is judged against this,
+        so changing KAP_YEARS makes the company due again instead of being skipped as fresh.
+        One call per company: the state file is rewritten whole on every save."""
+        payload = self._load(self._revalidation)
+        name = f"coverage:{key}"
+        entry = payload.get(name, {})
+        entry["years"] = sorted({int(y) for y in entry.get("years", [])} | {int(y) for y in years})
+        entry["last_collected_at"] = self.clock().isoformat()
+        collected = entry.setdefault("collected_at_by_year", {})
+        for year in years:
+            collected[str(year)] = self.clock().isoformat()
+        if statuses:
+            status_by_year = entry.setdefault("status_by_year", {})
+            for year, status in statuses.items():
+                status_by_year[str(year)] = status
+        payload[name] = entry
+        self._save(self._revalidation, payload)
+
+    def clear_coverage(self, key: str) -> bool:
+        """Make a company due again, e.g. after `verify-aliases` proved that rows the source
+        already returned for it were being rejected as an unknown title."""
+        payload = self._load(self._revalidation)
+        if payload.pop(f"coverage:{key}", None) is None:
+            return False
+        self._save(self._revalidation, payload)
+        return True
+
+    def fresh_coverage(self, key: str, *, now: datetime, max_age: timedelta) -> set[int]:
+        """A recent fetch of 2025 must not renew stale coverage of 2020.
+
+        Legacy entries without per-year timestamps are deliberately due again.
+        """
+        entry = self._load(self._revalidation).get(f"coverage:{key}", {})
+        return {
+            int(year) for year, timestamp in entry.get("collected_at_by_year", {}).items()
+            if timedelta(0) <= now - datetime.fromisoformat(timestamp) < max_age
+        }
+
     def revalidation(self, key: str) -> dict[str, Any]:
         return self._load(self._revalidation).get(key, {})
 

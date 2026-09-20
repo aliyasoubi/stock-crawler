@@ -65,6 +65,11 @@ CREATE TABLE dbo.fundamentals (
     currency_code                                    CHAR(3)       NOT NULL,
     currency_scale                                   BIGINT        NOT NULL,
     presentation_currency_raw                        NVARCHAR(32)  NOT NULL,
+    -- IAS 29 / TMS 29 purchasing power the amounts are expressed in. For a current column this
+    -- equals period_end_date; for a comparative it is the LATER filing's period end, because
+    -- comparatives are restated into the current period's measuring unit. Amounts with
+    -- different measuring_unit_date values are NOT directly comparable without a CPI bridge.
+    measuring_unit_date                              DATE          NULL,
     -- Ten baseline concepts. Monetary values are normalized to base currency units (already scaled).
     total_liabilities_and_equity                     DECIMAL(38,6) NULL,
     profit_attributable_to_non_controlling_interests DECIMAL(38,6) NULL,
@@ -92,6 +97,16 @@ CREATE TABLE dbo.fundamentals (
 );
 GO
 
+IF COL_LENGTH('dbo.fundamentals', 'measuring_unit_date') IS NULL
+ALTER TABLE dbo.fundamentals ADD measuring_unit_date DATE NULL;
+GO
+
+-- Backfill current columns only. Existing comparative rows retain NULL until an offline
+-- reprocess with parser 1.1.1 derives their measuring unit from the enclosing filing.
+UPDATE dbo.fundamentals SET measuring_unit_date = period_end_date
+WHERE measuring_unit_date IS NULL AND is_comparative = 0;
+GO
+
 -- Current-period rows only: one latest valid version per company / fiscal year / period / scope.
 -- Version order: publication time, numeric notification id, capture time, parse time, report id.
 -- Withdrawn notifications are excluded in every version.
@@ -102,7 +117,7 @@ WITH ranked AS (
         r.consolidation_scope, r.statement_type, r.source_url, r.document_url,
         r.content_hash, r.parser_version, r.retrieved_at, r.parsed_at, r.validation_summary,
         f.fundamental_id, f.fiscal_year, f.fiscal_period, f.period_start_date, f.period_end_date,
-        f.currency_code, f.currency_scale, f.presentation_currency_raw,
+        f.currency_code, f.currency_scale, f.presentation_currency_raw, f.measuring_unit_date,
         f.total_liabilities_and_equity, f.profit_attributable_to_non_controlling_interests,
         f.profit_attributable_to_owners_of_parent, f.current_liabilities, f.non_current_liabilities,
         f.total_equity, f.total_assets, f.revenue, f.net_profit, f.finance_sector_revenue,
@@ -130,7 +145,7 @@ SELECT
     k.report_id, k.market_source, k.notification_id, k.published_at, k.consolidation_scope, k.statement_type,
     k.source_url, k.document_url, k.content_hash, k.parser_version, k.retrieved_at, k.parsed_at,
     k.fiscal_year, k.fiscal_period, k.period_start_date, k.period_end_date,
-    k.currency_code, k.currency_scale, k.presentation_currency_raw,
+    k.currency_code, k.currency_scale, k.presentation_currency_raw, k.measuring_unit_date,
     k.total_liabilities_and_equity, k.profit_attributable_to_non_controlling_interests,
     k.profit_attributable_to_owners_of_parent, k.current_liabilities, k.non_current_liabilities,
     k.total_equity, k.total_assets, k.revenue, k.net_profit, k.finance_sector_revenue,
@@ -161,7 +176,7 @@ SELECT
     report_id, market_source, notification_id, published_at, consolidation_scope, statement_type,
     source_url, document_url, content_hash, parser_version, retrieved_at, parsed_at,
     fiscal_year, fiscal_period, period_start_date, period_end_date,
-    currency_code, currency_scale, presentation_currency_raw,
+    currency_code, currency_scale, presentation_currency_raw, measuring_unit_date,
     total_liabilities_and_equity, profit_attributable_to_non_controlling_interests,
     profit_attributable_to_owners_of_parent, current_liabilities, non_current_liabilities,
     total_equity, total_assets, revenue, net_profit, finance_sector_revenue,
@@ -195,4 +210,6 @@ CREATE TABLE dbo.schema_migrations (
 );
 IF NOT EXISTS (SELECT 1 FROM dbo.schema_migrations WHERE version = 1)
 INSERT INTO dbo.schema_migrations (version) VALUES (1);
+IF NOT EXISTS (SELECT 1 FROM dbo.schema_migrations WHERE version = 2)
+INSERT INTO dbo.schema_migrations (version) VALUES (2);
 GO

@@ -1,29 +1,41 @@
-# secrets and runtime state
+# secrets
 .env
-data/raw/
-data/state/
-data/runs/
-data/imports/
+.env.*
+!.env.example
+*.env
+!.env.example
+local.env*
+
+# runtime state and collected data, at any depth (a nested project copy must never get committed)
+**/data/raw/
+**/data/state/
+**/data/runs/
+**/data/imports/
+**/data/captures/
+**/data/*.json
+/data/
 imports/*
 !imports/.gitkeep
-config/companies_candidates.txt
+config/companies_pending.txt
+config/companies_manual.txt
+.crawler-manual.lock
 
 # python
 __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
+.venv-*/
 .pytest_cache/
 .coverage
 htmlcov/
 build/
 dist/
 
-# editors
+# editors / OS
 .idea/
 .vscode/
 .DS_Store
 
 # local backups and captured live filings
-backups/
-data/captures/
+**/backups/

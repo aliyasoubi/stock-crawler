@@ -1,4 +1,4 @@
-.PHONY: setup test up-db init sync import grafana probe backup logs down
+.PHONY: setup test up-db init sync import verify-aliases reprocess grafana probe backup logs down
 
 setup:           ## one-time: write .env, build the image, start SQL Server, create schema + logins
 	scripts/setup-linux.sh
@@ -20,6 +20,12 @@ sync:            ## fetch KAP_YEARS for the active company list (config/companie
 
 import:          ## import every downloaded manifest in imports/ (no HTTP)
 	docker compose run --rm crawler import-kap-export --input $(wildcard imports/*.json)
+
+verify-aliases:  ## prove historical company titles with single-company exports (HTTP, no SQL)
+	docker compose run --rm crawler verify-aliases --max-requests 20
+
+reprocess:       ## re-parse stored workbooks with the current parser (no HTTP)
+	docker compose run --rm crawler reprocess --company-file /app/config/companies_candidates.txt
 
 grafana:         ## start Grafana on http://127.0.0.1:3000
 	docker compose up -d grafana

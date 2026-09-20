@@ -30,7 +30,7 @@ from .models import (
 )
 from .units import UnitError, decode_presentation_currency, is_twelve_month_span, parse_dmy_date, parse_turkish_number
 
-PARSER_VERSION = "1.1.0"
+PARSER_VERSION = "1.2.0"
 
 StatementKind = Literal["balance_sheet", "income_statement", "cash_flow", "notes", "other"]
 Unit = Literal["monetary", "per_share", "shares"]
@@ -531,7 +531,8 @@ def build_report(facts: StatementFacts, *, parser_version: str = PARSER_VERSION)
             report.errors.append(message)
             return report
         record, sources, derivations, problems = _build_period(
-            resolver, instant, ctx, currency_code=currency_code, scale=scale, raw_currency=raw_currency, is_comparative=is_comparative
+            resolver, instant, ctx, currency_code=currency_code, scale=scale, raw_currency=raw_currency,
+            is_comparative=is_comparative, measuring_unit_date=current_ctx.end,
         )
         key = f"{record.fiscal_year}:{'comparative' if is_comparative else 'current'}"
         report.field_sources[key] = sources
@@ -565,6 +566,7 @@ def _build_period(
     scale: int,
     raw_currency: str,
     is_comparative: bool,
+    measuring_unit_date: date | None = None,
 ) -> tuple[FundamentalRecord, dict[str, Any], dict[str, Any], list[str]]:
     sources: dict[str, Any] = {}
     problems: list[str] = []
@@ -674,6 +676,7 @@ def _build_period(
         period_start_date=duration.start,
         period_end_date=duration.end,
         is_comparative=is_comparative,
+        measuring_unit_date=measuring_unit_date,
         currency_code=currency_code,
         currency_scale=scale,
         presentation_currency_raw=raw_currency,

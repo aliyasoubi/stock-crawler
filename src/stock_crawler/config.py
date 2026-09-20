@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     # fixtures with zero HTTP, used by the test-suite and for exercising SQL/Grafana offline.
     source_mode: Literal["fixture", "kap-export"] = "kap-export"
     kap_company_registry: Path = Path("config/kap_companies.json")
+    # Historical titles proven by `verify-aliases` (single-company exports). Optional.
+    kap_alias_file: Path = Path("config/kap_aliases.json")
     kap_years: list[int] = Field(default_factory=lambda: [date.today().year - 1, date.today().year])
     # Issuers whose financial year is NOT the calendar year. Everyone else gets Jan 1-Dec 31 inferred
     # from the export's Year column (BIST issuers overwhelmingly report on calendar years).

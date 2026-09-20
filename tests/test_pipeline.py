@@ -9,6 +9,10 @@ import pytest
 from stock_crawler.fetch import AccessBlocked, BudgetExhausted
 from stock_crawler.kap import FixtureSourceClient, UnknownTicker
 from stock_crawler.models import ParseStatus
+from stock_crawler.parser import PARSER_VERSION
+
+# A version that is guaranteed to differ from the current parser, whatever it is.
+NEXT_PARSER_VERSION = PARSER_VERSION + ".next"
 from stock_crawler.pipeline import Pipeline, SyncOptions
 from stock_crawler.storage import RawStore, StateStore
 
@@ -28,7 +32,7 @@ def test_sync_captures_parses_and_publishes(make_pipeline, repo, settings):
     assert asels_row["revenue"] == Decimal(700_000) and asels_row["currency_scale"] == 1
     raw = RawStore(settings.data_dir)
     ref = raw.latest_snapshot("kap", thyao.source_company_id)
-    assert ref.notification_id == "1400001" and (ref.path / "parsed" / "1.1.0.json").is_file()
+    assert ref.notification_id == "1400001" and (ref.path / "parsed" / f"{PARSER_VERSION}.json").is_file()
     report = repo.get_report(row["report_id"])
     assert report["raw_path"] == ref.relative_path and report["parse_status"] == "valid"
     assert summary.path.is_file() and json.loads(summary.path.read_text())["request_attempts"] == 0
@@ -86,15 +90,15 @@ def test_correction_keeps_both_versions_and_reports_delta(make_pipeline, repo, f
 
 def test_reprocess_with_new_parser_version_retains_prior_version(make_pipeline, repo, settings):
     make_pipeline().sync(SyncOptions(tickers=["THYAO"]))
-    summary = make_pipeline(parser_version="1.2.0").reprocess(["THYAO", "BIMAS"])
+    summary = make_pipeline(parser_version=NEXT_PARSER_VERSION).reprocess(["THYAO", "BIMAS"])
     by_ticker = {c["ticker"]: c for c in summary.data["companies"]}
-    assert by_ticker["THYAO"]["status"] == "published" and by_ticker["THYAO"]["parser_version"] == "1.2.0"
+    assert by_ticker["THYAO"]["status"] == "published" and by_ticker["THYAO"]["parser_version"] == NEXT_PARSER_VERSION
     assert by_ticker["BIMAS"]["status"] == "cache_miss"
-    assert {r["parser_version"] for r in repo.reports.values()} == {"1.1.0", "1.2.0"}
+    assert {r["parser_version"] for r in repo.reports.values()} == {PARSER_VERSION, NEXT_PARSER_VERSION}
     company = repo.get_company_by_ticker("kap", "THYAO")
-    assert repo.current_view_row(company.company_id, 2024, "consolidated")["parser_version"] == "1.2.0"
+    assert repo.current_view_row(company.company_id, 2024, "consolidated")["parser_version"] == NEXT_PARSER_VERSION
     assert summary.data["request_attempts"] == 0
-    again = make_pipeline(parser_version="1.2.0").reprocess(["THYAO"])
+    again = make_pipeline(parser_version=NEXT_PARSER_VERSION).reprocess(["THYAO"])
     assert again.data["companies"][0]["status"] == "already_parsed"
 
 

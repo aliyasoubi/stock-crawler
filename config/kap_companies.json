@@ -282,12 +282,18 @@
   {
     "ticker": "ARSNF",
     "source_company_id": "4028e4a240f27df70140f2e99d24002e",
-    "company_name": "ARSAN FİNANS FAKTORİNG A.Ş."
+    "company_name": "ARSAN FİNANS FAKTORİNG A.Ş.",
+    "aliases": [
+      "ZORLU FAKTORİNG A.Ş."
+    ]
   },
   {
     "ticker": "ARSAN",
     "source_company_id": "4028e4a14158e41f01415b1862696142",
-    "company_name": "ARSAN HOLDİNG A.Ş."
+    "company_name": "ARSAN HOLDİNG A.Ş.",
+    "aliases": [
+      "ARSAN TEKSTİL TİCARET VE SANAYİ A.Ş."
+    ]
   },
   {
     "ticker": "ARSVY",
@@ -3697,7 +3703,7 @@
   {
     "ticker": "SHTRP",
     "source_company_id": "4028e4a1422d9869014247ae2a7864f8",
-    "company_name": "SHELL \\u0026 TURCAS PETROL A.Ş."
+    "company_name": "SHELL & TURCAS PETROL A.Ş."
   },
   {
     "ticker": "SZUKI",

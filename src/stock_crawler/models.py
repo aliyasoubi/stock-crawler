@@ -6,7 +6,6 @@ from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Any
-from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -134,6 +133,12 @@ class FundamentalRecord(BaseModel):
     currency_code: str
     currency_scale: int
     presentation_currency_raw: str
+    # Purchasing power the figures are expressed in (IAS 29 / TMS 29). Equals the period end of
+    # the report the row came from: for a current column that is period_end_date; for a
+    # comparative it is the LATER report's period end, because comparatives are restated into
+    # the current period's measuring unit. Rows with different values are not directly
+    # comparable without a CPI bridge.
+    measuring_unit_date: date | None = None
 
     total_liabilities_and_equity: Decimal | None = None
     profit_attributable_to_non_controlling_interests: Decimal | None = None

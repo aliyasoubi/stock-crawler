@@ -19,7 +19,7 @@ from .models import FINANCIAL_FIELDS, METHOD_FIELDS, CompanyIdentity, Fundamenta
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 _IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
@@ -86,7 +86,8 @@ _REPORT_COLUMNS = (
 )
 _FUNDAMENTAL_COLUMNS = (
     "report_id", "fiscal_year", "fiscal_period", "period_start_date", "period_end_date", "is_comparative",
-    "currency_code", "currency_scale", "presentation_currency_raw", *FINANCIAL_FIELDS, *METHOD_FIELDS,
+    "currency_code", "currency_scale", "presentation_currency_raw", "measuring_unit_date",
+    *FINANCIAL_FIELDS, *METHOD_FIELDS,
 )
 
 

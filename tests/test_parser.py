@@ -53,6 +53,8 @@ def test_comparative_row_is_linked_with_its_own_dates(thyao_html):
     comparative = report.periods[1]
     assert (comparative.fiscal_year, str(comparative.period_start_date), str(comparative.period_end_date)) == (2023, "2023-01-01", "2023-12-31")
     assert comparative.revenue == D(500_000_000) and comparative.total_debt == D(345_000_000)
+    assert str(comparative.measuring_unit_date) == '2024-12-31'
+    assert comparative.measuring_unit_date == report.current_period().measuring_unit_date
 
 
 def test_field_sources_record_provenance(thyao_html):

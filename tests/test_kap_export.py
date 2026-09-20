@@ -16,6 +16,8 @@ from stock_crawler.fetch import PacedClient
 from stock_crawler.pipeline import Pipeline, SyncOptions
 from stock_crawler.parser import PARSER_VERSION
 
+NEXT_PARSER_VERSION = PARSER_VERSION + '.next'
+
 ROOT = Path(__file__).resolve().parents[1]
 BOOK = ROOT / 'tests/fixtures/kap/exports/two_companies_2023_2024.xlsx'
 REGISTRY = ROOT / 'config/kap_companies.json'
@@ -46,6 +48,7 @@ def test_real_export_four_rows_and_source_units():
     assert asels.revenue == Decimal('120205594000')
     assert (thyao.currency_scale, asels.currency_scale) == (1000000, 1000)
     assert thyao.ebitda is None and thyao.finance_sector_revenue is None
+    assert str(thyao.measuring_unit_date) == '2024-12-31'
 
 
 def test_non_calendar_issuer_and_unreviewed_family_are_not_silently_published():
@@ -124,9 +127,10 @@ def test_live_export_source_and_pipeline_use_same_real_workbook(settings, repo, 
     assert repo.current_view_row(company.company_id, 2023, 'consolidated')['revenue'] == Decimal('504398000000')
     again = p.sync(SyncOptions(tickers=['THYAO'], refresh=True))
     assert all(r['status'] == 'already_parsed' for r in again.data['companies']) and len(repo.reports) == 2
+    assert len(requests) == 2, 'refresh must request new bytes when the client is reused'
     # A new parser re-reads verified native bytes entirely offline.
     requests.clear()
-    p.parser_version = '1.2.0'
+    p.parser_version = NEXT_PARSER_VERSION
     assert all(r['status'] == 'published' for r in p.reprocess(['THYAO']).data['companies'])
     assert not requests
     fetcher.close()
@@ -185,7 +189,7 @@ def test_historical_import_publishes_all_periods_and_reprocesses_all(settings, r
     assert len(repo.reports) == 4
     assert all(c['status'] == 'already_parsed' for c in p.ingest_export_entries(entries).data['companies'])
     repo.mark_withdrawn('kap_compare', '1396940')
-    p.parser_version = '1.2.0'
+    p.parser_version = NEXT_PARSER_VERSION
     results = p.reprocess(['THYAO', 'ASELS']).data['companies']
     assert len(results) == 4 and sum(c['status'] == 'withdrawn' for c in results) == 1
     assert len(repo.reports) == 7
@@ -207,3 +211,135 @@ def test_identical_rows_in_repacked_workbook_have_same_snapshot(settings, repo, 
         rows = [ExportEntry(registry.match(r['Company']), r, digest, clock()) for r in read_export(data)]
         p.ingest_export_entries(rows)
     assert len(repo.reports) == 4
+
+
+def test_unmatched_row_is_rejected_without_discarding_the_rest_of_the_batch(settings, repo, clock):
+    """Regression: the per-row handler once called an undefined `log`, so the resulting
+    NameError reached the batch-level handler and failed every company in the POST."""
+    data = modified_book(lambda s: s.cell(row=8, column=1, value='SOME RENAMED COMPANY A.Ş.'))
+    requests = []
+    source, state, fetcher = _mock_export_client(settings, clock, data, requests)
+    p = Pipeline(settings, repo, RawStore(settings.data_dir), state, source, clock=clock)
+    summary = p.sync(SyncOptions(tickers=['ASELS', 'THYAO']))
+    published = {(r['ticker'], r['fiscal_year']) for r in summary.data['companies'] if r['status'] == 'published'}
+    assert published, 'the surviving rows must still publish'
+    assert summary.data['rejected_row_count'] == 1
+    assert 'SOME RENAMED COMPANY' in summary.data['rejected_rows'][0]['company']
+    fetcher.close()
+
+
+def test_changing_kap_years_makes_a_recently_synced_company_due_again(settings, repo, clock):
+    """Freshness must consider which years were collected, not only when the company was last
+    touched; otherwise a historical backfill with a new KAP_YEARS collects nothing."""
+    requests = []
+    source, state, fetcher = _mock_export_client(settings, clock, BOOK.read_bytes(), requests)
+    p = Pipeline(settings, repo, RawStore(settings.data_dir), state, source, clock=clock)
+    assert any(r['status'] == 'published' for r in p.sync(SyncOptions(tickers=['THYAO'])).data['companies'])
+    assert all(r['status'] == 'fresh' for r in p.sync(SyncOptions(tickers=['THYAO'])).data['companies'])
+    settings.kap_years = [2019, 2020]
+    assert not any(r['status'] == 'fresh' for r in p.sync(SyncOptions(tickers=['THYAO'])).data['companies'])
+    fetcher.close()
+
+
+# -- September 19 coverage losses: spelling variants, HOLDING format, finance-only revenue ------
+
+@pytest.mark.parametrize('export_title,ticker', [
+    ('BANVİT BANDIRMA VİTAMİNLİ YEM SANAYİİ A.Ş.', 'BANVT'),           # SANAYİ / SANAYİİ
+    ('PINAR SÜT MAMULLERİ SANAYİİ A.Ş.', 'PNSUT'),                     # MAMÜLLERİ / MAMULLERİ
+    ('BRİSA BRIDGESTONE SABANCI LASTİK SANAYİ VE TİCARET A.Ş.', 'BRISA'),  # İ / I
+    ('FEDERAL-MOGUL İZMİT PİSTON VE PİM ÜRETİM TESİSLERİ A.Ş.', 'FMIZP'),  # hyphen
+    ('BANTAŞ BANDIRMA AMBALAJ SANAYİ TİCARET A.Ş.', 'BNTAS'),          # dropped VE
+    ('YÜNSA YÜNLÜ SANAYİ VE TİCARET ', 'YUNSA'),                       # dropped legal form + trailing space
+])
+def test_kap_spelling_variants_resolve_by_normalized_key_within_the_batch(export_title, ticker):
+    """These exact titles were rejected as UnknownTicker in run 20260919T110856Z; each differs
+    from the registry seed only in KAP's own orthography, never in a name word."""
+    registry = CompanyRegistry(REGISTRY)
+    with pytest.raises(UnknownTicker):
+        registry.match(export_title, ['ASELS'])  # batch restriction still applies
+    assert registry.match_with_basis(export_title, [ticker, 'ASELS']) == (ticker, 'normalized')
+    assert registry.match_with_basis(registry.resolve(ticker).company_name, [ticker]) == (ticker, 'exact')
+
+
+def test_normalized_key_never_merges_distinct_issuers():
+    from stock_crawler.kap_export import loose_key
+    registry = CompanyRegistry(REGISTRY)
+    keys = {}
+    for entry in registry.entries:
+        assert keys.setdefault(loose_key(entry['company_name']), entry['ticker']) == entry['ticker']
+    # A real rename is still unknown: no partial or fuzzy matching.
+    with pytest.raises(UnknownTicker):
+        registry.match('DİTAŞ DOĞAN YEDEK PARÇA İMALAT VE TEKNİK A.Ş.', ['DITAS'])
+    assert loose_key('QNB FİNANSAL KİRALAMA A.Ş.') != loose_key('QNB FAKTORİNG A.Ş.')
+
+
+def test_registry_refuses_a_seed_whose_titles_collide_after_normalization(tmp_path):
+    entries = [
+        {'ticker': 'AAAAA', 'source_company_id': 'id1', 'company_name': 'ÖRNEK SANAYİ A.Ş.'},
+        {'ticker': 'BBBBB', 'source_company_id': 'id2', 'company_name': 'ORNEK SANAYİİ VE A.Ş.'},
+    ]
+    path = tmp_path / 'reg.json'
+    path.write_text(json.dumps(entries), 'utf-8')
+    with pytest.raises(SourceError, match='after normalization'):
+        CompanyRegistry(path)
+
+
+def test_verified_alias_file_extends_the_registry(tmp_path):
+    aliases = tmp_path / 'kap_aliases.json'
+    aliases.write_text(json.dumps({'aliases': [
+        {'ticker': 'DITAS', 'title': 'DİTAŞ DOĞAN YEDEK PARÇA İMALAT VE TEKNİK A.Ş.', 'verified_at': '2026-09-21T00:00:00+00:00'}]}), 'utf-8')
+    registry = CompanyRegistry(REGISTRY, aliases)
+    assert registry.match('DİTAŞ DOĞAN YEDEK PARÇA İMALAT VE TEKNİK A.Ş.', ['DITAS']).ticker == 'DITAS'
+    assert len(registry.verified_aliases) == 1
+    aliases.write_text(json.dumps({'aliases': [{'ticker': 'NOPE1', 'title': 'X A.Ş.'}]}), 'utf-8')
+    with pytest.raises(SourceError, match='unknown ticker'):
+        CompanyRegistry(REGISTRY, aliases)
+
+
+def test_sync_records_normalized_matches_in_the_summary(settings, repo, clock):
+    data = modified_book(lambda s: s.cell(row=8, column=1, value='ASELSAN ELEKTRONİK SANAYİİ VE TİCARET A.Ş.'))
+    requests = []
+    source, state, fetcher = _mock_export_client(settings, clock, data, requests)
+    summary = Pipeline(settings, repo, RawStore(settings.data_dir), state, source, clock=clock).sync(
+        SyncOptions(tickers=['ASELS', 'THYAO']))
+    assert summary.data['rejected_row_count'] == 0
+    assert summary.data['normalized_title_matches'] == [{
+        'company': 'ASELSAN ELEKTRONİK SANAYİİ VE TİCARET A.Ş.', 'ticker': 'ASELS',
+        'registry_title': 'ASELSAN ELEKTRONİK SANAYİ VE TİCARET A.Ş.'}]
+    assert sum(r['status'] == 'published' for r in summary.data['companies']) == 4
+    fetcher.close()
+
+
+def test_holding_format_rows_publish_with_both_revenue_lines_kept_apart():
+    """KOÇ, SABANCI, ŞİŞECAM, TURKCELL, AG ANADOLU, TEKFEN, DOĞAN and POLİSAN file in the HOLDING
+    format and were all `unsupported` on September 19. The ten items carry the same meaning;
+    the format only splits turnover into industrial and finance-sector lines."""
+    from stock_crawler.kap_export import HOLDING_REVENUE_SPLIT
+    rows = read_export(BOOK.read_bytes())
+    row = {**rows[1], 'Sectoral Statement Type': 'holding', 'Revenue': '120.205.594',
+           'Revenue from Finance Sector Operations': '7.817.357'}
+    report = parse_export_row(row, calendar_year_confirmed=True, parser_version=PARSER_VERSION)
+    assert report.parse_status.value == 'valid' and report.statement_type == 'holding'
+    period = report.periods[0]
+    assert period.revenue == Decimal('120205594000') and period.finance_sector_revenue == Decimal('7817357000')
+    assert HOLDING_REVENUE_SPLIT in report.warnings
+    for family in ('bank', 'insurance', 'finance'):
+        assert parse_export_row({**row, 'Sectoral Statement Type': family}, calendar_year_confirmed=True,
+                                parser_version=PARSER_VERSION).parse_status.value == 'unsupported'
+
+
+def test_general_format_with_only_finance_sector_revenue_is_valid_and_flagged():
+    """ÜNLÜ YATIRIM HOLDİNG (GENERAL format) reports its turnover only as finance-sector revenue
+    and failed with 'missing required values: revenue' in every run. Revenue stays null; the
+    finance line is kept in its own column and the client mapping states which it used."""
+    from stock_crawler.kap_export import REVENUE_FINANCE_ONLY
+    rows = read_export(BOOK.read_bytes())
+    row = {**rows[1], 'Revenue': None, 'Revenue from Finance Sector Operations': '55.517.419.484'}
+    report = parse_export_row(row, calendar_year_confirmed=True, parser_version=PARSER_VERSION)
+    assert report.parse_status.value == 'valid'
+    assert report.periods[0].revenue is None
+    assert report.periods[0].finance_sector_revenue == Decimal('55517419484000')
+    assert REVENUE_FINANCE_ONLY in report.warnings
+    neither = parse_export_row({**row, 'Revenue from Finance Sector Operations': None},
+                               calendar_year_confirmed=True, parser_version=PARSER_VERSION)
+    assert neither.parse_status.value == 'failed' and 'revenue' in neither.errors[0]

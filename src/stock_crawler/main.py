@@ -100,6 +100,20 @@ def build_parser() -> argparse.ArgumentParser:
     generate.add_argument("--output", type=Path, required=True)
     generate.add_argument("--max-requests", type=int, default=5)
     generate.add_argument("--batch-size", type=int, default=25)
+    client = sub.add_parser("export-company-fundamentals", help="review saved export workbooks against the client CompanyFundamental contract (no HTTP/SQL)")
+    client.add_argument("--input", type=Path, nargs="+", help="XLSX files; default: saved data/raw/_exports workbooks")
+    client.add_argument("--output", type=Path, required=True, help="review JSON output; contains missing-field diagnostics")
+    client.add_argument("--company-map", type=Path, help="JSON object mapping tickers to the client's dbo.Company IDs")
+    client.add_argument("--currency", required=True, help="expected target currency, e.g. TRY; values are not converted")
+    client.add_argument("--scope", choices=["consolidated-else-unconsolidated", "consolidated", "unconsolidated"],
+                        default="consolidated-else-unconsolidated",
+                        help="statement scope policy; the default falls back to the solo statement only when the issuer files no consolidated one, and records that per row")
+    client.add_argument("--net-income-basis", choices=["total-profit", "owners-of-parent"], default="total-profit")
+    client.add_argument("--tickers", help="optional comma-separated selection")
+    verify = sub.add_parser("verify-aliases", help="prove historical company titles with single-company exports (HTTP, no SQL)")
+    verify.add_argument("--summary", type=Path, help="run summary whose rejected rows to resolve; default: newest sync run")
+    verify.add_argument("--tickers", type=str, help="comma-separated tickers to verify instead of deriving them from the summary")
+    verify.add_argument("--max-requests", type=int, default=10, help="cap on verification requests this invocation (default 10)")
     return parser
 
 
@@ -138,7 +152,10 @@ def _pipeline(settings: Settings, repo: Repository, *, offline: bool = False) ->
 
 def _print_summary(summary) -> None:
     rows = summary.data["companies"]
-    print(f"run {summary.run_id}: {len(rows)} companies, {summary.data['request_attempts']} HTTP attempts")
+    company_count = len({r['ticker'] for r in rows})
+    print(f"run {summary.run_id}: {company_count} companies, {len(rows)} result entries, {summary.data['request_attempts']} HTTP attempts")
+    if "effective_company_limit" in summary.data:
+        print(f"company cap: {summary.data['effective_company_limit']}; selected: {summary.data['selected_company_count']}")
     for row in rows:
         extras = []
         for key in ("fiscal_year", "notification_id", "report_id", "persist", "snapshot", "error"):
@@ -150,6 +167,12 @@ def _print_summary(summary) -> None:
     if summary.data.get("stopped_reason"):
         print(f"stopped: {summary.data['stopped_reason']}")
         print(f"pending: {', '.join(summary.data.get('pending', [])) or '-'}")
+    print(f"rejected rows: {summary.data.get('rejected_row_count', 0)}; excluded tickers: {summary.data.get('excluded_ticker_count', 0)}; "
+          f"titles matched by normalization: {summary.data.get('normalized_title_match_count', 0)}")
+    for row in summary.data.get("rejected_rows", [])[:10]:
+        print(f"  rejected {row['company']}: {row['reason']}")
+    if summary.data.get("rejected_row_count"):
+        print("  -> run `verify-aliases` to prove historical titles with single-company exports")
     print(f"summary: {summary.path}")
 
 
@@ -280,7 +303,8 @@ def summary_exit_code(summary) -> int:
     if summary.data.get("stopped_reason"):
         return 2
     errors = {"error", "unresolved", "failed", "unsupported", "cache_miss", "no_filing"}
-    return 1 if any(c.get("status") in errors for c in summary.data["companies"]) else 0
+    return int(bool(summary.data.get("rejected_rows") or summary.data.get("rejected_row_count")
+                    or any(c.get("status") in errors for c in summary.data["companies"])))
 
 
 def cmd_import_kap_export(args: argparse.Namespace) -> int:
@@ -291,7 +315,7 @@ def cmd_import_kap_export(args: argparse.Namespace) -> int:
     from .parser import PARSER_VERSION
 
     settings = _settings(args)
-    registry = CompanyRegistry(settings.kap_company_registry)
+    registry = CompanyRegistry(settings.kap_company_registry, settings.kap_alias_file)
     raw = RawStore(settings.data_dir)
     exit_code = 0
     with RunLock(settings.data_dir):
@@ -344,7 +368,7 @@ def cmd_build_kap_script(args: argparse.Namespace) -> int:
     from .storage import write_atomic
     settings = _settings(args)
     years = [int(y.strip()) for y in args.years.split(",")]
-    registry = CompanyRegistry(settings.kap_company_registry)
+    registry = CompanyRegistry(settings.kap_company_registry, settings.kap_alias_file)
     identities = [registry.resolve(t) for t in _tickers(args, settings)]
     script = build_browser_script(identities, years, max_requests=args.max_requests, batch_size=args.batch_size)
     write_atomic(args.output, script.encode())
@@ -352,7 +376,70 @@ def cmd_build_kap_script(args: argparse.Namespace) -> int:
     return 0
 
 
+from .client_export import cmd_export_company_fundamentals
+
+def latest_run_summary(data_dir: Path, command: str = "sync") -> Path:
+    candidates = []
+    for path in (data_dir / "runs").glob("*/summary.json"):
+        try:
+            document = json.loads(path.read_text("utf-8"))
+        except (OSError, ValueError):
+            continue
+        if document.get("command") == command:
+            candidates.append((document.get("started_at") or "", path))
+    if not candidates:
+        raise SettingsError(f"no saved {command} run summary under {data_dir / 'runs'}")
+    return max(candidates)[1]
+
+
+def cmd_verify_aliases(args: argparse.Namespace) -> int:
+    from .aliases import candidate_tickers_from_summary, load_alias_file, verify_aliases
+    from .kap_export import CompanyRegistry
+
+    settings = _settings(args)
+    if settings.source_mode != "kap-export":
+        raise SettingsError("verify-aliases needs SOURCE_MODE=kap-export")
+    registry = CompanyRegistry(settings.kap_company_registry, settings.kap_alias_file)
+    if args.tickers:
+        tickers = parse_ticker_argument(args.tickers)
+    else:
+        summary_path = args.summary or latest_run_summary(settings.data_dir)
+        summary = json.loads(summary_path.read_text("utf-8"))
+        tickers = candidate_tickers_from_summary(summary, registry, load_alias_file(settings.kap_alias_file))
+        print(f"summary: {summary_path}; candidate tickers: {len(tickers)}")
+    if not tickers:
+        print("nothing to verify: every rejected title already resolves with the current registry/aliases")
+        return 0
+    with RunLock(settings.data_dir):
+        fetcher = _fetcher(settings)
+        try:
+            outcome = verify_aliases(
+                tickers, settings=settings, fetcher=fetcher, registry=registry,
+                raw=RawStore(settings.data_dir), state=StateStore(settings.data_dir),
+                alias_path=settings.kap_alias_file, max_requests=args.max_requests,
+            )
+        finally:
+            fetcher.close()
+    for record in outcome.checked:
+        detail = record.get("error") or ", ".join(record.get("titles", [])) or "no rows for the requested years"
+        print(f"  {record['ticker']:<8} {record['status']:<8} new_aliases={record.get('new_aliases', 0)}  {detail[:120]}")
+    for conflict in outcome.conflicts:
+        print(f"  CONFLICT {conflict['ticker']}: source returned {conflict['title']!r}, "
+              f"which the registry assigns to {conflict['registry_ticker']}; fix the seed by hand")
+    print(f"verified: {len(outcome.checked)} companies, {len(outcome.new_aliases)} new aliases, "
+          f"{len(outcome.conflicts)} conflicts, {outcome.request_attempts} HTTP attempts -> {settings.kap_alias_file}")
+    if outcome.stopped_reason:
+        print(f"stopped: {outcome.stopped_reason}; rerun to continue")
+    if outcome.new_aliases:
+        print("next: rerun `sync` for the same company list; the proven companies are due again")
+    if outcome.conflicts:
+        return 1
+    return 2 if outcome.stopped_reason and "budget" in outcome.stopped_reason else 0
+
+
 COMMANDS = {
+    "verify-aliases": cmd_verify_aliases,
+    "export-company-fundamentals": cmd_export_company_fundamentals,
     "init-db": cmd_init_db,
     "import-kap-export": cmd_import_kap_export,
     "build-kap-script": cmd_build_kap_script,

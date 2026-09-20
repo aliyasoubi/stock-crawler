@@ -19,6 +19,9 @@ from .storage import Clock, RawStore, RunSummary, SnapshotMissing, SnapshotRef, 
 log = logging.getLogger(__name__)
 
 RUN_STOPPING_ERRORS = (BudgetExhausted, HostCoolingDown, AccessBlocked, HostThrottled)
+# Per-year outcomes that settle a requested year until the discovery interval elapses.
+# "error" is deliberately absent: a fetch/storage error leaves the year unchecked.
+CHECKED_STATUSES = ("published", "already_parsed", "no_filing", "unsupported", "failed", "withdrawn")
 
 
 @dataclass(frozen=True)
@@ -56,6 +59,20 @@ class Pipeline:
         summary = RunSummary(self.settings.data_dir, "sync", clock=self.clock)
         summary.data["requested_tickers"] = options.tickers
         summary.data["refresh"] = options.refresh
+        summary.data["requested_years"] = list(self.settings.kap_years)
+        summary.data["parser_version"] = self.parser_version
+        try:
+            return self._sync(options, summary)
+        except Exception as exc:
+            # Preserve diagnostics for unexpected failures without treating them as success
+            # or writing exception text that could contain database credentials.
+            summary.data["stopped_reason"] = f"unexpected {type(exc).__name__}; inspect the command error"
+            summary.data["error_type"] = type(exc).__name__
+            self._finish(summary)
+            log.error("Run failed; diagnostic summary: %s", summary.path)
+            raise
+
+    def _sync(self, options: SyncOptions, summary: RunSummary) -> RunSummary:
         now = self.clock()
         if options.limit is not None and options.limit <= 0:
             raise ValueError("--limit must be positive")
@@ -79,6 +96,11 @@ class Pipeline:
 
         eligible.sort(key=lambda item: (item[2].last_discovery_at is not None, item[2].last_discovery_at or now, item[0]))
         cap = min(options.limit or self.settings.max_companies_per_run, self.settings.max_companies_per_run)
+        summary.data["effective_company_limit"] = cap
+        summary.data["eligible_company_count"] = len(eligible)
+        summary.data["selected_company_count"] = min(len(eligible), cap)
+        if options.limit and options.limit > cap:
+            log.warning("--limit %s is capped at MAX_COMPANIES_PER_RUN=%s", options.limit, cap)
         deferred = eligible[cap:]
         for ticker, _, _ in deferred:
             summary.add_company({"ticker": ticker, "status": "deferred", "reason": f"company cap {cap} reached"})
@@ -104,6 +126,17 @@ class Pipeline:
         return self._finish(summary)
 
     def _finish(self, summary: RunSummary) -> RunSummary:
+        # Rows the source client could not match or decode are coverage loss, not noise.
+        # Without this they only reached the log and the run still exited 0.
+        rejected = list(getattr(self.source, "rejected_rows", []))
+        excluded = list(getattr(self.source, "excluded_tickers", []))
+        normalized = list(getattr(self.source, "normalized_matches", []))
+        summary.data["rejected_rows"] = rejected
+        summary.data["rejected_row_count"] = len(rejected)
+        summary.data["excluded_tickers"] = excluded
+        summary.data["excluded_ticker_count"] = len(excluded)
+        summary.data["normalized_title_matches"] = normalized
+        summary.data["normalized_title_match_count"] = len(normalized)
         summary.finish(request_attempts=self.request_attempts())
         return summary
 
@@ -122,9 +155,38 @@ class Pipeline:
         return identity, company
 
     def _is_fresh(self, company: Any, now: datetime) -> bool:
-        if company.last_discovery_at is None or company.last_error:
+        """Recent AND every requested fiscal year checked within the discovery interval.
+
+        `last_discovery_at` alone is not enough: it says nothing about which years were asked
+        for. Without the coverage check, changing KAP_YEARS for a historical backfill would
+        skip every company as fresh and collect nothing.
+
+        For all-years sources a year counts as checked whatever the outcome (published,
+        already parsed, no filing, unsupported format, failed parse): the source was asked and
+        answered. Re-asking every run changed nothing in the September 19 runs except burning
+        ~40% of the request budget on the same empty answers; the interval re-checks them.
+        A company-level `last_error` is not consulted for those sources because one year's
+        parse failure says nothing about the other years, and the run summary carries the
+        per-year detail.
+        """
+        if company.last_discovery_at is None:
             return False
-        return now - company.last_discovery_at < timedelta(hours=self.settings.discovery_interval_hours)
+        if now - company.last_discovery_at >= timedelta(hours=self.settings.discovery_interval_hours):
+            return False
+        if not getattr(self.source, "publishes_all_years", False):
+            return not company.last_error  # notification-style: latest filing, retry after errors
+        wanted = set(getattr(self.settings, "kap_years", []) or [])
+        if not wanted:
+            return True
+        return wanted.issubset(self.state.fresh_coverage(
+            self._coverage_key(company), now=now,
+            max_age=timedelta(hours=self.settings.discovery_interval_hours),
+        ))
+
+    def _coverage_key(self, company: Any) -> str:
+        # Fetch coverage is a property of the source data, not of the parser: a parser upgrade
+        # is applied to the stored snapshots by `reprocess` (zero HTTP), never by re-downloading.
+        return f"{self.source.market_source}/{company.source_company_id}"
 
     def _sync_company(self, identity: CompanyIdentity, company: Any) -> list[dict[str, Any]]:
         """One summary entry per published record: a single latest annual filing for
@@ -134,21 +196,30 @@ class Pipeline:
             by_year: dict[int, list[FilingCandidate]] = {}
             for candidate in candidates:
                 by_year.setdefault(candidate.fiscal_year, []).append(candidate)
-            selections = [select_latest_annual(group) for _, group in sorted(by_year.items())] or [select_latest_annual([])]
+            selections = [(year, select_latest_annual(by_year.get(year, []))) for year in sorted(self.settings.kap_years)]
         else:
-            selections = [select_latest_annual(candidates)]
+            selections = [(None, select_latest_annual(candidates))]
 
+        all_years = bool(getattr(self.source, "publishes_all_years", False))
         entries: list[dict[str, Any]] = []
-        for selection in selections:
+        checked: dict[int, str] = {}
+        for requested_year, selection in selections:
             entry: dict[str, Any] = {"ticker": identity.ticker, "candidates": selection.considered}
+            if requested_year is not None:
+                entry["fiscal_year"] = requested_year
             for withdrawn in selection.withdrawn:
                 affected = self.repo.mark_withdrawn(identity.market_source, withdrawn.notification_id)
                 if affected:
                     entry.setdefault("withdrawn", []).append(withdrawn.notification_id)
             if selection.selected is None:
-                self.repo.record_discovery(company.company_id, at=self.clock(), notification_id=None, error=selection.reason)
+                # For an all-years source an empty year is an answer about that year, not a
+                # company error: the batch request succeeded and simply had no row for it.
+                self.repo.record_discovery(company.company_id, at=self.clock(), notification_id=None,
+                                           error=None if all_years else selection.reason)
                 entry.update(status="no_filing", error=selection.reason)
                 entries.append(entry)
+                if requested_year is not None:
+                    checked[requested_year] = "no_filing"
                 continue
             selected = selection.selected
             self.repo.record_discovery(company.company_id, at=self.clock(), notification_id=selected.notification_id, error=None)
@@ -157,7 +228,11 @@ class Pipeline:
             ref, snapshot_status = self._ensure_snapshot(identity, selected, force_download=bool(company.last_error))
             entry["snapshot"] = snapshot_status
             entry.update(self._parse_and_persist(company, identity, ref))
+            if all_years and entry.get("status") in CHECKED_STATUSES:
+                checked[selected.fiscal_year] = entry["status"]
             entries.append(entry)
+        if all_years and checked:
+            self.state.add_coverage(self._coverage_key(company), sorted(checked), statuses=checked)
         return entries
 
     def _ensure_snapshot(self, identity: CompanyIdentity, candidate: FilingCandidate, *, force_download: bool = False) -> tuple[SnapshotRef, str]:
