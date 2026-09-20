@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "70231d6d791917136cd9d93f6ae774736112ac0332ad9426496cf22870bb3521",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "b0012fa65b6f9d14ac35303cac1f644d0494e65b0d49751a261a5b45d61d516e",
+  "files": {
+    "source.json": {
+      "sha256": "a89a2095751ecba79a8fb25562edad76abf519eb51441a41b57c520fc7559efd",
+      "size": 777
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:04:39.888909+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1561011",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-02-24T15:14:32+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a141733b560141741ee61b25bd",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "SANFM"
+}

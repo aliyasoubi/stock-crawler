@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "fa2d98675b1d2ad77c26f8431149bc585badb228bad3cc2523752c55daad1997",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "a7dbaed9887afb8b6235b9680411a334e436a29cb8d085c7d64f0ca7e5522987",
+  "files": {
+    "source.json": {
+      "sha256": "1d368980a62de9a89c95136061d34f36f83948a9e47bb152475790b45a4de561",
+      "size": 751
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:11:01.253711+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1111648",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-02-08T17:43:00+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a240ee866c0140f1fad94e0047",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "DZGYO"
+}

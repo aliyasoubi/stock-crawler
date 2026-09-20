@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "afcb7405ff31dbf8129c3f174fca26a3ad8415be53216ec260ecfacd88469223",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "9c0bf1f50b4b35acb98ac5ab38f11210fd8d01df4aaa7dbfc2d4390cd29b7478",
+  "files": {
+    "source.json": {
+      "sha256": "3cb0d629d10f08e35464cfc89e29eac2faadaa32598dbaedd7f6d823a61abb0d",
+      "size": 726
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:13:22.951201+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1105545",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-01-27T18:01:21+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a240ee866c0140f2710c33013d",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "ISYAT"
+}

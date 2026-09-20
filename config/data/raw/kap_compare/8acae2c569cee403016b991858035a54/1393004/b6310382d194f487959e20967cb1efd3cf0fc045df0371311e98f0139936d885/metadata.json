@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "b6310382d194f487959e20967cb1efd3cf0fc045df0371311e98f0139936d885",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "ed40120683c621c964a3adbdcc282ec447385c2ff6c27a3f19265f99797b57bd",
+  "files": {
+    "source.json": {
+      "sha256": "caba7238e3909e718eec31a89e4c3b6c181e8763d8522321b8a9c3611fce18c7",
+      "size": 693
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:56:05.904874+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1393004",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-02-14T15:11:59+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c569cee403016b991858035a54",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "banks",
+  "ticker": "DNYVA"
+}

@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "aa2ec9b9e8c37fe69dc13c22837737e6091cab01660dd9ee42b03d9c42e1e7b9",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "b4adc67f4e96d943ab80f7df6617d105e326676b3b0a1588a7858877ebb8d9a1",
+  "files": {
+    "source.json": {
+      "sha256": "79a5b8128d90b02a5a76ff589be052a8693f85cac50712d5f1e93e7320d63bcf",
+      "size": 685
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:59:30.367806+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1563137",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-02-27T17:36:52+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a240f2ef4c0141165171ab0466",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "finance",
+  "ticker": "HEPFN"
+}

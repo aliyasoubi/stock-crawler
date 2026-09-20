@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "15376a27021f2372082dae9951cb972fb7306dc96d203f0bb53283ce58999a70",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "b1992b9947738430931a5899b6608b8510b2fa4fe0deed56f2cd0634d07e26be",
+  "files": {
+    "source.json": {
+      "sha256": "4d68910333de028ab2eb64f84a0557d0ad0cfbb90f0ce038ec025b6d89e0582f",
+      "size": 688
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:04:07.296450+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1395732",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-02-25T15:11:29+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c480e910340181144dafd90e8d",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "finance",
+  "ticker": "QUFIN"
+}

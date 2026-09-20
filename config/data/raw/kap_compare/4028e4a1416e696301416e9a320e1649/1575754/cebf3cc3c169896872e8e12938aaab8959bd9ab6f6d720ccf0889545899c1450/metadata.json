@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "cebf3cc3c169896872e8e12938aaab8959bd9ab6f6d720ccf0889545899c1450",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "231299fc3737cea2537b9249fe5897e1b24384dcce68fce4b8a66666b054dada",
+  "files": {
+    "source.json": {
+      "sha256": "87027adc3fb84dd1645e96f1d6fa6d9447cd12ced10dfafc30fd4e711be0c8d1",
+      "size": 757
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:01:47.433006+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1575754",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-03-25T15:10:23+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a1416e696301416e9a320e1649",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "METRO"
+}

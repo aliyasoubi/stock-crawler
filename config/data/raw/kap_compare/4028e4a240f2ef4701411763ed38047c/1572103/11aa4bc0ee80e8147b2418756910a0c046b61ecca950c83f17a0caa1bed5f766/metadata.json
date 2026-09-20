@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "11aa4bc0ee80e8147b2418756910a0c046b61ecca950c83f17a0caa1bed5f766",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "efa01df2865e01871ec967cb32bca004f362f105716fa9833a188d0d73c25f20",
+  "files": {
+    "source.json": {
+      "sha256": "dc9ebbd7578d0f7e4b709c278a1576f128ecb4919c73e9fe9f34fe1f41fcb7c5",
+      "size": 736
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:01:23.300217+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1572103",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-03-12T18:48:28+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a240f2ef4701411763ed38047c",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "LYDHO"
+}

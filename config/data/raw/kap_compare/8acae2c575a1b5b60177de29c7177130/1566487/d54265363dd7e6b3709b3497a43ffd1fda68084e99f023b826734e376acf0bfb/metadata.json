@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "d54265363dd7e6b3709b3497a43ffd1fda68084e99f023b826734e376acf0bfb",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "1bc0275333b4284ca90d8cad5b4100c1276829a35c087c221562190c4bff8a53",
+  "files": {
+    "source.json": {
+      "sha256": "cb2851ba73f53b30d11497dd5bd6fe7dcd8572cb155fba41a6c9087f728f9881",
+      "size": 753
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:02:10.190455+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1566487",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-03-05T15:11:10+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c575a1b5b60177de29c7177130",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "MTRKS"
+}

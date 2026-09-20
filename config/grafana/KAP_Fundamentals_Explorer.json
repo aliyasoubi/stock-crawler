@@ -1,0 +1,1172 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_STOCKFUNDAMENTALS",
+      "label": "StockFundamentals SQL Server",
+      "description": "Choose your existing StockFundamentals Microsoft SQL Server datasource.",
+      "type": "datasource",
+      "pluginId": "mssql",
+      "pluginName": "Microsoft SQL Server"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "11.3.0"
+    },
+    {
+      "type": "datasource",
+      "id": "mssql",
+      "name": "Microsoft SQL Server",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "text",
+      "name": "text",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "barchart",
+      "name": "barchart",
+      "version": ""
+    }
+  ],
+  "id": null,
+  "uid": "kap-fundamentals-explorer-v1",
+  "title": "KAP Fundamentals Explorer",
+  "description": "Annual KAP fundamentals from the stock-crawler SQL views. Currency/company/year filtering, exact values, comparisons and collection details.",
+  "tags": [
+    "kap",
+    "fundamentals",
+    "stock-crawler"
+  ],
+  "editable": true,
+  "style": "dark",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "time": {
+    "from": "now-5y",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": true
+  },
+  "refresh": "",
+  "graphTooltip": 0,
+  "fiscalYearStartMonth": 0,
+  "annotations": {
+    "list": []
+  },
+  "links": [],
+  "templating": {
+    "list": [
+      {
+        "name": "currency",
+        "label": "Currency",
+        "type": "query",
+        "datasource": {
+          "type": "mssql",
+          "uid": "${DS_STOCKFUNDAMENTALS}"
+        },
+        "query": "SELECT DISTINCT currency_code FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 ORDER BY currency_code;",
+        "definition": "SELECT DISTINCT currency_code FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 ORDER BY currency_code;",
+        "refresh": 1,
+        "sort": 0,
+        "hide": 0,
+        "multi": false,
+        "includeAll": false,
+        "options": [],
+        "skipUrlSync": false,
+        "current": {
+          "selected": true,
+          "text": "TRY",
+          "value": "TRY"
+        }
+      },
+      {
+        "name": "company",
+        "label": "Company",
+        "type": "query",
+        "datasource": {
+          "type": "mssql",
+          "uid": "${DS_STOCKFUNDAMENTALS}"
+        },
+        "query": "SELECT DISTINCT ticker FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) ORDER BY ticker;",
+        "definition": "SELECT DISTINCT ticker FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) ORDER BY ticker;",
+        "refresh": 1,
+        "sort": 0,
+        "hide": 0,
+        "multi": true,
+        "includeAll": true,
+        "options": [],
+        "skipUrlSync": false,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "allValue": null
+      },
+      {
+        "name": "year",
+        "label": "Fiscal year",
+        "type": "query",
+        "datasource": {
+          "type": "mssql",
+          "uid": "${DS_STOCKFUNDAMENTALS}"
+        },
+        "query": "SELECT DISTINCT CAST(fiscal_year AS varchar(4)) AS __text, CAST(fiscal_year AS varchar(4)) AS __value FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND ticker IN (${company:sqlstring}) ORDER BY __value DESC;",
+        "definition": "SELECT DISTINCT CAST(fiscal_year AS varchar(4)) AS __text, CAST(fiscal_year AS varchar(4)) AS __value FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND ticker IN (${company:sqlstring}) ORDER BY __value DESC;",
+        "refresh": 1,
+        "sort": 0,
+        "hide": 0,
+        "multi": true,
+        "includeAll": true,
+        "options": [],
+        "skipUrlSync": false,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "allValue": null
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "KAP · Annual fundamentals",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 3
+      },
+      "description": "",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—"
+        },
+        "overrides": []
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Choose Currency → Company → Fiscal year.** All selected years appear in the table; charts compare individual company-year records. Consolidated statements are preferred when both scopes exist. Tables use **base currency units**; monetary charts use **millions of ${currency}**. Refresh reads stored SQL data and does not start a crawl."
+      }
+    },
+    {
+      "id": 2,
+      "title": "SQL connection",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 6,
+        "h": 4
+      },
+      "description": "A green Connected confirms a SQL session. A red error identifies a connection problem; it does not mean the financial values are missing.",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Connected",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT 1 AS [Connection];"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Companies with selected data",
+      "type": "stat",
+      "gridPos": {
+        "x": 6,
+        "y": 3,
+        "w": 6,
+        "h": 4
+      },
+      "description": "Count of distinct companies with rows matching all filters.",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH ranked AS (\n    SELECT v.*,\n           ROW_NUMBER() OVER (\n               PARTITION BY v.company_id, v.fiscal_year\n               ORDER BY CASE WHEN v.consolidation_scope = 'consolidated' THEN 0 ELSE 1 END,\n                        v.period_end_date DESC, v.report_id DESC\n           ) AS scope_rank\n    FROM dbo.vw_fundamentals AS v\n    WHERE v.market_source = 'kap_compare'\n      AND v.fiscal_period = 4\n      AND v.currency_code IN (${currency:sqlstring})\n      AND v.ticker IN (${company:sqlstring})\n      AND CAST(v.fiscal_year AS varchar(4)) IN (${year:sqlstring})\n), selected AS (\n    SELECT * FROM ranked WHERE scope_rank = 1\n)\nSELECT COUNT(DISTINCT company_id) AS [Companies] FROM selected;"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Selected annual records",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 3,
+        "w": 6,
+        "h": 4
+      },
+      "description": "One record per company and selected year, with consolidated scope preferred. Expected for the first successful pilot: 4.",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "cyan"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH ranked AS (\n    SELECT v.*,\n           ROW_NUMBER() OVER (\n               PARTITION BY v.company_id, v.fiscal_year\n               ORDER BY CASE WHEN v.consolidation_scope = 'consolidated' THEN 0 ELSE 1 END,\n                        v.period_end_date DESC, v.report_id DESC\n           ) AS scope_rank\n    FROM dbo.vw_fundamentals AS v\n    WHERE v.market_source = 'kap_compare'\n      AND v.fiscal_period = 4\n      AND v.currency_code IN (${currency:sqlstring})\n      AND v.ticker IN (${company:sqlstring})\n      AND CAST(v.fiscal_year AS varchar(4)) IN (${year:sqlstring})\n), selected AS (\n    SELECT * FROM ranked WHERE scope_rank = 1\n)\nSELECT COUNT(*) AS [Records] FROM selected;"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Selected years with data",
+      "type": "stat",
+      "gridPos": {
+        "x": 18,
+        "y": 3,
+        "w": 6,
+        "h": 4
+      },
+      "description": "Number of distinct fiscal years present after filtering.",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH ranked AS (\n    SELECT v.*,\n           ROW_NUMBER() OVER (\n               PARTITION BY v.company_id, v.fiscal_year\n               ORDER BY CASE WHEN v.consolidation_scope = 'consolidated' THEN 0 ELSE 1 END,\n                        v.period_end_date DESC, v.report_id DESC\n           ) AS scope_rank\n    FROM dbo.vw_fundamentals AS v\n    WHERE v.market_source = 'kap_compare'\n      AND v.fiscal_period = 4\n      AND v.currency_code IN (${currency:sqlstring})\n      AND v.ticker IN (${company:sqlstring})\n      AND CAST(v.fiscal_year AS varchar(4)) IN (${year:sqlstring})\n), selected AS (\n    SELECT * FROM ranked WHERE scope_rank = 1\n)\nSELECT COUNT(DISTINCT fiscal_year) AS [Years] FROM selected;"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Annual fundamentals · all selected periods",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 7,
+        "w": 24,
+        "h": 11
+      },
+      "description": "Exact stored base-unit amounts. Scroll horizontally for more columns. No sum footer is used because adding annual snapshots across years is misleading.",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—",
+          "custom": {
+            "align": "auto",
+            "filterable": true,
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Revenue"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Net profit"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total assets"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total equity"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Current liabilities"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Non-current liabilities"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Liabilities + equity"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": ""
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH ranked AS (\n    SELECT v.*,\n           ROW_NUMBER() OVER (\n               PARTITION BY v.company_id, v.fiscal_year\n               ORDER BY CASE WHEN v.consolidation_scope = 'consolidated' THEN 0 ELSE 1 END,\n                        v.period_end_date DESC, v.report_id DESC\n           ) AS scope_rank\n    FROM dbo.vw_fundamentals AS v\n    WHERE v.market_source = 'kap_compare'\n      AND v.fiscal_period = 4\n      AND v.currency_code IN (${currency:sqlstring})\n      AND v.ticker IN (${company:sqlstring})\n      AND CAST(v.fiscal_year AS varchar(4)) IN (${year:sqlstring})\n), selected AS (\n    SELECT * FROM ranked WHERE scope_rank = 1\n)\nSELECT ticker AS [Company], fiscal_year AS [Year], currency_code AS [Currency],\n       consolidation_scope AS [Scope], revenue AS [Revenue], net_profit AS [Net profit],\n       total_assets AS [Total assets], total_equity AS [Total equity],\n       current_liabilities AS [Current liabilities], non_current_liabilities AS [Non-current liabilities],\n       total_liabilities_and_equity AS [Liabilities + equity]\nFROM selected ORDER BY ticker, fiscal_year DESC;"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Revenue · ${currency} millions",
+      "type": "barchart",
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 12,
+        "h": 9
+      },
+      "description": "Up to 20 company-year records ranked by revenue. Values divided by one million for display only; use the table for exact values.",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 1,
+          "noValue": "—",
+          "custom": {
+            "axisCenteredZero": false,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 85,
+            "lineWidth": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Revenue"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Company / year",
+        "barWidth": 0.72,
+        "groupWidth": 0.75,
+        "barRadius": 0.1,
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH ranked AS (\n    SELECT v.*,\n           ROW_NUMBER() OVER (\n               PARTITION BY v.company_id, v.fiscal_year\n               ORDER BY CASE WHEN v.consolidation_scope = 'consolidated' THEN 0 ELSE 1 END,\n                        v.period_end_date DESC, v.report_id DESC\n           ) AS scope_rank\n    FROM dbo.vw_fundamentals AS v\n    WHERE v.market_source = 'kap_compare'\n      AND v.fiscal_period = 4\n      AND v.currency_code IN (${currency:sqlstring})\n      AND v.ticker IN (${company:sqlstring})\n      AND CAST(v.fiscal_year AS varchar(4)) IN (${year:sqlstring})\n), selected AS (\n    SELECT * FROM ranked WHERE scope_rank = 1\n)\nSELECT TOP (20) CONCAT(ticker, ' / ', fiscal_year) AS [Company / year],\n       CAST(revenue AS float) / 1000000.0 AS [Revenue]\nFROM selected ORDER BY revenue DESC, ticker, fiscal_year DESC;"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Net profit · ${currency} millions",
+      "type": "barchart",
+      "gridPos": {
+        "x": 12,
+        "y": 18,
+        "w": 12,
+        "h": 9
+      },
+      "description": "Up to 20 company-year records ranked by reported net profit. Negative values represent losses.",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 1,
+          "noValue": "—",
+          "custom": {
+            "axisCenteredZero": false,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 85,
+            "lineWidth": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Net profit"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Company / year",
+        "barWidth": 0.72,
+        "groupWidth": 0.75,
+        "barRadius": 0.1,
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH ranked AS (\n    SELECT v.*,\n           ROW_NUMBER() OVER (\n               PARTITION BY v.company_id, v.fiscal_year\n               ORDER BY CASE WHEN v.consolidation_scope = 'consolidated' THEN 0 ELSE 1 END,\n                        v.period_end_date DESC, v.report_id DESC\n           ) AS scope_rank\n    FROM dbo.vw_fundamentals AS v\n    WHERE v.market_source = 'kap_compare'\n      AND v.fiscal_period = 4\n      AND v.currency_code IN (${currency:sqlstring})\n      AND v.ticker IN (${company:sqlstring})\n      AND CAST(v.fiscal_year AS varchar(4)) IN (${year:sqlstring})\n), selected AS (\n    SELECT * FROM ranked WHERE scope_rank = 1\n)\nSELECT TOP (20) CONCAT(ticker, ' / ', fiscal_year) AS [Company / year],\n       CAST(net_profit AS float) / 1000000.0 AS [Net profit]\nFROM selected ORDER BY net_profit DESC, ticker, fiscal_year DESC;"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Balance sheet composition · ${currency} millions",
+      "type": "barchart",
+      "gridPos": {
+        "x": 0,
+        "y": 27,
+        "w": 12,
+        "h": 9
+      },
+      "description": "Up to 20 records ranked by total assets. Liabilities are not the same as interest-bearing debt. Negative equity is retained.",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 1,
+          "noValue": "—",
+          "custom": {
+            "axisCenteredZero": false,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 85,
+            "lineWidth": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Current liabilities"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Non-current liabilities"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "purple"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Equity"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Company / year",
+        "barWidth": 0.72,
+        "groupWidth": 0.75,
+        "barRadius": 0.1,
+        "showValue": "auto",
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH ranked AS (\n    SELECT v.*,\n           ROW_NUMBER() OVER (\n               PARTITION BY v.company_id, v.fiscal_year\n               ORDER BY CASE WHEN v.consolidation_scope = 'consolidated' THEN 0 ELSE 1 END,\n                        v.period_end_date DESC, v.report_id DESC\n           ) AS scope_rank\n    FROM dbo.vw_fundamentals AS v\n    WHERE v.market_source = 'kap_compare'\n      AND v.fiscal_period = 4\n      AND v.currency_code IN (${currency:sqlstring})\n      AND v.ticker IN (${company:sqlstring})\n      AND CAST(v.fiscal_year AS varchar(4)) IN (${year:sqlstring})\n), selected AS (\n    SELECT * FROM ranked WHERE scope_rank = 1\n)\nSELECT TOP (20) CONCAT(ticker, ' / ', fiscal_year) AS [Company / year],\n       CAST(current_liabilities AS float) / 1000000.0 AS [Current liabilities],\n       CAST(non_current_liabilities AS float) / 1000000.0 AS [Non-current liabilities],\n       CAST(total_equity AS float) / 1000000.0 AS [Equity]\nFROM selected ORDER BY total_assets DESC, ticker, fiscal_year DESC;"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Net profit margin · %",
+      "type": "barchart",
+      "gridPos": {
+        "x": 12,
+        "y": 27,
+        "w": 12,
+        "h": 9
+      },
+      "description": "Calculated as 100 × net profit / revenue. Zero revenue gives a missing ratio, not zero. Shows up to 20 records ranked by revenue.",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "noValue": "—",
+          "custom": {
+            "axisCenteredZero": false,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 85,
+            "lineWidth": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Net margin"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "cyan"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Company / year",
+        "barWidth": 0.72,
+        "groupWidth": 0.75,
+        "barRadius": 0.1,
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH ranked AS (\n    SELECT v.*,\n           ROW_NUMBER() OVER (\n               PARTITION BY v.company_id, v.fiscal_year\n               ORDER BY CASE WHEN v.consolidation_scope = 'consolidated' THEN 0 ELSE 1 END,\n                        v.period_end_date DESC, v.report_id DESC\n           ) AS scope_rank\n    FROM dbo.vw_fundamentals AS v\n    WHERE v.market_source = 'kap_compare'\n      AND v.fiscal_period = 4\n      AND v.currency_code IN (${currency:sqlstring})\n      AND v.ticker IN (${company:sqlstring})\n      AND CAST(v.fiscal_year AS varchar(4)) IN (${year:sqlstring})\n), selected AS (\n    SELECT * FROM ranked WHERE scope_rank = 1\n)\nSELECT TOP (20) CONCAT(ticker, ' / ', fiscal_year) AS [Company / year],\n       100.0 * CAST(net_profit AS float) / NULLIF(CAST(revenue AS float), 0.0) AS [Net margin]\nFROM selected ORDER BY revenue DESC, ticker, fiscal_year DESC;"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Additional extracted earnings fields",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 36,
+        "w": 24,
+        "h": 7
+      },
+      "description": "These fields are requested by the export but may be absent or inapplicable. A dash means NULL, not zero.",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—",
+          "custom": {
+            "align": "auto",
+            "filterable": true,
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Profit attributable to owners"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Profit attributable to NCI"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Finance-sector revenue"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": ""
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH ranked AS (\n    SELECT v.*,\n           ROW_NUMBER() OVER (\n               PARTITION BY v.company_id, v.fiscal_year\n               ORDER BY CASE WHEN v.consolidation_scope = 'consolidated' THEN 0 ELSE 1 END,\n                        v.period_end_date DESC, v.report_id DESC\n           ) AS scope_rank\n    FROM dbo.vw_fundamentals AS v\n    WHERE v.market_source = 'kap_compare'\n      AND v.fiscal_period = 4\n      AND v.currency_code IN (${currency:sqlstring})\n      AND v.ticker IN (${company:sqlstring})\n      AND CAST(v.fiscal_year AS varchar(4)) IN (${year:sqlstring})\n), selected AS (\n    SELECT * FROM ranked WHERE scope_rank = 1\n)\nSELECT ticker AS [Company], fiscal_year AS [Year], currency_code AS [Currency],\n       profit_attributable_to_owners_of_parent AS [Profit attributable to owners],\n       profit_attributable_to_non_controlling_interests AS [Profit attributable to NCI],\n       finance_sector_revenue AS [Finance-sector revenue]\nFROM selected ORDER BY ticker, fiscal_year DESC;"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Source and collection details",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 43,
+        "w": 24,
+        "h": 9
+      },
+      "description": "Per-record capture and publication times, plus company-level latest collection status. Existing values remain readable during a later source outage. A dash under Last collection error means no recorded error.",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—",
+          "custom": {
+            "align": "auto",
+            "filterable": true,
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Report ID"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Source"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open KAP source",
+                    "url": "${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": ""
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH ranked AS (\n    SELECT v.*,\n           ROW_NUMBER() OVER (\n               PARTITION BY v.company_id, v.fiscal_year\n               ORDER BY CASE WHEN v.consolidation_scope = 'consolidated' THEN 0 ELSE 1 END,\n                        v.period_end_date DESC, v.report_id DESC\n           ) AS scope_rank\n    FROM dbo.vw_fundamentals AS v\n    WHERE v.market_source = 'kap_compare'\n      AND v.fiscal_period = 4\n      AND v.currency_code IN (${currency:sqlstring})\n      AND v.ticker IN (${company:sqlstring})\n      AND CAST(v.fiscal_year AS varchar(4)) IN (${year:sqlstring})\n), selected AS (\n    SELECT * FROM ranked WHERE scope_rank = 1\n)\nSELECT ticker AS [Company], fiscal_year AS [Year], report_id AS [Report ID],\n       notification_id AS [Notification], published_at AS [Published], retrieved_at AS [Captured],\n       last_success_at AS [Last successful collection], last_error AS [Last collection error],\n       source_url AS [Source]\nFROM selected ORDER BY ticker, fiscal_year DESC;"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "How to read this dashboard",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 52,
+        "w": 24,
+        "h": 5
+      },
+      "description": "",
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—"
+        },
+        "overrides": []
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "- **Data coverage:** annual KAP comparison exports only. One current valid version per company/year is displayed, with consolidated scope preferred.\n- **Units:** the crawler already applies source scaling. Do not multiply table values by `currency_scale` again.\n- **Across years:** amounts are as captured from each annual export; prior-period restatements and inflation effects are not harmonized by this dashboard.\n- **Missing values:** a dash means unavailable or inapplicable. EBITDA, EPS, cash flow, cash balance, debt and share count are omitted because this crawler does not populate them.\n- **Connection errors:** if the SQL connection tile reports `x509: negative serial number`, run the companion TLS fix and reload. Login or permission errors need datasource/account correction.\n- **No rows:** check the currency, company and fiscal-year filters. The time-range picker is hidden because these queries use fiscal years."
+      }
+    }
+  ]
+}

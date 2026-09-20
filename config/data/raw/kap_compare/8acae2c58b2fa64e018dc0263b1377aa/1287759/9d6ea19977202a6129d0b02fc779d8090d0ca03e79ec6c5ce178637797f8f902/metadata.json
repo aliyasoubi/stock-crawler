@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "9d6ea19977202a6129d0b02fc779d8090d0ca03e79ec6c5ce178637797f8f902",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "1aa885c29cbf218bb589beb6becf63873f085e8eb5e69cb131f7831626850088",
+  "files": {
+    "source.json": {
+      "sha256": "09f2b96abf4dcac42387d6475c082f468cee61bdb93c5046ac47c2c0a4579bcb",
+      "size": 744
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:20:44.502889+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1287759",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-05-17T16:25:04+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c58b2fa64e018dc0263b1377aa",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "ALVES"
+}

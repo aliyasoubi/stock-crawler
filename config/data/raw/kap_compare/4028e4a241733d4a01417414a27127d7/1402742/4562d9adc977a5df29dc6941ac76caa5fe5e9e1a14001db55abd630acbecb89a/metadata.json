@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "4562d9adc977a5df29dc6941ac76caa5fe5e9e1a14001db55abd630acbecb89a",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "04614a432bb8dfdf86a527a593765d5a828efaec4f29c76254fd01e1db0fef09",
+  "files": {
+    "source.json": {
+      "sha256": "c5c5a94ba27903b037a20dfcd7ec71134e701e16778fceb895b1ca15dd01be78",
+      "size": 741
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:03:11.297794+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1402742",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-03-07T19:24:41+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a241733d4a01417414a27127d7",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "holding",
+  "ticker": "POLHO"
+}

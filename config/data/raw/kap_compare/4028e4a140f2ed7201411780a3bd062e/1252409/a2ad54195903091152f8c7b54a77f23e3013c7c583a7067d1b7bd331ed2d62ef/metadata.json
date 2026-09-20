@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "a2ad54195903091152f8c7b54a77f23e3013c7c583a7067d1b7bd331ed2d62ef",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "7908e23c014e480b79a2e741c0a1143dca596516e432d085453066d1540dcaf2",
+  "files": {
+    "source.json": {
+      "sha256": "7afb1ee95ce09d9a83066e0209347cf7889721c794d1cdf81057721384d0a174",
+      "size": 705
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:22:40.395113+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1252409",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-02-27T15:15:47+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140f2ed7201411780a3bd062e",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "finance",
+  "ticker": "ORFIN"
+}

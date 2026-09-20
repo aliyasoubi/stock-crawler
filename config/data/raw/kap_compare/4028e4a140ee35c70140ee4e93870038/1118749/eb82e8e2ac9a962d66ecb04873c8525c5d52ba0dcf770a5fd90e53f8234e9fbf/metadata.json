@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "eb82e8e2ac9a962d66ecb04873c8525c5d52ba0dcf770a5fd90e53f8234e9fbf",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "ec49ab3d4bbed42655af57155f833fa0f785be4f3347c9122aeef92eac943722",
+  "files": {
+    "source.json": {
+      "sha256": "3674e83f4160095f2bbf59a743babd47540641b833256cd72530ecfbc06c5176",
+      "size": 721
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:15:37.910269+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1118749",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-03-01T18:09:58+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140ee35c70140ee4e93870038",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "OYAYO"
+}

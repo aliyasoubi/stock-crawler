@@ -1,0 +1,5 @@
+# Add to the existing Compose project; reuse its SQL Server data volume.
+services:
+  mssql:
+    ports:
+      - "127.0.0.1:${CRAWLER_DB_HOST_PORT:-1433}:1433"

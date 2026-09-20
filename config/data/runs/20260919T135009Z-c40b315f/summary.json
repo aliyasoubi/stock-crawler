@@ -1,0 +1,1172 @@
+{
+  "command": "sync",
+  "companies": [
+    {
+      "last_discovery_at": "2026-09-19T11:20:10.998000+00:00",
+      "status": "fresh",
+      "ticker": "AKMGY"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:11.253000+00:00",
+      "status": "fresh",
+      "ticker": "AKSA"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:11.547000+00:00",
+      "status": "fresh",
+      "ticker": "AKSEN"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:12.037000+00:00",
+      "status": "fresh",
+      "ticker": "AKSGY"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:12.314000+00:00",
+      "status": "fresh",
+      "ticker": "AKSUE"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:12.612000+00:00",
+      "status": "fresh",
+      "ticker": "AKTVK"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:12.860000+00:00",
+      "status": "fresh",
+      "ticker": "AKYHO"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:13.117000+00:00",
+      "status": "fresh",
+      "ticker": "ALARK"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:13.378000+00:00",
+      "status": "fresh",
+      "ticker": "ALCAR"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:13.679000+00:00",
+      "status": "fresh",
+      "ticker": "ALCTL"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:13.948000+00:00",
+      "status": "fresh",
+      "ticker": "ALFAS"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:14.364000+00:00",
+      "status": "fresh",
+      "ticker": "ALGYO"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:14.864000+00:00",
+      "status": "fresh",
+      "ticker": "ALKA"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:20:15.122000+00:00",
+      "status": "fresh",
+      "ticker": "ALKIM"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:44.344000+00:00",
+      "status": "fresh",
+      "ticker": "MEPET"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:45.099000+00:00",
+      "status": "fresh",
+      "ticker": "VAKKO"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:45.372000+00:00",
+      "status": "fresh",
+      "ticker": "VAKVK"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:45.618000+00:00",
+      "status": "fresh",
+      "ticker": "VANGD"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:45.982000+00:00",
+      "status": "fresh",
+      "ticker": "YKSLN"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:46.248000+00:00",
+      "status": "fresh",
+      "ticker": "YONGA"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:46.511000+00:00",
+      "status": "fresh",
+      "ticker": "YUNSA"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:46.802000+00:00",
+      "status": "fresh",
+      "ticker": "YYAPI"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:47.093000+00:00",
+      "status": "fresh",
+      "ticker": "YYLGD"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:47.363000+00:00",
+      "status": "fresh",
+      "ticker": "ZEDUR"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:47.736000+00:00",
+      "status": "fresh",
+      "ticker": "ZKBVK"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:48.011000+00:00",
+      "status": "fresh",
+      "ticker": "ZKBVR"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:48.264000+00:00",
+      "status": "fresh",
+      "ticker": "ZOREN"
+    },
+    {
+      "last_discovery_at": "2026-09-19T11:19:48.522000+00:00",
+      "status": "fresh",
+      "ticker": "ZRGYO"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "KOPOL"
+    },
+    {
+      "candidates": 1,
+      "errors": [],
+      "fiscal_year": 2023,
+      "notification_id": "1253132",
+      "parse_status": "valid",
+      "parser_version": "1.1.1",
+      "persist": "inserted",
+      "report_id": 2435,
+      "snapshot": "captured",
+      "status": "published",
+      "ticker": "KOPOL",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+        "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+      ]
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2024,
+      "notification_id": "1399357",
+      "parser_version": "1.1.1",
+      "report_id": 1429,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "KOPOL"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2025,
+      "notification_id": "1557717",
+      "parser_version": "1.1.1",
+      "report_id": 1430,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "KOPOL"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "KOTON"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2023,
+      "status": "no_filing",
+      "ticker": "KOTON"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2024,
+      "notification_id": "1405350",
+      "parser_version": "1.1.1",
+      "report_id": 1344,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "KOTON"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2025,
+      "notification_id": "1565342",
+      "parser_version": "1.1.1",
+      "report_id": 1345,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "KOTON"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "ULDAG"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2023,
+      "status": "no_filing",
+      "ticker": "ULDAG"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2024,
+      "status": "no_filing",
+      "ticker": "ULDAG"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2025,
+      "status": "no_filing",
+      "ticker": "ULDAG"
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2022,
+      "notification_id": "1117773",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2276,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "ULUFA",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2023,
+      "notification_id": "1249348",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2277,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "ULUFA",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2024,
+      "notification_id": "1397611",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1348,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "ULUFA",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2025,
+      "notification_id": "1550705",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1349,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "ULUFA",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "missing required values: revenue"
+      ],
+      "fiscal_year": 2022,
+      "notification_id": "1121943",
+      "parse_status": "failed",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2278,
+      "snapshot": "unchanged (same content hash)",
+      "status": "failed",
+      "ticker": "UNLU",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "missing required values: revenue"
+      ],
+      "fiscal_year": 2023,
+      "notification_id": "1274761",
+      "parse_status": "failed",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2279,
+      "snapshot": "unchanged (same content hash)",
+      "status": "failed",
+      "ticker": "UNLU",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "missing required values: revenue"
+      ],
+      "fiscal_year": 2024,
+      "notification_id": "1402863",
+      "parse_status": "failed",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1350,
+      "snapshot": "unchanged (same content hash)",
+      "status": "failed",
+      "ticker": "UNLU",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "missing required values: revenue"
+      ],
+      "fiscal_year": 2025,
+      "notification_id": "1569069",
+      "parse_status": "failed",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1351,
+      "snapshot": "unchanged (same content hash)",
+      "status": "failed",
+      "ticker": "UNLU",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "YIGIT"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2023,
+      "status": "no_filing",
+      "ticker": "YIGIT"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2024,
+      "notification_id": "1399023",
+      "parser_version": "1.1.1",
+      "report_id": 1358,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "YIGIT"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2025,
+      "notification_id": "1564702",
+      "parser_version": "1.1.1",
+      "report_id": 1359,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "YIGIT"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "YLDZL"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2023,
+      "status": "no_filing",
+      "ticker": "YLDZL"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2024,
+      "status": "no_filing",
+      "ticker": "YLDZL"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2025,
+      "status": "no_filing",
+      "ticker": "YLDZL"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "ZERGY"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2023,
+      "status": "no_filing",
+      "ticker": "ZERGY"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2024,
+      "status": "no_filing",
+      "ticker": "ZERGY"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2025,
+      "notification_id": "1557954",
+      "parser_version": "1.1.1",
+      "report_id": 1372,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "ZERGY"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "ZGYO"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2023,
+      "status": "no_filing",
+      "ticker": "ZGYO"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2024,
+      "status": "no_filing",
+      "ticker": "ZGYO"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2025,
+      "notification_id": "1564585",
+      "parser_version": "1.1.1",
+      "report_id": 1373,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "ZGYO"
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2022,
+      "notification_id": "1106250",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2306,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "AKFK",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2023,
+      "notification_id": "1246191",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2307,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "AKFK",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2024,
+      "notification_id": "1386659",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1382,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "AKFK",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2025,
+      "notification_id": "1550259",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1383,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "AKFK",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "AKFYE"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2023,
+      "notification_id": "1280042",
+      "parser_version": "1.1.1",
+      "report_id": 2308,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "AKFYE"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2024,
+      "notification_id": "1404952",
+      "parser_version": "1.1.1",
+      "report_id": 1384,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "AKFYE"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2025,
+      "notification_id": "1568922",
+      "parser_version": "1.1.1",
+      "report_id": 1385,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "AKFYE"
+    },
+    {
+      "candidates": 2,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2022,
+      "notification_id": "1113038",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2309,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "AKGRT",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 2,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2023,
+      "notification_id": "1248641",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2310,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "AKGRT",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2024,
+      "notification_id": "1390358",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1386,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "AKGRT",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2025,
+      "notification_id": "1553232",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1387,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "AKGRT",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "AKHAN"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2023,
+      "status": "no_filing",
+      "ticker": "AKHAN"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2024,
+      "status": "no_filing",
+      "ticker": "AKHAN"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2025,
+      "notification_id": "1569915",
+      "parser_version": "1.1.1",
+      "report_id": 1388,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "AKHAN"
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2022,
+      "notification_id": "1118673",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2317,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "AKSFA",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2023,
+      "notification_id": "1253052",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2318,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "AKSFA",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2024,
+      "notification_id": "1399272",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1395,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "AKSFA",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2025,
+      "notification_id": "1564679",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1396,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "AKSFA",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "ALBTN"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2023,
+      "status": "no_filing",
+      "ticker": "ALBTN"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2024,
+      "status": "no_filing",
+      "ticker": "ALBTN"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2025,
+      "status": "no_filing",
+      "ticker": "ALBTN"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "ALFIN"
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2023,
+      "notification_id": "1246996",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2335,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "ALFIN",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2024,
+      "notification_id": "1386894",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1413,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "ALFIN",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2025,
+      "notification_id": "1555566",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1414,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "ALFIN",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2022,
+      "notification_id": "1114959",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2338,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "ALJF",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2023,
+      "notification_id": "1253263",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 2339,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "ALJF",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2024,
+      "notification_id": "1397659",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1417,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "ALJF",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2025,
+      "notification_id": "1559449",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.1",
+      "persist": "exists",
+      "report_id": 1418,
+      "snapshot": "unchanged (same content hash)",
+      "status": "unsupported",
+      "ticker": "ALJF",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "ALKLC"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2023,
+      "status": "no_filing",
+      "ticker": "ALKLC"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2024,
+      "notification_id": "1405312",
+      "parser_version": "1.1.1",
+      "report_id": 1423,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "ALKLC"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2025,
+      "notification_id": "1571309",
+      "parser_version": "1.1.1",
+      "report_id": 1424,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "ALKLC"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "ALTNY"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2023,
+      "status": "no_filing",
+      "ticker": "ALTNY"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2024,
+      "notification_id": "1429196",
+      "parser_version": "1.1.1",
+      "report_id": 1425,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "ALTNY"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2025,
+      "notification_id": "1569926",
+      "parser_version": "1.1.1",
+      "report_id": 1426,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "ALTNY"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "ALTYZ"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2023,
+      "notification_id": "1296382",
+      "parser_version": "1.1.1",
+      "report_id": 2344,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "ALTYZ"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2024,
+      "status": "no_filing",
+      "ticker": "ALTYZ"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2025,
+      "status": "no_filing",
+      "ticker": "ALTYZ"
+    },
+    {
+      "candidates": 0,
+      "error": "no annual financial statement notification found",
+      "fiscal_year": 2022,
+      "status": "no_filing",
+      "ticker": "ALVES"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2023,
+      "notification_id": "1287759",
+      "parser_version": "1.1.1",
+      "report_id": 2345,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "ALVES"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2024,
+      "notification_id": "1398794",
+      "parser_version": "1.1.1",
+      "report_id": 1427,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "ALVES"
+    },
+    {
+      "candidates": 1,
+      "fiscal_year": 2025,
+      "notification_id": "1560574",
+      "parser_version": "1.1.1",
+      "report_id": 1428,
+      "snapshot": "unchanged (same content hash)",
+      "status": "already_parsed",
+      "ticker": "ALVES"
+    }
+  ],
+  "effective_company_limit": 755,
+  "eligible_company_count": 21,
+  "excluded_ticker_count": 0,
+  "excluded_tickers": [],
+  "finished_at": "2026-09-19T13:50:16.581589+00:00",
+  "parser_version": "1.1.1",
+  "pending": [],
+  "refresh": false,
+  "rejected_row_count": 0,
+  "rejected_rows": [],
+  "request_attempts": 1,
+  "requested_tickers": [
+    "AKFK",
+    "AKFYE",
+    "AKGRT",
+    "AKHAN",
+    "AKMGY",
+    "AKSA",
+    "AKSEN",
+    "AKSFA",
+    "AKSGY",
+    "AKSUE",
+    "AKTVK",
+    "AKYHO",
+    "ALARK",
+    "ALBTN",
+    "ALCAR",
+    "ALCTL",
+    "ALFAS",
+    "ALFIN",
+    "ALGYO",
+    "ALJF",
+    "ALKA",
+    "ALKIM",
+    "ALKLC",
+    "ALTNY",
+    "ALTYZ",
+    "ALVES",
+    "KOPOL",
+    "KOTON",
+    "MEPET",
+    "ULDAG",
+    "ULUFA",
+    "UNLU",
+    "VAKKO",
+    "VAKVK",
+    "VANGD",
+    "YIGIT",
+    "YKSLN",
+    "YLDZL",
+    "YONGA",
+    "YUNSA",
+    "YYAPI",
+    "YYLGD",
+    "ZEDUR",
+    "ZERGY",
+    "ZGYO",
+    "ZKBVK",
+    "ZKBVR",
+    "ZOREN",
+    "ZRGYO"
+  ],
+  "requested_years": [
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "run_id": "20260919T135009Z-c40b315f",
+  "selected_company_count": 21,
+  "started_at": "2026-09-19T13:50:09.511315+00:00",
+  "stopped_reason": null
+}

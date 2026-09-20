@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "83608acbefdd635f5ddbbe9192de3e14ab2e69fee0e4ee02476260dcf4cc4227",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "04614a432bb8dfdf86a527a593765d5a828efaec4f29c76254fd01e1db0fef09",
+  "files": {
+    "source.json": {
+      "sha256": "31246857f64a1e4ee1de7d5e477dc131fcd466993c6f2dbcf09928dd309c18f5",
+      "size": 733
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:03:11.297667+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1562021",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-02-26T15:12:01+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140f2ed72014106c1df9a021f",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "PKENT"
+}

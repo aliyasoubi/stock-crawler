@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "da77e1a060c1e033d7e6af9a24aa190dae5448525ceb36bade731b4642f21011",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "16804d1b5ae47dd47acccf539c11d6d1122b90ffc2f5999d0546489fb34daef2",
+  "files": {
+    "source.json": {
+      "sha256": "ca89810e37f5dda6c6b30719a7aceb349b1788792e32f7923edf631e12d1df2b",
+      "size": 733
+    }
+  },
+  "first_retrieved_at": "2026-09-19T08:08:29.277498+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1568922",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-03-09T15:12:33+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c48304fe9e0186a66e7a9568ea",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "AKFYE"
+}

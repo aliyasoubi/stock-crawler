@@ -1,0 +1,22 @@
+{
+  "consolidation_scope": "consolidated",
+  "content_hash": "9974031987a494f0fb07699cd3416e5649747daf05a93f5f1dbdf3d05d7a255a",
+  "derivations": {},
+  "errors": [
+    "only annual GENERAL comparison exports have a reviewed mapping"
+  ],
+  "field_sources": {},
+  "filing_fiscal_period": 4,
+  "filing_fiscal_year": 2024,
+  "filing_period_end_date": null,
+  "filing_period_start_date": null,
+  "notification_id": "1397611",
+  "parse_status": "unsupported",
+  "parsed_at": "2026-09-19T13:50:14.459574+00:00",
+  "parser_version": "1.1.1",
+  "periods": [],
+  "statement_type": "finance",
+  "warnings": [
+    "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+  ]
+}

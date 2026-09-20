@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "10da8feed264e1b444ce3a9c3f64f98bd7bcc17f29c1063b80e590bbcb1f4700",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "0e3e109f7c2386d3dbc23a2cf7b4af1a8d51fc62e13b960a366dc0c929433e44",
+  "files": {
+    "source.json": {
+      "sha256": "3e58ad84709520bee6d698f78d8094c2ca845e74b2b99edae8d07da7fee1271b",
+      "size": 765
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:55:19.465851+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1559884",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-02-20T15:18:04+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140ee84900140f1f334ce0025",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "CEMTS"
+}

@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "b5902940fc6f5d24709c94cc782c64da86bd477e55538ddd3f71eb85c0b5dcac",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "efa01df2865e01871ec967cb32bca004f362f105716fa9833a188d0d73c25f20",
+  "files": {
+    "source.json": {
+      "sha256": "b479276c33a3bb318de376d07042598397cdda2723aadcecd3ea09687d9e5601",
+      "size": 750
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:01:23.300149+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1397511",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-02-28T15:42:42+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140f2ed720140f31ed775014f",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "LUKSK"
+}

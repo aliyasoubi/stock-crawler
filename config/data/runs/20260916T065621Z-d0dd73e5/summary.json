@@ -1,0 +1,80 @@
+{
+  "command": "sync",
+  "companies": [
+    {
+      "last_discovery_at": "2026-09-15T10:41:00+00:00",
+      "status": "fresh",
+      "ticker": "ASELS"
+    },
+    {
+      "last_discovery_at": "2026-09-15T10:41:00.100000+00:00",
+      "status": "fresh",
+      "ticker": "THYAO"
+    },
+    {
+      "candidates": 1,
+      "errors": [],
+      "fiscal_year": 2025,
+      "notification_id": "1570150",
+      "parse_status": "valid",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 7,
+      "snapshot": "captured",
+      "status": "published",
+      "ticker": "BIMAS",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+        "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [],
+      "fiscal_year": 2025,
+      "notification_id": "1557665",
+      "parse_status": "valid",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 8,
+      "snapshot": "captured",
+      "status": "published",
+      "ticker": "EREGL",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+        "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [],
+      "fiscal_year": 2025,
+      "notification_id": "1554106",
+      "parse_status": "valid",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 9,
+      "snapshot": "captured",
+      "status": "published",
+      "ticker": "TUPRS",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+        "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+      ]
+    }
+  ],
+  "finished_at": "2026-09-16T06:56:26.323967+00:00",
+  "pending": [],
+  "refresh": false,
+  "request_attempts": 1,
+  "requested_tickers": [
+    "ASELS",
+    "BIMAS",
+    "EREGL",
+    "THYAO",
+    "TUPRS"
+  ],
+  "run_id": "20260916T065621Z-d0dd73e5",
+  "started_at": "2026-09-16T06:56:21.828056+00:00",
+  "stopped_reason": null
+}

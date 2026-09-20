@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "0691b11334d8d38acb5e9d40bf1fe9e5b229e83835f1ffdc05c1729216034b6d",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "9bf4621ac47b8d550055d7c2f46cd0a309dcb3df928a3d9993c632d75dbfde38",
+  "files": {
+    "source.json": {
+      "sha256": "7560636a8f5a462e82aca763c6e6ea3e58623074e192e6a480c5629ba1259bda",
+      "size": 752
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:57:33.291637+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1476151",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-08-11T15:57:23+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a240e95dc90140ede7351a013d",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "FENER"
+}

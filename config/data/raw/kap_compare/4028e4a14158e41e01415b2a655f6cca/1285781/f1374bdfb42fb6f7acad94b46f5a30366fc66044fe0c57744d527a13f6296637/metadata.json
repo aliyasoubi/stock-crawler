@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "f1374bdfb42fb6f7acad94b46f5a30366fc66044fe0c57744d527a13f6296637",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "42b7c0badfa08eac5aa3375c1ff67d973f28b3cb96ab51142b4c0f83a1784311",
+  "files": {
+    "source.json": {
+      "sha256": "46f751e39308fbfb76039e9ef0aaea7bef0fee7a4206b0635084440674168c13",
+      "size": 747
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:11:54.870815+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1285781",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-05-13T15:20:15+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a14158e41e01415b2a655f6cca",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "GEDZA"
+}

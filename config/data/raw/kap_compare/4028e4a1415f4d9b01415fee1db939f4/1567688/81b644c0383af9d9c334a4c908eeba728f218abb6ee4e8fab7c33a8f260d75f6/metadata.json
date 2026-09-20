@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "81b644c0383af9d9c334a4c908eeba728f218abb6ee4e8fab7c33a8f260d75f6",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "a3e0d07cc588ef9cc355ed6c4910e96d44234c550c6c37e3badf375324b22cbf",
+  "files": {
+    "source.json": {
+      "sha256": "1870000121d66cb3f9a4226baef242724c500af06ae03690976143fde65a21ee",
+      "size": 763
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:58:03.313122+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1567688",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-03-06T15:46:46+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a1415f4d9b01415fee1db939f4",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "FRIGO"
+}

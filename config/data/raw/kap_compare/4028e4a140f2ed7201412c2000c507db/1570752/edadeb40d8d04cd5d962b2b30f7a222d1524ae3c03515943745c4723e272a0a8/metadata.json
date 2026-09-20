@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "edadeb40d8d04cd5d962b2b30f7a222d1524ae3c03515943745c4723e272a0a8",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "9d2d50e604c3ff4c590e28d435010b13567604830040e168711720411ac38fb2",
+  "files": {
+    "source.json": {
+      "sha256": "ba490d5772eb8fb33475f4b4be7ecfc7eb8aec0f84a3c1f8a42661452b0803e8",
+      "size": 756
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:06:34.671453+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1570752",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-03-11T15:45:12+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140f2ed7201412c2000c507db",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "VESTL"
+}

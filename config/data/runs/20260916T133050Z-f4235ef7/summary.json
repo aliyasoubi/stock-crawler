@@ -1,0 +1,26 @@
+{
+  "command": "sync",
+  "companies": [
+    {
+      "last_discovery_at": "2026-09-16T10:41:42.835000+00:00",
+      "status": "fresh",
+      "ticker": "ASELS"
+    },
+    {
+      "last_discovery_at": "2026-09-16T10:41:42.849000+00:00",
+      "status": "fresh",
+      "ticker": "THYAO"
+    }
+  ],
+  "finished_at": "2026-09-16T13:30:50.201833+00:00",
+  "pending": [],
+  "refresh": false,
+  "request_attempts": 0,
+  "requested_tickers": [
+    "ASELS",
+    "THYAO"
+  ],
+  "run_id": "20260916T133050Z-f4235ef7",
+  "started_at": "2026-09-16T13:30:50.187804+00:00",
+  "stopped_reason": null
+}

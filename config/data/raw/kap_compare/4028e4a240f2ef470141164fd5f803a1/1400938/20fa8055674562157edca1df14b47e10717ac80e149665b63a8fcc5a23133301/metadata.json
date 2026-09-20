@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "20fa8055674562157edca1df14b47e10717ac80e149665b63a8fcc5a23133301",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "600b158b624b5476c533dc79c0b653b955e6492e4fe98622d916abc4e4349f58",
+  "files": {
+    "source.json": {
+      "sha256": "ecb921719901ce675d4520b75f806d8dce230bf73cc8ae7f21af5b3c7443a643",
+      "size": 751
+    }
+  },
+  "first_retrieved_at": "2026-09-16T13:56:52.134988+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1400938",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-03-05T15:11:31+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a240f2ef470141164fd5f803a1",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "ZEDUR"
+}

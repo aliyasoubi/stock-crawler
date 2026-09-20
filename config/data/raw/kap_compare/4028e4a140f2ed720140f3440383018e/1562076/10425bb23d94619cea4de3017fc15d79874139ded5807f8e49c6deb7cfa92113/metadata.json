@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "10425bb23d94619cea4de3017fc15d79874139ded5807f8e49c6deb7cfa92113",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "6f6d9da57ae83854f5e56bc72add0b28cdc160cf4b7765eb8b5f8d7703df80e1",
+  "files": {
+    "source.json": {
+      "sha256": "385cf7915c7214d24d509dd60544f0116f6d23c9cfc324e685d665d232c69511",
+      "size": 753
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:06:12.283507+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1562076",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-02-26T15:21:29+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140f2ed720140f3440383018e",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "TURGG"
+}

@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "280906336802919eff4397941b51e45bfe07552ca8920f1801a804d3507043b1",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "b1992b9947738430931a5899b6608b8510b2fa4fe0deed56f2cd0634d07e26be",
+  "files": {
+    "source.json": {
+      "sha256": "99c48cee6516a6c5bd7f2e5493831019966783ba3f1aeed7b807064c06ba59b0",
+      "size": 771
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:04:07.296602+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1602679",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-05-07T15:20:29+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c586d22c53018a73739d9104a8",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "REEDR"
+}

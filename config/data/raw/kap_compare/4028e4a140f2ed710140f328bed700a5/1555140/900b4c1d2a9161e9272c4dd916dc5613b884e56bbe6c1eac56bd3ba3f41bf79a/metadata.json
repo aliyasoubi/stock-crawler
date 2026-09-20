@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "900b4c1d2a9161e9272c4dd916dc5613b884e56bbe6c1eac56bd3ba3f41bf79a",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "46533d2411f792b1ad9c6f47a49fbeeedb8a73ad9feb14448712a7563c7b08e0",
+  "files": {
+    "source.json": {
+      "sha256": "e370f7f5177f9dff71b17623aae57ac58efe3c7cf1bb1a989b91073df05773ab",
+      "size": 745
+    }
+  },
+  "first_retrieved_at": "2026-09-16T07:57:30.486239+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1555140",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-02-09T20:32:34+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140f2ed710140f328bed700a5",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "TOASO"
+}

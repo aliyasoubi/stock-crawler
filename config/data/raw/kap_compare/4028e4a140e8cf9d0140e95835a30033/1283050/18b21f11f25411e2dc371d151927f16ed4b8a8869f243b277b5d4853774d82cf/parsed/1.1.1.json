@@ -1,0 +1,117 @@
+{
+  "consolidation_scope": "consolidated",
+  "content_hash": "18b21f11f25411e2dc371d151927f16ed4b8a8869f243b277b5d4853774d82cf",
+  "derivations": {},
+  "errors": [],
+  "field_sources": {
+    "2023:current": {
+      "current_liabilities": {
+        "item_id": "ifrs-full_CurrentLiabilities",
+        "label": "Current Liabilities",
+        "raw_value": "4.209.778.330",
+        "scaled_by": 1
+      },
+      "finance_sector_revenue": {
+        "item_id": "kap-fr_RevenueFromFinanceSectorOperations",
+        "label": "Revenue from Finance Sector Operations",
+        "raw_value": null,
+        "scaled_by": 1
+      },
+      "net_profit": {
+        "item_id": "ifrs-full_ProfitLoss",
+        "label": "Net Profit (Loss)",
+        "raw_value": "326.512.170",
+        "scaled_by": 1
+      },
+      "non_current_liabilities": {
+        "item_id": "ifrs-full_NoncurrentLiabilities",
+        "label": "Non-current Liabilities",
+        "raw_value": "2.566.868.158",
+        "scaled_by": 1
+      },
+      "profit_attributable_to_non_controlling_interests": {
+        "item_id": "ifrs-full_ProfitLossAttributableToNoncontrollingInterests",
+        "label": "Profit (Loss) Attributable To, Non-controlling Interests",
+        "raw_value": "0",
+        "scaled_by": 1
+      },
+      "profit_attributable_to_owners_of_parent": {
+        "item_id": "ifrs-full_ProfitLossAttributableToOwnersOfParent",
+        "label": "Profit (Loss) Attributable To, Owners of Parent",
+        "raw_value": "326.512.170",
+        "scaled_by": 1
+      },
+      "revenue": {
+        "item_id": "ifrs-full_Revenue",
+        "label": "Revenue",
+        "raw_value": "8.527.744.854",
+        "scaled_by": 1
+      },
+      "total_assets": {
+        "item_id": "ifrs-full_Assets",
+        "label": "Total Assets",
+        "raw_value": "10.400.809.148",
+        "scaled_by": 1
+      },
+      "total_equity": {
+        "item_id": "ifrs-full_Equity",
+        "label": "Total Equity",
+        "raw_value": "3.624.162.660",
+        "scaled_by": 1
+      },
+      "total_liabilities_and_equity": {
+        "item_id": "ifrs-full_EquityAndLiabilities",
+        "label": "Total Liabilities and Equity",
+        "raw_value": "10.400.809.148",
+        "scaled_by": 1
+      }
+    }
+  },
+  "filing_fiscal_period": 4,
+  "filing_fiscal_year": 2023,
+  "filing_period_end_date": "2023-12-31",
+  "filing_period_start_date": "2023-01-01",
+  "notification_id": "1283050",
+  "parse_status": "valid",
+  "parsed_at": "2026-09-19T11:11:05.225317+00:00",
+  "parser_version": "1.1.1",
+  "periods": [
+    {
+      "cash_and_cash_equivalents": null,
+      "currency_code": "TRY",
+      "currency_scale": 1,
+      "current_liabilities": "4209778330",
+      "ebitda": null,
+      "ebitda_method": "missing",
+      "eps": null,
+      "finance_sector_revenue": null,
+      "fiscal_period": 4,
+      "fiscal_year": 2023,
+      "free_cash_flow": null,
+      "free_cash_flow_method": "missing",
+      "is_comparative": false,
+      "measuring_unit_date": "2023-12-31",
+      "net_profit": "326512170",
+      "non_current_liabilities": "2566868158",
+      "operating_income": null,
+      "period_end_date": "2023-12-31",
+      "period_start_date": "2023-01-01",
+      "presentation_currency_raw": "TL",
+      "profit_attributable_to_non_controlling_interests": "0",
+      "profit_attributable_to_owners_of_parent": "326512170",
+      "revenue": "8527744854",
+      "shares_outstanding": null,
+      "shares_outstanding_method": "missing",
+      "total_assets": "10400809148",
+      "total_debt": null,
+      "total_debt_method": "missing",
+      "total_equity": "3624162660",
+      "total_liabilities_and_equity": "10400809148"
+    }
+  ],
+  "statement_type": "general",
+  "warnings": [
+    "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+    "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+  ]
+}

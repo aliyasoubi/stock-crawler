@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "e369dd6f69fa5ecb925b706cb02f896ccfa23d621354ca60f51e949dac5d6731",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "1bc0275333b4284ca90d8cad5b4100c1276829a35c087c221562190c4bff8a53",
+  "files": {
+    "source.json": {
+      "sha256": "552c1451184f76a84226d309143413696de6d1ca6cfc367f01302c1de60d1b68",
+      "size": 754
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:02:10.190592+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1569984",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-03-10T16:25:56+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a240f2ef47014111d7df220232",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "NETAS"
+}

@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "576d4d687fdf9c462161e06eb35aeacc047a7af56013bee91182387883493b82",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "b4adc67f4e96d943ab80f7df6617d105e326676b3b0a1588a7858877ebb8d9a1",
+  "files": {
+    "source.json": {
+      "sha256": "66fe13b2ca0749c6463f5fde0378df1af2149a05a14b378d23ac57c0b05d6b0e",
+      "size": 766
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:59:30.367980+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1402540",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-03-07T15:21:07+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c58b2fa64e018fabc0441664a1",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "HOROZ"
+}

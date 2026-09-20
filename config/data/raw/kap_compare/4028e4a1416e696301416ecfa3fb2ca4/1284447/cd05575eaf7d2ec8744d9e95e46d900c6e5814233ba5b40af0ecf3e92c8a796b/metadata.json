@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "cd05575eaf7d2ec8744d9e95e46d900c6e5814233ba5b40af0ecf3e92c8a796b",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "a3e06f63e02465f46c7da7bb91a1bc615fbee2380ffd0e29fb1eb1f90dd5f185",
+  "files": {
+    "source.json": {
+      "sha256": "64776408e8099fb1a300cad03a04e0bb3070996dfc3ea31f5e92c3fb38163180",
+      "size": 745
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:19:43.173738+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1284447",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-05-09T17:15:29+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a1416e696301416ecfa3fb2ca4",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "VANGD"
+}

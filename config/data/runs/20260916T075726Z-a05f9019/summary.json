@@ -1,0 +1,137 @@
+{
+  "command": "sync",
+  "companies": [
+    {
+      "last_discovery_at": "2026-09-15T10:41:00+00:00",
+      "status": "fresh",
+      "ticker": "ASELS"
+    },
+    {
+      "last_discovery_at": "2026-09-16T06:56:26.067000+00:00",
+      "status": "fresh",
+      "ticker": "BIMAS"
+    },
+    {
+      "last_discovery_at": "2026-09-16T06:56:26.183000+00:00",
+      "status": "fresh",
+      "ticker": "EREGL"
+    },
+    {
+      "last_discovery_at": "2026-09-15T10:41:00.100000+00:00",
+      "status": "fresh",
+      "ticker": "THYAO"
+    },
+    {
+      "last_discovery_at": "2026-09-16T06:56:26.264000+00:00",
+      "status": "fresh",
+      "ticker": "TUPRS"
+    },
+    {
+      "candidates": 1,
+      "errors": [],
+      "fiscal_year": 2025,
+      "notification_id": "1555145",
+      "parse_status": "valid",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 10,
+      "snapshot": "captured",
+      "status": "published",
+      "ticker": "FROTO",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+        "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2025,
+      "notification_id": "1555903",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 11,
+      "snapshot": "captured",
+      "status": "unsupported",
+      "ticker": "KCHOL",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2025,
+      "notification_id": "1566011",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 12,
+      "snapshot": "captured",
+      "status": "unsupported",
+      "ticker": "SAHOL",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [
+        "only annual GENERAL comparison exports have a reviewed mapping"
+      ],
+      "fiscal_year": 2025,
+      "notification_id": "1557053",
+      "parse_status": "unsupported",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 13,
+      "snapshot": "captured",
+      "status": "unsupported",
+      "ticker": "SISE",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [],
+      "fiscal_year": 2025,
+      "notification_id": "1555140",
+      "parse_status": "valid",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 14,
+      "snapshot": "captured",
+      "status": "published",
+      "ticker": "TOASO",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+        "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+      ]
+    }
+  ],
+  "finished_at": "2026-09-16T07:57:30.795505+00:00",
+  "pending": [],
+  "refresh": false,
+  "request_attempts": 1,
+  "requested_tickers": [
+    "ASELS",
+    "BIMAS",
+    "EREGL",
+    "FROTO",
+    "KCHOL",
+    "SAHOL",
+    "SISE",
+    "THYAO",
+    "TOASO",
+    "TUPRS"
+  ],
+  "run_id": "20260916T075726Z-a05f9019",
+  "started_at": "2026-09-16T07:57:26.368764+00:00",
+  "stopped_reason": null
+}

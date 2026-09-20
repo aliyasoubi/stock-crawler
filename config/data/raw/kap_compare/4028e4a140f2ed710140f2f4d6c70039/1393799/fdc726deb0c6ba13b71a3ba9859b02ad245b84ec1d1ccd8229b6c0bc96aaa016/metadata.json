@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "fdc726deb0c6ba13b71a3ba9859b02ad245b84ec1d1ccd8229b6c0bc96aaa016",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "b94658929a006636997d791f751cbee345dea2c215b89ac98c5ad271172f4441",
+  "files": {
+    "source.json": {
+      "sha256": "176e573eb71a9d09eb90c5ceeee752aac1ad5c49fb7488df2893a3f7e2ec6232",
+      "size": 710
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:07:03.844098+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1393799",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-02-18T15:16:56+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140f2ed710140f2f4d6c70039",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "holding",
+  "ticker": "KCHOL"
+}

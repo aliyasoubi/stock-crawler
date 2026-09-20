@@ -1,0 +1,22 @@
+{
+  "consolidation_scope": "consolidated",
+  "content_hash": "049da66de0451ac8b0fbfc322e89f9fd551c10a63977752fd00217b720f9735f",
+  "derivations": {},
+  "errors": [
+    "missing required values: revenue"
+  ],
+  "field_sources": {},
+  "filing_fiscal_period": 4,
+  "filing_fiscal_year": 2025,
+  "filing_period_end_date": null,
+  "filing_period_start_date": null,
+  "notification_id": "1569069",
+  "parse_status": "failed",
+  "parsed_at": "2026-09-16T13:56:52.317245+00:00",
+  "parser_version": "1.1.0",
+  "periods": [],
+  "statement_type": "general",
+  "warnings": [
+    "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+  ]
+}

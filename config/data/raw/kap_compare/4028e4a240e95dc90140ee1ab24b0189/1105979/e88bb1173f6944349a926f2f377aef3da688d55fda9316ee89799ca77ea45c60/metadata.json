@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "e88bb1173f6944349a926f2f377aef3da688d55fda9316ee89799ca77ea45c60",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "dc9bb6900ae839e56102d1dbc3a4757164e7039232d340efaba2b6e57eee0693",
+  "files": {
+    "source.json": {
+      "sha256": "ec7cdd27e9765b3fa68d75fdd82ce1ee8956be956fa879db16815168a0ee19cb",
+      "size": 689
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:21:45.954770+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1105979",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-01-30T15:55:14+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a240e95dc90140ee1ab24b0189",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "finance",
+  "ticker": "GARFA"
+}

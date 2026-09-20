@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "03686a2c2f3a6706d58e00f37018a9e74fb19665dc7e5b355dc76c8db705ec44",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "9c0bf1f50b4b35acb98ac5ab38f11210fd8d01df4aaa7dbfc2d4390cd29b7478",
+  "files": {
+    "source.json": {
+      "sha256": "da7987c2cb71f4e191fa5b412b78b734e1962ba1c9129c5eb4ae9c4ed934e395",
+      "size": 753
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:13:22.952321+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1282168",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-05-06T17:17:50+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c55835f84c015848477328085a",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "KFEIN"
+}

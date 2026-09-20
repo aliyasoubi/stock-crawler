@@ -1,0 +1,117 @@
+{
+  "consolidation_scope": "consolidated",
+  "content_hash": "5262accb02e112d250b21d01427f7ad93ac96adbf35075dc7542746fa9e006c8",
+  "derivations": {},
+  "errors": [],
+  "field_sources": {
+    "2023:current": {
+      "current_liabilities": {
+        "item_id": "ifrs-full_CurrentLiabilities",
+        "label": "Current Liabilities",
+        "raw_value": "1.321.973",
+        "scaled_by": 1000
+      },
+      "finance_sector_revenue": {
+        "item_id": "kap-fr_RevenueFromFinanceSectorOperations",
+        "label": "Revenue from Finance Sector Operations",
+        "raw_value": "1.082.104",
+        "scaled_by": 1000
+      },
+      "net_profit": {
+        "item_id": "ifrs-full_ProfitLoss",
+        "label": "Net Profit (Loss)",
+        "raw_value": "-1.788.980",
+        "scaled_by": 1000
+      },
+      "non_current_liabilities": {
+        "item_id": "ifrs-full_NoncurrentLiabilities",
+        "label": "Non-current Liabilities",
+        "raw_value": "652.887",
+        "scaled_by": 1000
+      },
+      "profit_attributable_to_non_controlling_interests": {
+        "item_id": "ifrs-full_ProfitLossAttributableToNoncontrollingInterests",
+        "label": "Profit (Loss) Attributable To, Non-controlling Interests",
+        "raw_value": "-109.706",
+        "scaled_by": 1000
+      },
+      "profit_attributable_to_owners_of_parent": {
+        "item_id": "ifrs-full_ProfitLossAttributableToOwnersOfParent",
+        "label": "Profit (Loss) Attributable To, Owners of Parent",
+        "raw_value": "-1.679.274",
+        "scaled_by": 1000
+      },
+      "revenue": {
+        "item_id": "ifrs-full_Revenue",
+        "label": "Revenue",
+        "raw_value": "775.213",
+        "scaled_by": 1000
+      },
+      "total_assets": {
+        "item_id": "ifrs-full_Assets",
+        "label": "Total Assets",
+        "raw_value": "9.050.799",
+        "scaled_by": 1000
+      },
+      "total_equity": {
+        "item_id": "ifrs-full_Equity",
+        "label": "Total Equity",
+        "raw_value": "7.075.939",
+        "scaled_by": 1000
+      },
+      "total_liabilities_and_equity": {
+        "item_id": "ifrs-full_EquityAndLiabilities",
+        "label": "Total Liabilities and Equity",
+        "raw_value": "9.050.799",
+        "scaled_by": 1000
+      }
+    }
+  },
+  "filing_fiscal_period": 4,
+  "filing_fiscal_year": 2023,
+  "filing_period_end_date": "2023-12-31",
+  "filing_period_start_date": "2023-01-01",
+  "notification_id": "1281431",
+  "parse_status": "valid",
+  "parsed_at": "2026-09-19T11:12:33.014417+00:00",
+  "parser_version": "1.1.1",
+  "periods": [
+    {
+      "cash_and_cash_equivalents": null,
+      "currency_code": "TRY",
+      "currency_scale": 1000,
+      "current_liabilities": "1321973000",
+      "ebitda": null,
+      "ebitda_method": "missing",
+      "eps": null,
+      "finance_sector_revenue": "1082104000",
+      "fiscal_period": 4,
+      "fiscal_year": 2023,
+      "free_cash_flow": null,
+      "free_cash_flow_method": "missing",
+      "is_comparative": false,
+      "measuring_unit_date": "2023-12-31",
+      "net_profit": "-1788980000",
+      "non_current_liabilities": "652887000",
+      "operating_income": null,
+      "period_end_date": "2023-12-31",
+      "period_start_date": "2023-01-01",
+      "presentation_currency_raw": "1000TL",
+      "profit_attributable_to_non_controlling_interests": "-109706000",
+      "profit_attributable_to_owners_of_parent": "-1679274000",
+      "revenue": "775213000",
+      "shares_outstanding": null,
+      "shares_outstanding_method": "missing",
+      "total_assets": "9050799000",
+      "total_debt": null,
+      "total_debt_method": "missing",
+      "total_equity": "7075939000",
+      "total_liabilities_and_equity": "9050799000"
+    }
+  ],
+  "statement_type": "general",
+  "warnings": [
+    "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+    "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+  ]
+}

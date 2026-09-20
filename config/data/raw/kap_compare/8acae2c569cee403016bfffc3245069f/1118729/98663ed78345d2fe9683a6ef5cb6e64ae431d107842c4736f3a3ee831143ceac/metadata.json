@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "98663ed78345d2fe9683a6ef5cb6e64ae431d107842c4736f3a3ee831143ceac",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "dc9bb6900ae839e56102d1dbc3a4757164e7039232d340efaba2b6e57eee0693",
+  "files": {
+    "source.json": {
+      "sha256": "91e89b246f88d0a78da5dff0c505273c2c15d569766452b4c177754988ba2e59",
+      "size": 686
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:21:45.954261+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1118729",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-03-01T17:43:35+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c569cee403016bfffc3245069f",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "banks",
+  "ticker": "EMIRV"
+}

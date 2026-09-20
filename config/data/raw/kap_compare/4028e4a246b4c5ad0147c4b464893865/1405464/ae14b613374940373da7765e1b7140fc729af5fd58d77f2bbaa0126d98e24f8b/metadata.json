@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "ae14b613374940373da7765e1b7140fc729af5fd58d77f2bbaa0126d98e24f8b",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "72b5712a5938667dd4e1bea265e123ec08f8438eb315297d3c50e9579d269ba7",
+  "files": {
+    "source.json": {
+      "sha256": "a8ac6663b0ea525842c44f5d7bf69c0b71b8f8f59c579d887682e91966b5c255",
+      "size": 759
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:58:59.380157+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1405464",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-03-12T01:41:14+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a246b4c5ad0147c4b464893865",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "HDFFL"
+}

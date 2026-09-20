@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "a42393416f234d62c1de9a96a4a846d5cc53acfe2c49305d5af1be1b268902a3",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "a4840e37ffae2695affdf5673b741afcb5316a0c38b4dca7452464d8d0413819",
+  "files": {
+    "source.json": {
+      "sha256": "168ef0defaaa5800610ee662aa84b73e7d538e0a9ec006d7f2c821dbdde879d7",
+      "size": 756
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:57:04.385462+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1404984",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-03-11T18:49:39+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c48304fe9c0186ca8287b67657",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "EKSUN"
+}

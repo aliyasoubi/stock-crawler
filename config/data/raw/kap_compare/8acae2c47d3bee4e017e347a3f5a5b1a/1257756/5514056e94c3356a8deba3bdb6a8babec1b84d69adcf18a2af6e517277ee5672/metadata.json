@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "5514056e94c3356a8deba3bdb6a8babec1b84d69adcf18a2af6e517277ee5672",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "9ed9a71617d4ea364019f556c15bdfae18ba38692d5117c9bf4bb01f5d50a170",
+  "files": {
+    "source.json": {
+      "sha256": "2047e3e9769797860090228d9a6c35f25ec4d5f8c7a27478c6b79819b660bcc2",
+      "size": 758
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:12:55.836354+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1257756",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-03-11T20:10:40+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c47d3bee4e017e347a3f5a5b1a",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "HUNER"
+}

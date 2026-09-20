@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "313bc4c155db195d91c3810c4eb043fdcb4b91f19345d26e049f8d02f8d88c54",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "72b5712a5938667dd4e1bea265e123ec08f8438eb315297d3c50e9579d269ba7",
+  "files": {
+    "source.json": {
+      "sha256": "89f4390b3139310ad330532d53c99e0a426e6c276a89564b2bd2015d790ee493",
+      "size": 758
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:58:59.380047+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1403776",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-03-10T17:25:25+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a141e536460141e5859f40059b",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "HATEK"
+}

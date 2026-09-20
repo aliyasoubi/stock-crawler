@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "f32eb99def84e0c9fb0034f366014a778f178d67964aef0439f158da78ff631e",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "6cad78cd09e8002d4cc9c75ffcb8d8d523f719b4b3b84ea6fd34a15a0a9abdbc",
+  "files": {
+    "source.json": {
+      "sha256": "7d704fd11d966aa4fe25d3d38e57b12938f830e5e6e857b26d5493f2a4f9f713",
+      "size": 771
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:05:45.192999+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1404878",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-03-11T17:54:02+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a246b4c5ad0148319a4a87518f",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "TMPOL"
+}

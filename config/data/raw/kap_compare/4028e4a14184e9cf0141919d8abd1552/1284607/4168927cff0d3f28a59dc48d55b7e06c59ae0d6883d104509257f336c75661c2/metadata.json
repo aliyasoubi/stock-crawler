@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "4168927cff0d3f28a59dc48d55b7e06c59ae0d6883d104509257f336c75661c2",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "ec49ab3d4bbed42655af57155f833fa0f785be4f3347c9122aeef92eac943722",
+  "files": {
+    "source.json": {
+      "sha256": "9f6d5cc096c2c440de92ae2ca9a12305a9c5dd48064ef782235b456fbfccbfb2",
+      "size": 731
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:15:37.910360+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1284607",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-05-09T20:20:00+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a14184e9cf0141919d8abd1552",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "OYLUM"
+}

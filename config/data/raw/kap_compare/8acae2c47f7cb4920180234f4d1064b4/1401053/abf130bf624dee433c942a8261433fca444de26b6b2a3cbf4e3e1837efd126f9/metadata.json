@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "abf130bf624dee433c942a8261433fca444de26b6b2a3cbf4e3e1837efd126f9",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "d371d5168fd5c7579073b2c6187e9a4ab9a4e48f022ba84f1b2d5905392bd5d5",
+  "files": {
+    "source.json": {
+      "sha256": "ee3ac9a4a1a20e893579d7de2558edc8cf71ab122bbc68103a2db448cbd32c5a",
+      "size": 758
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:05:09.561658+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1401053",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-03-05T16:45:59+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c47f7cb4920180234f4d1064b4",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "SUNTK"
+}

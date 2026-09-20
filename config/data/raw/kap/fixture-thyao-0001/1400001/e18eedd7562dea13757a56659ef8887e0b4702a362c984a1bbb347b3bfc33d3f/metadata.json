@@ -1,0 +1,29 @@
+{
+  "consolidation_scope": "consolidated",
+  "content_hash": "e18eedd7562dea13757a56659ef8887e0b4702a362c984a1bbb347b3bfc33d3f",
+  "content_types": {
+    "source.html": "text/html; charset=utf-8"
+  },
+  "document_url": "fixture://THYAO/1400001/source.html",
+  "files": {
+    "source.html": {
+      "sha256": "e50aa1f90f7bffdd424f59f85584a7743d10cf84f5c7ffdc45691a7e12596ea0",
+      "size": 8201
+    }
+  },
+  "first_retrieved_at": "2026-09-14T11:17:15.378360+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap",
+  "notification_id": "1400001",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.html",
+  "published_at": "2025-03-05T18:45:00+03:00",
+  "source_company_id": "fixture-thyao-0001",
+  "source_url": "fixture://THYAO/1400001",
+  "source_urls": {
+    "source.html": "fixture://THYAO/1400001/source.html"
+  },
+  "statement_type": "general",
+  "ticker": "THYAO"
+}

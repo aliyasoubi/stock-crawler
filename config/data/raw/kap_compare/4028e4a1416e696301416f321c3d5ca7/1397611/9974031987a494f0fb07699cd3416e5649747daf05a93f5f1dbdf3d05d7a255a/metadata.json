@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "9974031987a494f0fb07699cd3416e5649747daf05a93f5f1dbdf3d05d7a255a",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "600b158b624b5476c533dc79c0b653b955e6492e4fe98622d916abc4e4349f58",
+  "files": {
+    "source.json": {
+      "sha256": "ba5d036b2a87267d310a8ce71770bee7b4a18eaf0bfebd1e6fb2c87826793d9e",
+      "size": 689
+    }
+  },
+  "first_retrieved_at": "2026-09-16T13:56:52.134538+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1397611",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-02-28T16:30:20+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a1416e696301416f321c3d5ca7",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "finance",
+  "ticker": "ULUFA"
+}

@@ -1,0 +1,3 @@
+# Active pilot issuers. Verify registry and calendar-year settings before adding more.
+ASELS
+THYAO

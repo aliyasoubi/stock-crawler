@@ -1,0 +1,117 @@
+{
+  "consolidation_scope": "consolidated",
+  "content_hash": "da77e1a060c1e033d7e6af9a24aa190dae5448525ceb36bade731b4642f21011",
+  "derivations": {},
+  "errors": [],
+  "field_sources": {
+    "2025:current": {
+      "current_liabilities": {
+        "item_id": "ifrs-full_CurrentLiabilities",
+        "label": "Current Liabilities",
+        "raw_value": "4.684.422",
+        "scaled_by": 1000
+      },
+      "finance_sector_revenue": {
+        "item_id": "kap-fr_RevenueFromFinanceSectorOperations",
+        "label": "Revenue from Finance Sector Operations",
+        "raw_value": null,
+        "scaled_by": 1000
+      },
+      "net_profit": {
+        "item_id": "ifrs-full_ProfitLoss",
+        "label": "Net Profit (Loss)",
+        "raw_value": "1.951.886",
+        "scaled_by": 1000
+      },
+      "non_current_liabilities": {
+        "item_id": "ifrs-full_NoncurrentLiabilities",
+        "label": "Non-current Liabilities",
+        "raw_value": "15.033.961",
+        "scaled_by": 1000
+      },
+      "profit_attributable_to_non_controlling_interests": {
+        "item_id": "ifrs-full_ProfitLossAttributableToNoncontrollingInterests",
+        "label": "Profit (Loss) Attributable To, Non-controlling Interests",
+        "raw_value": "2.115",
+        "scaled_by": 1000
+      },
+      "profit_attributable_to_owners_of_parent": {
+        "item_id": "ifrs-full_ProfitLossAttributableToOwnersOfParent",
+        "label": "Profit (Loss) Attributable To, Owners of Parent",
+        "raw_value": "1.949.771",
+        "scaled_by": 1000
+      },
+      "revenue": {
+        "item_id": "ifrs-full_Revenue",
+        "label": "Revenue",
+        "raw_value": "5.795.914",
+        "scaled_by": 1000
+      },
+      "total_assets": {
+        "item_id": "ifrs-full_Assets",
+        "label": "Total Assets",
+        "raw_value": "75.563.651",
+        "scaled_by": 1000
+      },
+      "total_equity": {
+        "item_id": "ifrs-full_Equity",
+        "label": "Total Equity",
+        "raw_value": "55.845.268",
+        "scaled_by": 1000
+      },
+      "total_liabilities_and_equity": {
+        "item_id": "ifrs-full_EquityAndLiabilities",
+        "label": "Total Liabilities and Equity",
+        "raw_value": "75.563.651",
+        "scaled_by": 1000
+      }
+    }
+  },
+  "filing_fiscal_period": 4,
+  "filing_fiscal_year": 2025,
+  "filing_period_end_date": "2025-12-31",
+  "filing_period_start_date": "2025-01-01",
+  "notification_id": "1568922",
+  "parse_status": "valid",
+  "parsed_at": "2026-09-19T10:58:06.687252+00:00",
+  "parser_version": "1.1.1",
+  "periods": [
+    {
+      "cash_and_cash_equivalents": null,
+      "currency_code": "TRY",
+      "currency_scale": 1000,
+      "current_liabilities": "4684422000",
+      "ebitda": null,
+      "ebitda_method": "missing",
+      "eps": null,
+      "finance_sector_revenue": null,
+      "fiscal_period": 4,
+      "fiscal_year": 2025,
+      "free_cash_flow": null,
+      "free_cash_flow_method": "missing",
+      "is_comparative": false,
+      "measuring_unit_date": "2025-12-31",
+      "net_profit": "1951886000",
+      "non_current_liabilities": "15033961000",
+      "operating_income": null,
+      "period_end_date": "2025-12-31",
+      "period_start_date": "2025-01-01",
+      "presentation_currency_raw": "1000TL",
+      "profit_attributable_to_non_controlling_interests": "2115000",
+      "profit_attributable_to_owners_of_parent": "1949771000",
+      "revenue": "5795914000",
+      "shares_outstanding": null,
+      "shares_outstanding_method": "missing",
+      "total_assets": "75563651000",
+      "total_debt": null,
+      "total_debt_method": "missing",
+      "total_equity": "55845268000",
+      "total_liabilities_and_equity": "75563651000"
+    }
+  ],
+  "statement_type": "general",
+  "warnings": [
+    "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+    "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+  ]
+}

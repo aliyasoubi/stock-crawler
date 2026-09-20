@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "023906c9fa271963d32985ea0c5a986c7402c6e46f5f6514aeb8ceed2f59f2ac",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "25e58796314feb99f7fecdac7dba11c6dccdf6a07709afc6727c2f72026b3f9e",
+  "files": {
+    "source.json": {
+      "sha256": "85bf6810ec10a013ab45f95c58c66388d940be7442462df5c028e9ef285a4e38",
+      "size": 722
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:17:03.601242+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1123953",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-03-13T17:47:04+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c5794d3d6a0179fb3f31d744cd",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "SELVA"
+}

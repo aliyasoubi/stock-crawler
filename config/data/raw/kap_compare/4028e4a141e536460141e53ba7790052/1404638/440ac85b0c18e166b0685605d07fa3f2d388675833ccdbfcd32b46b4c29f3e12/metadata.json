@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "440ac85b0c18e166b0685605d07fa3f2d388675833ccdbfcd32b46b4c29f3e12",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "b4adc67f4e96d943ab80f7df6617d105e326676b3b0a1588a7858877ebb8d9a1",
+  "files": {
+    "source.json": {
+      "sha256": "4a8976569c31a908402f3c745a7ed038875450851c6d00bd0ef5dbcf3ec1fd0a",
+      "size": 745
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:59:30.368251+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1404638",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-03-11T16:00:56+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a141e536460141e53ba7790052",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "ICUGS"
+}

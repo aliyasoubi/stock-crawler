@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "19c4401a5f28ec921482497a34f967c7a9b88bc140f97cd3360a089a766368cd",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "c3ad477c2f05784ab3e07848b30968a94f57fa5412d91af776a4383be8f3b8ce",
+  "files": {
+    "source.json": {
+      "sha256": "693a2f5bf0587d4fbfb8dcb3c8695500670e31f2e7c817d04992e479ee3f7dbb",
+      "size": 687
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:21:17.476369+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1112821",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-02-10T16:37:26+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140f2ed71014117912e3102bf",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "finance",
+  "ticker": "DENFA"
+}

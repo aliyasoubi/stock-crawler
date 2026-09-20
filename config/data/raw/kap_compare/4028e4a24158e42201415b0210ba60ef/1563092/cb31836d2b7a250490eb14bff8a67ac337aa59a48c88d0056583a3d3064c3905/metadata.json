@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "cb31836d2b7a250490eb14bff8a67ac337aa59a48c88d0056583a3d3064c3905",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "72b5712a5938667dd4e1bea265e123ec08f8438eb315297d3c50e9579d269ba7",
+  "files": {
+    "source.json": {
+      "sha256": "ff62da74fb8d54bbc9d30ac56dcd1abe14cda3fca3d435594790b730609f572b",
+      "size": 769
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:58:59.379561+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1563092",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-02-27T17:03:41+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a24158e42201415b0210ba60ef",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "GOZDE"
+}

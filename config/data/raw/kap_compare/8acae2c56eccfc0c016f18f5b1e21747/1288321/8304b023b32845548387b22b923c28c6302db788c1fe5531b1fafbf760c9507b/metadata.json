@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "8304b023b32845548387b22b923c28c6302db788c1fe5531b1fafbf760c9507b",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "5d6d1256616d8c487e36a44da7ff72244a7a4c36de0e55c55c37c64167b85f8e",
+  "files": {
+    "source.json": {
+      "sha256": "b9686206a927055ada995c6f7263a0d72d209b266299d96e929bb4b97f1a09ed",
+      "size": 748
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:10:07.175729+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1288321",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-05-20T15:45:55+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c56eccfc0c016f18f5b1e21747",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "BMSCH"
+}

@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "80903dff29804a181f522cf3a244801256fb0b3a9240e48e2963bd00ded17f1d",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "a7dbaed9887afb8b6235b9680411a334e436a29cb8d085c7d64f0ca7e5522987",
+  "files": {
+    "source.json": {
+      "sha256": "6eb42ca5b9e3722ae0d7992b6c95a07337049e5fd29e8afde91a254059ac3df5",
+      "size": 751
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:11:01.253491+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1123977",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-03-13T17:55:40+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a141effedc0141fe14e2b41807",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "DURDO"
+}

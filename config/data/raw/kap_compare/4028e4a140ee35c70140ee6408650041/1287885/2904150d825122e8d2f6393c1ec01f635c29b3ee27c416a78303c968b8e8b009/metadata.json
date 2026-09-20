@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "2904150d825122e8d2f6393c1ec01f635c29b3ee27c416a78303c968b8e8b009",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "9ed9a71617d4ea364019f556c15bdfae18ba38692d5117c9bf4bb01f5d50a170",
+  "files": {
+    "source.json": {
+      "sha256": "96ddbdea8de59f585f8155f6b99b80c91e3f32043c2c4e7cdcc9adc1e0e22dd9",
+      "size": 761
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:12:55.836424+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1287885",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-05-17T21:04:56+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140ee35c70140ee6408650041",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "HURGZ"
+}

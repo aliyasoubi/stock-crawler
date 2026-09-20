@@ -1,0 +1,36 @@
+{
+  "command": "sync",
+  "companies": [
+    {
+      "last_discovery_at": "2026-09-14T11:17:15.373000+00:00",
+      "status": "fresh",
+      "ticker": "THYAO"
+    },
+    {
+      "candidates": 1,
+      "errors": [],
+      "notification_id": "1400101",
+      "parse_status": "valid",
+      "parser_version": "1.0.0",
+      "persist": "inserted",
+      "report_id": 2,
+      "snapshot": "captured",
+      "status": "published",
+      "ticker": "ASELS",
+      "warnings": [
+        "ebitda: D&A taken from cash-flow adjustments and assumed fully within operating income"
+      ]
+    }
+  ],
+  "finished_at": "2026-09-14T13:41:41.041045+00:00",
+  "pending": [],
+  "refresh": false,
+  "request_attempts": 0,
+  "requested_tickers": [
+    "ASELS",
+    "THYAO"
+  ],
+  "run_id": "20260914T134140Z-449f87b9",
+  "started_at": "2026-09-14T13:41:40.936091+00:00",
+  "stopped_reason": null
+}

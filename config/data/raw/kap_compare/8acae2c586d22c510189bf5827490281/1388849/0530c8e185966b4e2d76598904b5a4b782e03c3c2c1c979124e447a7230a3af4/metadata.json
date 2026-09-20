@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "0530c8e185966b4e2d76598904b5a4b782e03c3c2c1c979124e447a7230a3af4",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "d371d5168fd5c7579073b2c6187e9a4ab9a4e48f022ba84f1b2d5905392bd5d5",
+  "files": {
+    "source.json": {
+      "sha256": "70a7f4437769da00a1ee59aef643dd4c766f18d2a4bbba25ac6afd6dfaa53c05",
+      "size": 760
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:05:09.562008+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1388849",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-02-03T15:51:27+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c586d22c510189bf5827490281",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "TATEN"
+}

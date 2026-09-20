@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "44148c98cfd642b37865019c851d512272bbf3511ea2f99dc1c37d3e664810d6",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "fdf765a525bbc5a21c84e017379347eb67d1be4f05c96669eb89ffe03004ccab",
+  "files": {
+    "source.json": {
+      "sha256": "65cd8ce6506f1c5dbbee5a3222a4c3d6a39ad8590316d8f720becdd17aa47f71",
+      "size": 744
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:18:01.297894+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1284623",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-05-09T20:27:43+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c56faf888c0171e54394012909",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "VDFLO"
+}

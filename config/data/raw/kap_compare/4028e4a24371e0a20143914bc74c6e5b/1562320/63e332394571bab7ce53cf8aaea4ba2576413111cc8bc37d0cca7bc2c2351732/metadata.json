@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "63e332394571bab7ce53cf8aaea4ba2576413111cc8bc37d0cca7bc2c2351732",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "9d2d50e604c3ff4c590e28d435010b13567604830040e168711720411ac38fb2",
+  "files": {
+    "source.json": {
+      "sha256": "3acee2e347ddd2f00549536a55a439ce908fb73f60242905ed7b634f8f4100a2",
+      "size": 707
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:06:34.671246+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1562320",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-02-26T20:35:35+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a24371e0a20143914bc74c6e5b",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "finance",
+  "ticker": "VDFAS"
+}

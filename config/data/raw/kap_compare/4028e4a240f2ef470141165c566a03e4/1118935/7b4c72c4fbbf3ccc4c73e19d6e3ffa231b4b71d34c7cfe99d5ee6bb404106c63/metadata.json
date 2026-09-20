@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "7b4c72c4fbbf3ccc4c73e19d6e3ffa231b4b71d34c7cfe99d5ee6bb404106c63",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "a1f86e478ae4718c411e538c4306736e68f1a515282f135c03accc173d0df158",
+  "files": {
+    "source.json": {
+      "sha256": "52e3aa995fe4b084939b7b05537010b3c18d386f40c734bbe35697e12ccbffc5",
+      "size": 734
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:16:03.516889+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1118935",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-03-02T04:26:34+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a240f2ef470141165c566a03e4",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "PETKM"
+}

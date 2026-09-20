@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "2c82740a5352d58be03e7753e47af4056603c520dbf342a311fc98f05b8e6243",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "25e58796314feb99f7fecdac7dba11c6dccdf6a07709afc6727c2f72026b3f9e",
+  "files": {
+    "source.json": {
+      "sha256": "fe3d6a24e3a1891d927964c64882aa4b9c6a401f93a154c4dd950489024b25b1",
+      "size": 743
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:17:03.601412+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1117391",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-02-27T18:10:05+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a243dd5e8f01440734fd5613db",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "SILVR"
+}

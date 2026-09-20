@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "cf07818bc63a2cb1eff03513a474b059570b96dad209ef172985f7f160413918",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "9bf4621ac47b8d550055d7c2f46cd0a309dcb3df928a3d9993c632d75dbfde38",
+  "files": {
+    "source.json": {
+      "sha256": "3849b17bfc6e033e0c0fffa4ac7dfef25d165849c6d0dcb785868eec345093e1",
+      "size": 781
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:57:33.291134+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1591069",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-04-10T17:20:42+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a24337209001434898a6893468",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "ERGLI"
+}

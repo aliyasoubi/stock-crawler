@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "762b8c39897805eba12fabd622cd36e42593a9585fe72a4eb6d35b678444d64b",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "c4550b6554916d8c584d404d97115d669ce048b0cb0b539a7759e092b9a9d0f6",
+  "files": {
+    "source.json": {
+      "sha256": "beef94b5999ebffbfc223e1c7e61c62fdb8ed36f9ef51b7e0a10e2951783e305",
+      "size": 742
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:10:29.429794+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1288623",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-05-20T19:47:33+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a240f2ef4c0141164dd92d044c",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "CELHA"
+}

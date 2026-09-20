@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "d07531030c913f7373334ef54c602391a9518819464ee924430e996879770360",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "c3ad477c2f05784ab3e07848b30968a94f57fa5412d91af776a4383be8f3b8ce",
+  "files": {
+    "source.json": {
+      "sha256": "cb5ee34bd1bf5d104059da393c58ec0aaf93dfa0b2c114ad74301a9ebb5c4bf8",
+      "size": 704
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:21:17.476652+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1242376",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-01-23T19:59:36+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140f2ed7101411793bae502d5",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "finance",
+  "ticker": "DNFIN"
+}

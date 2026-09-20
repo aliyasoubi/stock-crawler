@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "0d4c9a7fb0ac22f2e12e09070112e058727a48db5a9a91ab2c69308ec406b46c",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "dc9bb6900ae839e56102d1dbc3a4757164e7039232d340efaba2b6e57eee0693",
+  "files": {
+    "source.json": {
+      "sha256": "00625f91946bdd490c69cb227904670669f27b622d901f509a80ed062920e7fa",
+      "size": 683
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:21:45.953866+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1116527",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-02-23T17:40:38+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c4757dba8c01759d4015520c73",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "banks",
+  "ticker": "DYBNK"
+}

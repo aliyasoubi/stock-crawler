@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "9fbf981ec911e2ad79a8203e5651dba9743f2d3af0bceae30189687867629f9d",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "231299fc3737cea2537b9249fe5897e1b24384dcce68fce4b8a66666b054dada",
+  "files": {
+    "source.json": {
+      "sha256": "d1aeebcb8acc3fc25f4efb712fcbd89b73cd6d62d3fa6f9b11b10208b41e5069",
+      "size": 749
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:01:47.432971+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1582505",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-04-01T16:36:53+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c49b85f8cf019c0470c53c6a68",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "METEN"
+}

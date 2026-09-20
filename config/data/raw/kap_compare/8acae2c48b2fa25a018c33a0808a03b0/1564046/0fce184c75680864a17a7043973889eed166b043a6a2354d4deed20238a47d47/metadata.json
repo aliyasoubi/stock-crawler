@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "0fce184c75680864a17a7043973889eed166b043a6a2354d4deed20238a47d47",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "d371d5168fd5c7579073b2c6187e9a4ab9a4e48f022ba84f1b2d5905392bd5d5",
+  "files": {
+    "source.json": {
+      "sha256": "23bb73e78f69fbedb462e0fe8a1324f5964ccfc87ff53fdf6df73668b4129862",
+      "size": 760
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:05:09.561721+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1564046",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-03-02T15:32:32+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c48b2fa25a018c33a0808a03b0",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "SURGY"
+}

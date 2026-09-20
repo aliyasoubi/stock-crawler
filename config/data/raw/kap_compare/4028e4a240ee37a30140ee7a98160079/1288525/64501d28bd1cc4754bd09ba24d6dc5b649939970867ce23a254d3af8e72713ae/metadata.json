@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "64501d28bd1cc4754bd09ba24d6dc5b649939970867ce23a254d3af8e72713ae",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "9ed9a71617d4ea364019f556c15bdfae18ba38692d5117c9bf4bb01f5d50a170",
+  "files": {
+    "source.json": {
+      "sha256": "cefee3ff06d43ff4dab9019619d9a2f954bf8f91ca5720b16f89c102d668d4c0",
+      "size": 764
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:12:55.836699+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1288525",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-05-20T18:39:04+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a240ee37a30140ee7a98160079",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "IHEVA"
+}

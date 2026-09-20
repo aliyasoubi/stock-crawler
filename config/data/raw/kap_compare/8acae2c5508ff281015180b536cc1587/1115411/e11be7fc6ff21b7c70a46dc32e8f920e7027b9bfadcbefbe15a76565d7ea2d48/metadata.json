@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "e11be7fc6ff21b7c70a46dc32e8f920e7027b9bfadcbefbe15a76565d7ea2d48",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "dc9bb6900ae839e56102d1dbc3a4757164e7039232d340efaba2b6e57eee0693",
+  "files": {
+    "source.json": {
+      "sha256": "42315b4768a0292d7a76c0e669fe216dbec30bd23cbbacfc4799804b8d4c9ca4",
+      "size": 694
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:21:45.954648+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1115411",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-02-20T20:28:40+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c5508ff281015180b536cc1587",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "finance",
+  "ticker": "FNCLL"
+}

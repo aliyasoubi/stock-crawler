@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "7414666325999782434d68652275feebb1f291816a845501b9ee414199e321c1",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "d371d5168fd5c7579073b2c6187e9a4ab9a4e48f022ba84f1b2d5905392bd5d5",
+  "files": {
+    "source.json": {
+      "sha256": "e1669168e2a1fdd323e14399d36808a9b51c18869e435256eebff4c393978656",
+      "size": 693
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:05:09.560881+00:00",
+  "fiscal_year": 2024,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1398875",
+  "period_end_date": "2024-12-31",
+  "primary_file": "source.json",
+  "published_at": "2025-03-03T15:26:24+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "402821814da3a99c014eb57bdd604a6f",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "banks",
+  "ticker": "SMRVA"
+}

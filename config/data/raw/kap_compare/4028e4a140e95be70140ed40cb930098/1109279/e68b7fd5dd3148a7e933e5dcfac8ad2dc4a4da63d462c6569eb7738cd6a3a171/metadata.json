@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "e68b7fd5dd3148a7e933e5dcfac8ad2dc4a4da63d462c6569eb7738cd6a3a171",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "1aa885c29cbf218bb589beb6becf63873f085e8eb5e69cb131f7831626850088",
+  "files": {
+    "source.json": {
+      "sha256": "1343e9865809d294b248a75f38f9e906ab05bda6b6b350156e1fa927515350e4",
+      "size": 740
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:20:44.502977+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1109279",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-02-02T16:44:31+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a140e95be70140ed40cb930098",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "insurance",
+  "ticker": "ANHYT"
+}

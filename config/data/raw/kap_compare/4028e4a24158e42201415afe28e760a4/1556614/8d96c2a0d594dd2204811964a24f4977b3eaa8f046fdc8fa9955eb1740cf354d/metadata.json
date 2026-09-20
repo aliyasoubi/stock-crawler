@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "8d96c2a0d594dd2204811964a24f4977b3eaa8f046fdc8fa9955eb1740cf354d",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "6f6d9da57ae83854f5e56bc72add0b28cdc160cf4b7765eb8b5f8d7703df80e1",
+  "files": {
+    "source.json": {
+      "sha256": "341dbfadb94b6cd0532d58a9d621e3c82aecc68ee0e1676a8934169a3fbdb790",
+      "size": 742
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:06:12.283663+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1556614",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-02-13T15:16:09+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a24158e42201415afe28e760a4",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "UFUK"
+}

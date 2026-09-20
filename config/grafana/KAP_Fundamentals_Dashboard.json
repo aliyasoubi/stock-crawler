@@ -1,0 +1,803 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_STOCKFUNDAMENTALS",
+      "label": "StockFundamentals SQL Server",
+      "description": "Choose your existing StockFundamentals Microsoft SQL Server datasource.",
+      "type": "datasource",
+      "pluginId": "mssql",
+      "pluginName": "Microsoft SQL Server"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "11.3.0"
+    },
+    {
+      "type": "datasource",
+      "id": "mssql",
+      "name": "Microsoft SQL Server",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "text",
+      "name": "text",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "barchart",
+      "name": "barchart",
+      "version": ""
+    }
+  ],
+  "id": null,
+  "uid": "kap-client-fields-v1",
+  "title": "KAP | Client Fundamentals & Coverage",
+  "description": "Annual crawler SQL data projected into the requested 20 client fields, with missing-value coverage and provenance. No reviewed PDF values are silently imported.",
+  "tags": [
+    "KAP",
+    "fundamentals",
+    "client-fields",
+    "coverage"
+  ],
+  "editable": true,
+  "style": "dark",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "time": {
+    "from": "now-5y",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": true
+  },
+  "refresh": "",
+  "graphTooltip": 0,
+  "fiscalYearStartMonth": 0,
+  "annotations": {
+    "list": []
+  },
+  "links": [],
+  "templating": {
+    "list": [
+      {
+        "name": "currency",
+        "label": "Currency",
+        "type": "query",
+        "datasource": {
+          "type": "mssql",
+          "uid": "${DS_STOCKFUNDAMENTALS}"
+        },
+        "query": "SELECT DISTINCT currency_code FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 ORDER BY currency_code;",
+        "definition": "SELECT DISTINCT currency_code FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 ORDER BY currency_code;",
+        "refresh": 1,
+        "sort": 0,
+        "hide": 0,
+        "multi": false,
+        "includeAll": false,
+        "allValue": null,
+        "options": [],
+        "skipUrlSync": false,
+        "current": {
+          "selected": true,
+          "text": "TRY",
+          "value": "TRY"
+        }
+      },
+      {
+        "name": "scope",
+        "label": "Statement scope",
+        "type": "query",
+        "datasource": {
+          "type": "mssql",
+          "uid": "${DS_STOCKFUNDAMENTALS}"
+        },
+        "query": "SELECT DISTINCT consolidation_scope FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) ORDER BY consolidation_scope;",
+        "definition": "SELECT DISTINCT consolidation_scope FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) ORDER BY consolidation_scope;",
+        "refresh": 1,
+        "sort": 0,
+        "hide": 0,
+        "multi": false,
+        "includeAll": false,
+        "allValue": null,
+        "options": [],
+        "skipUrlSync": false,
+        "current": {
+          "selected": true,
+          "text": "consolidated",
+          "value": "consolidated"
+        }
+      },
+      {
+        "name": "company",
+        "label": "Companies",
+        "type": "query",
+        "datasource": {
+          "type": "mssql",
+          "uid": "${DS_STOCKFUNDAMENTALS}"
+        },
+        "query": "SELECT DISTINCT ticker FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) ORDER BY ticker;",
+        "definition": "SELECT DISTINCT ticker FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) ORDER BY ticker;",
+        "refresh": 1,
+        "sort": 0,
+        "hide": 0,
+        "multi": true,
+        "includeAll": true,
+        "allValue": null,
+        "options": [],
+        "skipUrlSync": false,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        }
+      },
+      {
+        "name": "year",
+        "label": "Annual fiscal year",
+        "type": "query",
+        "datasource": {
+          "type": "mssql",
+          "uid": "${DS_STOCKFUNDAMENTALS}"
+        },
+        "query": "SELECT DISTINCT CAST(fiscal_year AS varchar(4)) AS __text, CAST(fiscal_year AS varchar(4)) AS __value FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) AND ticker IN (${company:sqlstring}) ORDER BY __value DESC;",
+        "definition": "SELECT DISTINCT CAST(fiscal_year AS varchar(4)) AS __text, CAST(fiscal_year AS varchar(4)) AS __value FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) AND ticker IN (${company:sqlstring}) ORDER BY __value DESC;",
+        "refresh": 1,
+        "sort": 0,
+        "hide": 0,
+        "multi": true,
+        "includeAll": true,
+        "allValue": null,
+        "options": [],
+        "skipUrlSync": false,
+        "current": {
+          "selected": true,
+          "text": [
+            "2025"
+          ],
+          "value": [
+            "2025"
+          ]
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Annual fundamentals | live SQL data",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available"
+        },
+        "overrides": []
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Choose currency, statement scope, companies and annual year.** Values below come from your saved SQL records. **Not available means NULL or an unmapped field, not zero or a connection failure.** Refresh reads the database; it does not crawl the website. Annual period 4 means the full year, not standalone Q4.\n\nThe separate full-report review JSON has not been imported into SQL. Its manually reviewed cash/profit values will not appear here until a validated report importer stores them. This dashboard is not an insert-readiness approval."
+      }
+    },
+    {
+      "id": 2,
+      "title": "SQL connection",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Connected",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT 1 AS [Connection];"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Companies with selected data",
+      "type": "stat",
+      "gridPos": {
+        "x": 6,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH selected AS (SELECT * FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) AND ticker IN (${company:sqlstring}) AND CAST(fiscal_year AS varchar(4)) IN (${year:sqlstring}))\nSELECT COUNT(DISTINCT ticker) AS [Companies] FROM selected;"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Saved annual records",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH selected AS (SELECT * FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) AND ticker IN (${company:sqlstring}) AND CAST(fiscal_year AS varchar(4)) IN (${year:sqlstring}))\nSELECT COUNT(*) AS [Records] FROM selected;"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Balance differences above 1 unit",
+      "type": "stat",
+      "gridPos": {
+        "x": 18,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "description": "Only records with every balance component are checked. Missing components are shown in the balance-check table.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH selected AS (SELECT * FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) AND ticker IN (${company:sqlstring}) AND CAST(fiscal_year AS varchar(4)) IN (${year:sqlstring}))\nSELECT COUNT(*) AS [Differences] FROM selected WHERE ABS(total_assets - total_equity - current_liabilities - non_current_liabilities) > 1;"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Client requested fields | all 20 columns",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 12
+      },
+      "description": "Live projection of the crawler view, not dbo.CompanyFundamental. CompanyId and split debt are deliberately NULL. Monetary values are exact text in base currency units, not millions. Scroll horizontally for all fields. No client rounding or insertion is performed.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available",
+          "custom": {
+            "filterable": true,
+            "align": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH selected AS (SELECT * FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) AND ticker IN (${company:sqlstring}) AND CAST(fiscal_year AS varchar(4)) IN (${year:sqlstring}))\nSELECT ticker AS [Ticker], currency_code AS [Currency], consolidation_scope AS [Scope],\n       CAST(NULL AS int) AS [CompanyId],\n       fiscal_year AS [FiscalYear],\n       fiscal_period AS [FiscalQuarter],\n       CONVERT(varchar(10), period_end_date, 23) AS [PeriodEndDate],\n       CONVERT(varchar(10), SWITCHOFFSET(published_at, '+03:00'), 23) AS [PublishDate],\n       CONVERT(varchar(80), revenue) AS [Revenue],\n       CONVERT(varchar(80), operating_income) AS [OperatingIncome],\n       CONVERT(varchar(80), net_profit) AS [NetIncome],\n       CONVERT(varchar(80), ebitda) AS [Ebitda],\n       CONVERT(varchar(80), total_assets) AS [TotalAssets],\n       CONVERT(varchar(80), current_liabilities + non_current_liabilities) AS [TotalLiabilities],\n       CONVERT(varchar(80), total_equity) AS [Equity],\n       CONVERT(varchar(80), CAST(NULL AS decimal(38,6))) AS [TotalDebtShort],\n       CONVERT(varchar(80), CAST(NULL AS decimal(38,6))) AS [TotalDebtLong],\n       CONVERT(varchar(80), cash_and_cash_equivalents) AS [CashAndEquivalents],\n       CONVERT(varchar(80), current_liabilities) AS [CurrentLiabilities],\n       CONVERT(varchar(80), non_current_liabilities) AS [NonCurrentLiabilities],\n       CONVERT(varchar(80), free_cash_flow) AS [FreeCashFlow],\n       CONVERT(varchar(80), eps) AS [Eps],\n       CONVERT(varchar(80), shares_outstanding) AS [SharesOutstanding]\nFROM selected ORDER BY ticker, fiscal_year DESC;"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Field availability | populated does not mean approved",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 12
+      },
+      "description": "Counts values actually present in SQL. A non-null value still requires correct definitions, units and client numeric-range validation.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available",
+          "custom": {
+            "filterable": true,
+            "align": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH selected AS (SELECT * FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) AND ticker IN (${company:sqlstring}) AND CAST(fiscal_year AS varchar(4)) IN (${year:sqlstring}))\nSELECT f.[Field], MAX(f.[Required]) AS [Client requires NOT NULL],\n       SUM(f.HasValue) AS [Records with value], COUNT(*) AS [Selected records],\n       COUNT(*) - SUM(f.HasValue) AS [Records missing], MAX(f.Notes) AS [Meaning / limitation]\nFROM selected\nCROSS APPLY (VALUES\n(1, 'CompanyId', 'Yes', CASE WHEN (CAST(NULL AS int)) IS NOT NULL THEN 1 ELSE 0 END, 'Client mapping not configured'),\n(2, 'FiscalYear', 'Yes', CASE WHEN (fiscal_year) IS NOT NULL THEN 1 ELSE 0 END, 'Annual reporting year'),\n(3, 'FiscalQuarter', 'Yes', CASE WHEN (fiscal_period) IS NOT NULL THEN 1 ELSE 0 END, '4 = full-year/YTD, not standalone Q4'),\n(4, 'PeriodEndDate', 'Yes', CASE WHEN (CONVERT(varchar(10), period_end_date, 23)) IS NOT NULL THEN 1 ELSE 0 END, 'Stored period end; comparison parser may infer calendar year end'),\n(5, 'PublishDate', 'Yes', CASE WHEN (CONVERT(varchar(10), SWITCHOFFSET(published_at, '+03:00'), 23)) IS NOT NULL THEN 1 ELSE 0 END, 'KAP publication date in Istanbul'),\n(6, 'Revenue', 'Yes', CASE WHEN (revenue) IS NOT NULL THEN 1 ELSE 0 END, 'Stored revenue'),\n(7, 'OperatingIncome', 'Yes', CASE WHEN (operating_income) IS NOT NULL THEN 1 ELSE 0 END, 'Stored value only; current comparison export does not provide it'),\n(8, 'NetIncome', 'Yes', CASE WHEN (net_profit) IS NOT NULL THEN 1 ELSE 0 END, 'Total consolidated profit, not parent-only profit'),\n(9, 'Ebitda', 'Yes', CASE WHEN (ebitda) IS NOT NULL THEN 1 ELSE 0 END, 'Stored value only; check calculation method'),\n(10, 'TotalAssets', 'Yes', CASE WHEN (total_assets) IS NOT NULL THEN 1 ELSE 0 END, 'Stored total assets'),\n(11, 'TotalLiabilities', 'No', CASE WHEN (current_liabilities + non_current_liabilities) IS NOT NULL THEN 1 ELSE 0 END, 'Sum only when both components are present; not financial debt'),\n(12, 'Equity', 'Yes', CASE WHEN (total_equity) IS NOT NULL THEN 1 ELSE 0 END, 'Stored total equity, including non-controlling interests'),\n(13, 'TotalDebtShort', 'Yes', CASE WHEN (CAST(NULL AS decimal(38,6))) IS NOT NULL THEN 1 ELSE 0 END, 'No separate short-debt column/mapping in current schema'),\n(14, 'TotalDebtLong', 'Yes', CASE WHEN (CAST(NULL AS decimal(38,6))) IS NOT NULL THEN 1 ELSE 0 END, 'No separate long-debt column/mapping in current schema'),\n(15, 'CashAndEquivalents', 'Yes', CASE WHEN (cash_and_cash_equivalents) IS NOT NULL THEN 1 ELSE 0 END, 'Stored value only; current comparison export does not provide it'),\n(16, 'CurrentLiabilities', 'No', CASE WHEN (current_liabilities) IS NOT NULL THEN 1 ELSE 0 END, 'All current liabilities, not short-term debt'),\n(17, 'NonCurrentLiabilities', 'No', CASE WHEN (non_current_liabilities) IS NOT NULL THEN 1 ELSE 0 END, 'All non-current liabilities, not long-term debt'),\n(18, 'FreeCashFlow', 'Yes', CASE WHEN (free_cash_flow) IS NOT NULL THEN 1 ELSE 0 END, 'Stored value only; check calculation method'),\n(19, 'Eps', 'Yes', CASE WHEN (eps) IS NOT NULL THEN 1 ELSE 0 END, 'Stored currency per share; confirm share basis before client use'),\n(20, 'SharesOutstanding', 'Yes', CASE WHEN (shares_outstanding) IS NOT NULL THEN 1 ELSE 0 END, 'Stored count; confirm year-end versus weighted-average and share unit')) AS f(SortOrder, [Field], [Required], HasValue, Notes)\nGROUP BY f.SortOrder, f.[Field]\nORDER BY f.SortOrder;"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Revenue | ${currency} millions",
+      "type": "barchart",
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 12,
+        "h": 9
+      },
+      "description": "Top 20 selected company/year records. Millions are for chart display only.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available",
+          "unit": "none",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Company / year",
+        "barWidth": 0.72,
+        "groupWidth": 0.75,
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH selected AS (SELECT * FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) AND ticker IN (${company:sqlstring}) AND CAST(fiscal_year AS varchar(4)) IN (${year:sqlstring}))\nSELECT TOP (20) CONCAT(ticker, ' / ', fiscal_year) AS [Company / year], CAST(revenue AS float)/1000000.0 AS [Revenue] FROM selected WHERE revenue IS NOT NULL ORDER BY revenue DESC, ticker;"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Net income | ${currency} millions",
+      "type": "barchart",
+      "gridPos": {
+        "x": 12,
+        "y": 32,
+        "w": 12,
+        "h": 9
+      },
+      "description": "Top 20 selected company/year records. Millions are for chart display only.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available",
+          "unit": "none",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Company / year",
+        "barWidth": 0.72,
+        "groupWidth": 0.75,
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH selected AS (SELECT * FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) AND ticker IN (${company:sqlstring}) AND CAST(fiscal_year AS varchar(4)) IN (${year:sqlstring}))\nSELECT TOP (20) CONCAT(ticker, ' / ', fiscal_year) AS [Company / year], CAST(net_profit AS float)/1000000.0 AS [Net income] FROM selected WHERE net_profit IS NOT NULL ORDER BY net_profit DESC, ticker;"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Additional financial fields | stored values and methods",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 41,
+        "w": 24,
+        "h": 9
+      },
+      "description": "No values are taken from the review JSON. These database columns may remain NULL until a supported parser supplies them. Unsplit debt is not substituted into either requested debt field.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available",
+          "custom": {
+            "filterable": true,
+            "align": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH selected AS (SELECT * FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) AND ticker IN (${company:sqlstring}) AND CAST(fiscal_year AS varchar(4)) IN (${year:sqlstring}))\nSELECT ticker, fiscal_year, operating_income, ebitda, ebitda_method,\ncash_and_cash_equivalents, free_cash_flow, free_cash_flow_method,\neps, shares_outstanding, shares_outstanding_method,\ntotal_debt AS [Total debt (unsplit)], total_debt_method,\nprofit_attributable_to_owners_of_parent AS [Parent-only profit (alternative)]\nFROM selected ORDER BY ticker, fiscal_year DESC;"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Balance identity | assets minus equity and liabilities",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 50,
+        "w": 24,
+        "h": 9
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available",
+          "custom": {
+            "filterable": true,
+            "align": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH selected AS (SELECT * FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) AND ticker IN (${company:sqlstring}) AND CAST(fiscal_year AS varchar(4)) IN (${year:sqlstring}))\nSELECT ticker, fiscal_year, total_assets AS [Assets], total_equity AS [Equity],\ncurrent_liabilities AS [Current liabilities], non_current_liabilities AS [Non-current liabilities],\ncurrent_liabilities + non_current_liabilities AS [Total liabilities],\ntotal_assets - total_equity - current_liabilities - non_current_liabilities AS [Residual],\nCASE WHEN total_assets IS NULL OR total_equity IS NULL OR current_liabilities IS NULL OR non_current_liabilities IS NULL THEN 'Not checked: missing component'\nWHEN ABS(total_assets - total_equity - current_liabilities - non_current_liabilities) <= 1 THEN 'Pass (within 1 base currency unit)'\nELSE 'Review difference' END AS [Check]\nFROM selected ORDER BY ticker, fiscal_year DESC;"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Publication, collection and source details",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 59,
+        "w": 24,
+        "h": 10
+      },
+      "description": "Source capture time may stay old when content is reused; last discovery shows subsequent checks. Companies without any saved valid report do not appear here; inspect the crawler run summary for them.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available",
+          "custom": {
+            "filterable": true,
+            "align": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "datasource": {
+        "type": "mssql",
+        "uid": "${DS_STOCKFUNDAMENTALS}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mssql",
+            "uid": "${DS_STOCKFUNDAMENTALS}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH selected AS (SELECT * FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND fiscal_period = 4 AND currency_code IN (${currency:sqlstring}) AND consolidation_scope IN (${scope:sqlstring}) AND ticker IN (${company:sqlstring}) AND CAST(fiscal_year AS varchar(4)) IN (${year:sqlstring}))\nSELECT ticker, fiscal_year, report_id, notification_id,\nCONVERT(varchar(35), published_at, 127) AS [Published timestamp],\nCONVERT(varchar(35), retrieved_at, 127) AS [Source captured timestamp],\nCONVERT(varchar(35), last_discovery_at, 127) AS [Last discovery timestamp],\nCONVERT(varchar(35), last_success_at, 127) AS [Last success timestamp],\nlast_error, parser_version, source_url, document_url\nFROM selected ORDER BY ticker, fiscal_year DESC;"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "How manual updates work",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 69,
+        "w": 24,
+        "h": 6
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Not available"
+        },
+        "overrides": []
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "1. Run `bash scripts/crawl-manual.sh` in your project when you want an update.\n2. The helper checks the proxy, starts SQL, then downloads comparison exports, parses them and saves valid records.\n3. Review each company status and any stopped reason. `fresh` skips a recently checked company; it does not mean every requested field is complete.\n4. Refresh this dashboard. Reload it if new companies or years are missing from the dropdowns.\n\n**This dashboard uses annual selections, not the top-right time range.** The normal freshness window is 24 hours. There is no automatic schedule or ban-free guarantee. Full-report candidates and client IDs still require validation before a client-table import."
+      }
+    }
+  ]
+}

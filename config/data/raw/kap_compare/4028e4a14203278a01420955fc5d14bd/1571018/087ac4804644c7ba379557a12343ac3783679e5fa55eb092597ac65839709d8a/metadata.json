@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "087ac4804644c7ba379557a12343ac3783679e5fa55eb092597ac65839709d8a",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "65d859c3797899bbc99b19e0d592825e5209de463958edd1a899a254be2bac27",
+  "files": {
+    "source.json": {
+      "sha256": "3b6582cebdcd5d11c277d0d045d4db2338af9a41c584dab17950c9ea55608b45",
+      "size": 729
+    }
+  },
+  "first_retrieved_at": "2026-09-19T10:02:43.942478+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1571018",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-03-11T18:00:56+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a14203278a01420955fc5d14bd",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "OTTO"
+}

@@ -1,0 +1,22 @@
+{
+  "consolidation_scope": "consolidated",
+  "content_hash": "b6aab24d6d3ac212001337b295973e85e0bc97a24af1d03bf55b90e3bdac5cd0",
+  "derivations": {},
+  "errors": [
+    "only annual GENERAL comparison exports have a reviewed mapping"
+  ],
+  "field_sources": {},
+  "filing_fiscal_period": 4,
+  "filing_fiscal_year": 2025,
+  "filing_period_end_date": null,
+  "filing_period_start_date": null,
+  "notification_id": "1546393",
+  "parse_status": "unsupported",
+  "parsed_at": "2026-09-19T11:01:46.656241+00:00",
+  "parser_version": "1.1.1",
+  "periods": [],
+  "statement_type": "insurance",
+  "warnings": [
+    "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered."
+  ]
+}

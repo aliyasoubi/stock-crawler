@@ -1,0 +1,33 @@
+{
+  "companyType": "IGS",
+  "mkkMemberIdList": [
+    "4028e4a1413b7ef401413bc2251e0047",
+    "4028e4a140f2ed720140f376bebb01a7"
+  ],
+  "mkkMemberTitleList": [
+    "ASELSAN ELEKTRONİK SANAYİ VE TİCARET A.Ş.",
+    "TÜRK HAVA YOLLARI A.O."
+  ],
+  "yearList": [
+    "2023",
+    "2024"
+  ],
+  "periodList": [
+    "4"
+  ],
+  "itemIdList": [
+    "ifrs-full_Equity",
+    "ifrs-full_ProfitLoss",
+    "ifrs-full_ProfitLossAttributableToNoncontrollingInterests",
+    "ifrs-full_ProfitLossAttributableToOwnersOfParent",
+    "ifrs-full_Revenue",
+    "kap-fr_RevenueFromFinanceSectorOperations",
+    "ifrs-full_Assets",
+    "ifrs-full_CurrentLiabilities",
+    "ifrs-full_EquityAndLiabilities",
+    "ifrs-full_NoncurrentLiabilities"
+  ],
+  "sectors": [
+    "GENERAL"
+  ]
+}

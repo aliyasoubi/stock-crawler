@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "a1143299c018a33e70354166cb118ceced2b526d3734c7b7c5504e98a69edbfe",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "5d6d1256616d8c487e36a44da7ff72244a7a4c36de0e55c55c37c64167b85f8e",
+  "files": {
+    "source.json": {
+      "sha256": "e26d8d7d56bc31899baf9cd872fbc1bf04170153a10da06e398b6925211ea3c3",
+      "size": 737
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:10:07.176077+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1285916",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-05-13T20:42:20+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c486d22a3a018b03b5cfbe29b8",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "BORLS"
+}

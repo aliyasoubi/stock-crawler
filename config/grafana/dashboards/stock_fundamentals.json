@@ -1,0 +1,322 @@
+{
+  "uid": "stock-fundamentals-mvp",
+  "title": "Stock Fundamentals MVP",
+  "tags": [
+    "fundamentals",
+    "kap"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "refresh": "",
+  "time": {
+    "from": "now-1y",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "currency",
+        "label": "Currency",
+        "type": "query",
+        "datasource": {
+          "type": "mssql",
+          "uid": "stockfundamentals-mssql"
+        },
+        "multi": false,
+        "includeAll": false,
+        "refresh": 1,
+        "sort": 1,
+        "query": "SELECT DISTINCT currency_code FROM dbo.vw_latest_fundamentals WHERE market_source = 'kap_compare' ORDER BY currency_code",
+        "definition": "SELECT DISTINCT currency_code FROM dbo.vw_latest_fundamentals WHERE market_source = 'kap_compare' ORDER BY currency_code",
+        "current": {
+          "selected": true,
+          "text": "TRY",
+          "value": "TRY"
+        }
+      },
+      {
+        "name": "ticker",
+        "label": "Company",
+        "type": "query",
+        "datasource": {
+          "type": "mssql",
+          "uid": "stockfundamentals-mssql"
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": null,
+        "refresh": 1,
+        "sort": 1,
+        "query": "SELECT DISTINCT ticker FROM dbo.vw_latest_fundamentals WHERE market_source = 'kap_compare' AND currency_code IN ($currency) ORDER BY ticker",
+        "definition": "SELECT DISTINCT ticker FROM dbo.vw_latest_fundamentals WHERE market_source = 'kap_compare' AND currency_code IN ($currency) ORDER BY ticker",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Latest annual fundamentals per company** (view `vw_latest_fundamentals`). Monetary values are already normalised to base currency units (`currency_code`); do not multiply by `currency_scale` again. Empty cells mean *unavailable or not safely derivable*, never zero. Companies can be on different latest fiscal years - check `fiscal_year` before comparing."
+      }
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Latest annual fundamentals (base currency units)",
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mssql",
+            "uid": "stockfundamentals-mssql"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ticker, company_name, fiscal_year, period_end_date, consolidation_scope, currency_code,\n       revenue, net_profit, profit_attributable_to_owners_of_parent, operating_income, ebitda, ebitda_method,\n       total_assets, total_equity, total_debt, total_debt_method, cash_and_cash_equivalents, free_cash_flow,\n       free_cash_flow_method, eps, shares_outstanding, finance_sector_revenue, published_at, retrieved_at, parser_version FROM dbo.vw_latest_fundamentals WHERE market_source = 'kap_compare' AND currency_code IN ($currency) AND ticker IN ($ticker) ORDER BY ticker",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "unavailable",
+          "custom": {
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "revenue|net_profit|profit_attributable.*|operating_income|ebitda|total_assets|total_equity|total_debt|cash_and_cash_equivalents|free_cash_flow|finance_sector_revenue"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Revenue (latest annual)",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 15
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mssql",
+            "uid": "stockfundamentals-mssql"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ticker AS metric, revenue AS value FROM dbo.vw_latest_fundamentals WHERE market_source = 'kap_compare' AND currency_code IN ($currency) AND ticker IN ($ticker) ORDER BY ticker",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^value$/",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "unavailable",
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Net profit (latest annual)",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 15
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mssql",
+            "uid": "stockfundamentals-mssql"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ticker AS metric, net_profit AS value FROM dbo.vw_latest_fundamentals WHERE market_source = 'kap_compare' AND currency_code IN ($currency) AND ticker IN ($ticker) ORDER BY ticker",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^value$/",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "unavailable",
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Total assets (latest annual)",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 15
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mssql",
+            "uid": "stockfundamentals-mssql"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ticker AS metric, total_assets AS value FROM dbo.vw_latest_fundamentals WHERE market_source = 'kap_compare' AND currency_code IN ($currency) AND ticker IN ($ticker) ORDER BY ticker",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^value$/",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "unavailable",
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Freshness and errors (data stays readable during source outages)",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mssql",
+            "uid": "stockfundamentals-mssql"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ticker, notification_id, published_at, retrieved_at, parsed_at, last_discovery_at, last_success_at, latest_discovered_notification_id, last_error, parser_version FROM dbo.vw_latest_fundamentals WHERE market_source = 'kap_compare' AND currency_code IN ($currency) AND ticker IN ($ticker) ORDER BY ticker",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "-"
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true
+      }
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "All collected annual periods (current-period rows, one version per year/scope)",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mssql",
+            "uid": "stockfundamentals-mssql"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ticker, fiscal_year, consolidation_scope, currency_code, revenue, net_profit, total_assets, total_equity, total_debt, ebitda, free_cash_flow, eps, published_at, parser_version, report_id FROM dbo.vw_fundamentals WHERE market_source = 'kap_compare' AND currency_code IN ($currency) AND ticker IN ($ticker) ORDER BY ticker, fiscal_year DESC, consolidation_scope",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "unavailable"
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true
+      }
+    }
+  ]
+}

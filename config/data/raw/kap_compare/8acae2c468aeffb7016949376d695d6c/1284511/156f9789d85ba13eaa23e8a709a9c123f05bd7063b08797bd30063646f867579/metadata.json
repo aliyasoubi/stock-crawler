@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "156f9789d85ba13eaa23e8a709a9c123f05bd7063b08797bd30063646f867579",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "d7ebe557dfb94f6c08d993b66e04acd14f70470d0bf02b918cfabaa6fa4e455d",
+  "files": {
+    "source.json": {
+      "sha256": "b2a184b540c964add37a8006e7fae6dbadaad7da829f9f18280a7938312f5e1a",
+      "size": 753
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:17:31.016464+00:00",
+  "fiscal_year": 2023,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1284511",
+  "period_end_date": "2023-12-31",
+  "primary_file": "source.json",
+  "published_at": "2024-05-09T17:46:39+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c468aeffb7016949376d695d6c",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "TEZOL"
+}

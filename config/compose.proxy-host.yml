@@ -1,0 +1,16 @@
+# Ubuntu Docker Engine: the crawler can reach the host's loopback SSH proxy.
+# Use together with docker-compose.yml and compose.db-local.yml.
+services:
+  crawler:
+    network_mode: host
+    environment:
+      MSSQL_HOST: "127.0.0.1"
+      MSSQL_PORT: "${CRAWLER_DB_HOST_PORT:-1433}"
+      HTTP_PROXY: "${CRAWLER_PROXY_URL:-socks5h://127.0.0.1:10808}"
+      HTTPS_PROXY: "${CRAWLER_PROXY_URL:-socks5h://127.0.0.1:10808}"
+      ALL_PROXY: "${CRAWLER_PROXY_URL:-socks5h://127.0.0.1:10808}"
+      http_proxy: "${CRAWLER_PROXY_URL:-socks5h://127.0.0.1:10808}"
+      https_proxy: "${CRAWLER_PROXY_URL:-socks5h://127.0.0.1:10808}"
+      all_proxy: "${CRAWLER_PROXY_URL:-socks5h://127.0.0.1:10808}"
+      NO_PROXY: "localhost,127.0.0.1,::1,mssql"
+      no_proxy: "localhost,127.0.0.1,::1,mssql"

@@ -1,0 +1,84 @@
+{
+  "command": "sync",
+  "companies": [
+    {
+      "candidates": 1,
+      "errors": [],
+      "fiscal_year": 2024,
+      "notification_id": "1395801",
+      "parse_status": "valid",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 3,
+      "snapshot": "captured",
+      "status": "published",
+      "ticker": "ASELS",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+        "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [],
+      "fiscal_year": 2025,
+      "notification_id": "1561039",
+      "parse_status": "valid",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 4,
+      "snapshot": "captured",
+      "status": "published",
+      "ticker": "ASELS",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+        "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [],
+      "fiscal_year": 2024,
+      "notification_id": "1396940",
+      "parse_status": "valid",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 5,
+      "snapshot": "captured",
+      "status": "published",
+      "ticker": "THYAO",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+        "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+      ]
+    },
+    {
+      "candidates": 1,
+      "errors": [],
+      "fiscal_year": 2025,
+      "notification_id": "1565996",
+      "parse_status": "valid",
+      "parser_version": "1.1.0",
+      "persist": "inserted",
+      "report_id": 6,
+      "snapshot": "captured",
+      "status": "published",
+      "ticker": "THYAO",
+      "warnings": [
+        "Delayed KAP comparison export: current columns only; prior-period restatements and withdrawal discovery are not covered.",
+        "Period dates inferred from Year + Period=4 for an explicitly confirmed calendar-year issuer."
+      ]
+    }
+  ],
+  "finished_at": "2026-09-15T10:41:00.141018+00:00",
+  "pending": [],
+  "refresh": false,
+  "request_attempts": 1,
+  "requested_tickers": [
+    "ASELS",
+    "THYAO"
+  ],
+  "run_id": "20260915T104056Z-c0da5bc7",
+  "started_at": "2026-09-15T10:40:56.819666+00:00",
+  "stopped_reason": null
+}

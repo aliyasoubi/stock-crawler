@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "consolidated",
+  "content_hash": "69379ad44b968362b949c961ea340a137b247774814b1f8d9a35d46beb0cbfcd",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "c4550b6554916d8c584d404d97115d669ce048b0cb0b539a7759e092b9a9d0f6",
+  "files": {
+    "source.json": {
+      "sha256": "8408056187752d737facc7295bd6423c34282d9f7fbd74f917bdc926e7775c9b",
+      "size": 728
+    }
+  },
+  "first_retrieved_at": "2026-09-19T11:10:29.431516+00:00",
+  "fiscal_year": 2022,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1116454",
+  "period_end_date": "2022-12-31",
+  "primary_file": "source.json",
+  "published_at": "2023-02-23T15:36:02+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "8acae2c469cee2a4016a5492160c43c3",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "DERHL"
+}

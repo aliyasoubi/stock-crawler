@@ -1,0 +1,33 @@
+{
+  "calendar_year_confirmed": true,
+  "consolidation_scope": "unconsolidated",
+  "content_hash": "12f5a5bf0df984e9f8ffbbf5c10fbfd6625fbd12fe55f5e904e7778861822a40",
+  "content_types": {
+    "source.json": "application/json"
+  },
+  "data_product": "kap_compare",
+  "document_url": null,
+  "export_blob_sha256": "117209498f23a28623a9e4405d8b4ac47a144278c5c2d5a8200280a8bc569712",
+  "files": {
+    "source.json": {
+      "sha256": "d746721bddfc0c8acc2758464ee8dfa5fb53fcfdf3167db5840de2342e0ecbb7",
+      "size": 759
+    }
+  },
+  "first_retrieved_at": "2026-09-19T09:54:25.288591+00:00",
+  "fiscal_year": 2025,
+  "is_correction": false,
+  "market_source": "kap_compare",
+  "notification_id": "1564094",
+  "period_end_date": "2025-12-31",
+  "primary_file": "source.json",
+  "published_at": "2026-03-02T15:43:34+00:00",
+  "retrieved_at_basis": "source_capture",
+  "source_company_id": "4028e4a241733d42014182b942a247e4",
+  "source_url": "https://www.kap.org.tr/en/kalem-karsilastirma",
+  "source_urls": {
+    "source.json": "https://www.kap.org.tr/en/api/export/compareItems"
+  },
+  "statement_type": "general",
+  "ticker": "AVTUR"
+}
