@@ -1,0 +1,45 @@
+{
+  "verified": false,
+  "_verification_note": "Series codes, frequencies and units were read from the live EVDS catalog on 2026-09-23 (see catalog_evidence). json_key follows the documented EVDS convention of the series code with dots replaced by underscores, but could NOT be observed: the data endpoint requires an API key. Capture one response with `stock-warehouse fetch`, confirm each json_key against it, then set verified to true.",
+  "catalog_evidence": "EVDS catalog https://evds3.tcmb.gov.tr/igmevdsms-dis/categories/withDatagroups/type=json and per-group serieList/fe endpoints, retrieved 2026-09-23. Cpi: bie_tukfiy2003 'Consumer Price Index (General) (2003=100)', TURKSTAT, monthly, updated 22-09-2026. TaxRevenue: bie_kbmgel 'Central Government Budget Revenues - New Definition', Ministry of Treasury and Finance, monthly, unit 'thousand TRY', updated 22-04-2026; TP.KB.GEL003 is line 'I. Taxes'. PublicDebt: bie_kbicborc 'Domestic Debt Stock', monthly, unit 'thousand TRY'; TP.KB.A09 is line '5.Total'. InterestRate: bie_bispolfaiz 'Central Banks' Policy Interest Rate', BIS, monthly, unit 'Percentage'; TP.BISPOLFAIZ.TUR is the Türkiye entry.",
+  "base_url": "https://evds3.tcmb.gov.tr/igmevdsms-dis/",
+  "date_key": "Tarih",
+  "series": [
+    {
+      "target": "Cpi",
+      "code": "TP.GENENDEKS.T1",
+      "json_key": "TP_GENENDEKS_T1",
+      "frequency": "M",
+      "unit": "index (2003=100)",
+      "definition": "TURKSTAT Consumer Price Index, general index, base 2003=100. An index level, not a rate of change: year-on-year inflation must be derived by the consumer, not stored here. TURKSTAT also publishes a rebased 2025=100 series (bie_tukfiy2025); mixing the two bases in one column would be a break in series.",
+      "scale": "1"
+    },
+    {
+      "target": "TaxRevenue",
+      "code": "TP.KB.GEL003",
+      "json_key": "TP_KB_GEL003",
+      "frequency": "M",
+      "unit": "TRY",
+      "definition": "Central government budget revenues, line 'I. Taxes' (tax revenue only, excluding non-tax revenue and capital revenue). Monthly flow, not cumulative year-to-date, under the 'New Definition' presentation. Source unit is thousand TRY; scale 1000 converts to base TRY units.",
+      "scale": "1000"
+    },
+    {
+      "target": "PublicDebt",
+      "code": "TP.KB.A09",
+      "json_key": "TP_KB_A09",
+      "frequency": "M",
+      "unit": "TRY",
+      "definition": "Domestic debt stock, line '5.Total'. This is the DOMESTIC debt stock only: external debt is a separate EVDS group (bie_brutdbalckamu, reported in million USD) and is deliberately not added in, because summing a TRY stock and a USD stock requires an explicit FX convention. Source unit is thousand TRY; scale 1000 converts to base TRY units.",
+      "scale": "1000"
+    },
+    {
+      "target": "InterestRate",
+      "code": "TP.BISPOLFAIZ.TUR",
+      "json_key": "TP_BISPOLFAIZ_TUR",
+      "frequency": "M",
+      "unit": "percent per annum",
+      "definition": "Central bank policy interest rate for Türkiye as published in the BIS policy-rate dataset, monthly. Stored as a percentage number (e.g. 40.0 means 40%), not a decimal fraction.",
+      "scale": "1"
+    }
+  ]
+}

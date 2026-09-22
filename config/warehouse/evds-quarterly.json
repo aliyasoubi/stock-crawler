@@ -1,0 +1,18 @@
+{
+  "verified": false,
+  "_verification_note": "Series codes, frequencies and units were read from the live EVDS catalog on 2026-09-23 (see catalog_evidence). json_key follows the documented EVDS convention of the series code with dots replaced by underscores, but could NOT be observed: the data endpoint requires an API key. Capture one response with `stock-warehouse fetch`, confirm each json_key against it, then set verified to true.",
+  "catalog_evidence": "https://evds3.tcmb.gov.tr/igmevdsms-dis/serieList/fe/type=json&code=bie_gsyhhrccar retrieved 2026-09-23; datagroup bie_gsyhhrccar 'Gross Domestic Product (Expenditure Approach, Current Prices)', unit 'thousand TRY', frequency 'ÜÇ AYLIK' (quarterly), last updated 23-07-2026. TP.GSYIH20.BY.B1GQ is the headline GDP aggregate; the other seven series in the group are expenditure components (household/government consumption, GFCF, stocks, exports, imports) and are deliberately not mapped.",
+  "base_url": "https://evds3.tcmb.gov.tr/igmevdsms-dis/",
+  "date_key": "Tarih",
+  "series": [
+    {
+      "target": "Gdp",
+      "code": "TP.GSYIH20.BY.B1GQ",
+      "json_key": "TP_GSYIH20_BY_B1GQ",
+      "frequency": "Q",
+      "unit": "TRY",
+      "definition": "Gross Domestic Product at purchaser's prices, expenditure approach, current prices. Source unit is thousand TRY; scale 1000 converts to base TRY units so macro amounts match the base-currency convention used for company fundamentals. Current prices means nominal, NOT inflation-adjusted.",
+      "scale": "1000"
+    }
+  ]
+}
