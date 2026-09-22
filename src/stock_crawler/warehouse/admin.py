@@ -12,9 +12,7 @@ from sqlalchemy import MetaData, Table, func, insert, inspect, select, text
 from ..core.config import Settings
 from ..core.db import split_batches
 from ..core.storage import dump_json, write_atomic
-from .loader import COLUMNS, KEYS
-
-INDEX_NAMES = {'XU100': 'BIST 100', 'XU030': 'BIST 30', 'XU050': 'BIST 50', 'XUTUM': 'BIST All Shares'}
+from .loader import BIST_MARKET, COLUMNS, INDEX_NAMES, KEYS
 
 
 def warehouse_settings(path=None, *, use_bootstrap=False):
@@ -108,8 +106,7 @@ def seed_reference(engine, companies=()):
             lock(conn)
             md = MetaData()
             tables = {name: Table(name, md, schema='dbo', autoload_with=conn) for name in counts}
-            market, created = insert_master(conn, tables['Market'], {
-                'MarketCode': 'BIST', 'CountryCode': 'TR', 'CountryName': 'Türkiye', 'BaseCurrency': 'TRY'}, ['MarketCode'])
+            market, created = insert_master(conn, tables['Market'], dict(BIST_MARKET), ['MarketCode'])
             counts['Market'] += created
             for code, name in INDEX_NAMES.items():
                 _, created = insert_master(conn, tables['MarketIndexMaster'], {

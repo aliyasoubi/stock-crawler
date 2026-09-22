@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 
 from ..core.storage import dump_json, sha256_bytes, utcnow, write_atomic
-from .loader import COLUMNS, bundle, import_csv, load_bundle
+from .loader import BIST_MARKET, COLUMNS, INDEX_NAMES, bundle, import_csv, load_bundle
 from .fundamentals import build_fundamentals, load_mapping
 from .sources import fetch_snapshot, evds_url, import_evds, normalize_vendor_csv
 
@@ -398,17 +398,15 @@ def run(args):
         source = {'provider': 'reference_seed', 'observed_at': utcnow().isoformat(),
                   'registry_sha256': sha256_bytes(args.registry.read_bytes()),
                   'warning': 'Registry membership is not evidence of active listed equity status. Enrich metadata before loading.'}
-        records = [{'table': 'Market', 'values': {'MarketId': args.market_id, 'MarketCode': 'BIST',
-                    'CountryCode': 'TR', 'CountryName': 'Türkiye', 'BaseCurrency': 'TRY'}, 'source': source}]
+        records = [{'table': 'Market', 'values': dict(BIST_MARKET, MarketId=args.market_id), 'source': source}]
         for entry in registry.entries:
             values = dict.fromkeys(COLUMNS['Company'])
             values.update(CompanyId=company_ids.get(entry['ticker']), Ticker=entry['ticker'],
                           MarketId=args.market_id, FullName=entry['company_name'])
             records.append({'table': 'Company', 'values': values, 'source': source,
                             'validation_issues': ['listing_status_sector_currency_and_IPO_date_require_reference_enrichment']})
-        names = {'XU100': 'BIST 100', 'XU030': 'BIST 30', 'XU050': 'BIST 50', 'XUTUM': 'BIST ALL'}
         indices = read_json(args.index_map) if args.index_map else {}
-        for code, name in names.items():
+        for code, name in INDEX_NAMES.items():
             records.append({'table': 'MarketIndexMaster', 'values': {'IndexId': indices.get(code),
                 'IndexCode': code, 'MarketId': args.market_id, 'IndexName': name}, 'source': source})
         result = bundle(records)

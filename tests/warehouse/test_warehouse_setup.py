@@ -1,5 +1,6 @@
 """Offline behavior tests; SQLite reference inserts do not verify SQL Server DDL."""
 from datetime import date
+import json
 from pathlib import Path
 import pytest
 from sqlalchemy import Column, Integer, String, Identity, MetaData, Table, create_engine, select
@@ -146,6 +147,30 @@ def test_seed_dry_run_accepts_docker_environment_without_file(monkeypatch, capsy
     assert main(['seed-reference', '--tickers', 'ASELS,THYAO',
                  '--registry', str(root / 'config/kap_companies.json')]) == 0
     assert '"company_candidates": 2' in capsys.readouterr().out
+
+
+def test_reference_bundle_uses_the_shared_market_and_index_constants(tmp_path):
+    """Both seeding paths must emit identical reference data.
+
+    They were previously separate literals that had drifted: XUTUM was 'BIST All Shares'
+    in seed-reference and 'BIST ALL' in the reference bundle, so the name reaching the
+    client depended on which command ran first.
+    """
+    from stock_crawler.warehouse.loader import BIST_MARKET, INDEX_NAMES
+
+    output = tmp_path / 'reference.json'
+    assert main(['reference', '--registry', str(Path(__file__).parents[2] / 'config/kap_companies.json'),
+                 '--market-id', '1', '--output', str(output)]) in (0, 1)
+    records = json.loads(output.read_text('utf-8'))['records']
+
+    market = next(r for r in records if r['table'] == 'Market')
+    assert market['values'] == dict(BIST_MARKET, MarketId=1)
+
+    indices = {r['values']['IndexCode']: r['values']['IndexName']
+               for r in records if r['table'] == 'MarketIndexMaster'}
+    assert indices == INDEX_NAMES
+    # seed_reference writes the same constant, so the two paths cannot disagree.
+    assert indices['XUTUM'] == INDEX_NAMES['XUTUM']
 
 
 def test_official_tcmb_historical_fixture(tmp_path):

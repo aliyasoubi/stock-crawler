@@ -27,6 +27,16 @@ CONTRACTS = {
 }
 KEYS = {t: c[1] for t, c in CONTRACTS.items()}
 COLUMNS = {t: c[0].split() for t, c in CONTRACTS.items()}
+# Reference values for the single market this warehouse serves. Defined once because two
+# paths seed them: `seed-reference` writes them to SQL directly, and the `reference` command
+# emits them as a loadable bundle. They were previously duplicated, and the copies had
+# drifted -- XUTUM was 'BIST All Shares' in one and 'BIST ALL' in the other, so the name that
+# reached the client depended on which command ran first.
+# IndexCode is the join key to the quote feed and to the client's IndexId map; IndexName is
+# display text only. The four English names are unconfirmed against an official Borsa
+# İstanbul publication -- have the client confirm them before these are shown to end users.
+BIST_MARKET = {'MarketCode': 'BIST', 'CountryCode': 'TR', 'CountryName': 'Türkiye', 'BaseCurrency': 'TRY'}
+INDEX_NAMES = {'XU100': 'BIST 100', 'XU030': 'BIST 30', 'XU050': 'BIST 50', 'XUTUM': 'BIST All Shares'}
 TEXT_LENGTHS = {'MarketCode': 10, 'CountryCode': 2, 'CountryName': 50, 'BaseCurrency': 3,
                 'Ticker': 32, 'FullName': 255, 'SectorName': 100, 'ReportingCurrency': 3,
                 'IndexCode': 20, 'IndexName': 100, 'PeriodType': 10}
