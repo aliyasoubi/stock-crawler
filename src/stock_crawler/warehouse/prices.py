@@ -164,6 +164,62 @@ def fetch_isyatirim_snapshots(codes, *, archive_dir, batch_size=20,
     return snapshots
 
 
+def build_listing_status(*, company_map, names, market_id, archive_dir=Path("data/warehouse"),
+                         batch_size=20, pause_seconds=1.0, client=None, observed_at=None):
+    """Company rows carrying IsActive evidence taken from the public quote feed.
+
+    A live quote is positive evidence that a ticker is a listed, tradeable equity. The
+    absence of one is NOT proof of delisting: most unquoted KAP registrants are bond,
+    sukuk, factoring or leasing issuers that never had listed stock, and a listed name can
+    also be suspended on the survey day. Unquoted companies are therefore left with
+    IsActive unset rather than written as inactive, and are returned for review instead.
+    """
+    company_map = {str(k).upper(): int(v) for k, v in company_map.items()}
+    codes = _validate_codes(company_map)
+    if not codes:
+        raise ValueError("company_map is empty; seed dbo.Company and export the ID map first")
+    captured = observed_at or utcnow().isoformat()
+    snapshots = fetch_isyatirim_snapshots(codes, archive_dir=archive_dir, batch_size=batch_size,
+                                          pause_seconds=pause_seconds, client=client,
+                                          observed_at=captured)
+    records, quoted, unquoted = [], [], []
+    for code in codes:
+        captured_row = snapshots.get(code)
+        if captured_row is None or not captured_row["row"].get("last"):
+            unquoted.append(code)
+            continue
+        quoted.append(code)
+        records.append({"table": "Company", "values": {
+            "CompanyId": company_map[code],
+            "Ticker": code,
+            "MarketId": int(market_id),
+            "FullName": names[code],
+            "IsActive": 1,
+        }, "source": {
+            "provider": PROVIDER,
+            "observed_at": captured,
+            "raw_sha256": captured_row["raw_sha256"],
+            "source_url": ENDPOINT,
+            "parser_version": "warehouse-listing-status-1.0.0",
+            "symbol": code,
+            "evidence": "live quote carrying a last traded price on the survey date",
+            "field_semantics": {
+                "IsActive": "1 = the exchange feed quoted this ticker; absence of a quote is "
+                            "not written back as 0, because it does not distinguish a delisting "
+                            "from a registrant that never had listed stock",
+            },
+        }})
+    result = bundle(records)
+    result["listing_survey"] = {
+        "observed_at": captured, "companies_surveyed": len(codes),
+        "quoted": len(quoted), "unquoted": len(unquoted),
+        "unquoted_tickers": unquoted,
+        "note": "Unquoted companies keep IsActive NULL. Review them before treating the "
+                "quoted set as the complete listed-equity universe.",
+    }
+    return result
+
+
 def _history_date(value):
     """HGDG_TARIH is rendered DD-MM-YYYY, unlike the ISO timestamps in the daily feed."""
     try:

@@ -7,7 +7,7 @@ import httpx
 import pytest
 
 from stock_crawler.warehouse.prices import (build_isyatirim_daily, build_isyatirim_history,
-                                            fetch_isyatirim_snapshots)
+                                            build_listing_status, fetch_isyatirim_snapshots)
 
 
 def row(symbol, update="2026-09-22T18:20:00.000+03:00"):
@@ -179,6 +179,50 @@ def test_provider_error_payload_stops_the_symbol(tmp_path):
     with pytest.raises(ValueError, match="rejected the history request"):
         build_isyatirim_history("ASELS", 4, start=date(2015, 1, 1), end=date(2015, 1, 31),
                                 fetcher=fetcher, archive_dir=tmp_path)
+
+
+# -- listing status --------------------------------------------------------------------
+
+NAMES = {"THYAO": "TÜRK HAVA YOLLARI A.O.", "ARSNF": "ARSAN FİNANS FAKTORİNG A.Ş."}
+
+
+def test_quoted_ticker_is_marked_active(tmp_path):
+    with client_for([row("THYAO")]) as client:
+        result = build_listing_status(company_map={"THYAO": 7}, names=NAMES, market_id=1,
+                                      archive_dir=tmp_path, pause_seconds=0, client=client)
+    record = result["records"][0]
+    assert record["values"] == {"CompanyId": 7, "Ticker": "THYAO", "MarketId": 1,
+                                "FullName": "TÜRK HAVA YOLLARI A.O.", "IsActive": 1}
+    assert record["missing_required_fields"] == [] and record["validation_issues"] == []
+    assert result["summary"] == {"records": 1, "ready": 1}
+
+
+def test_unquoted_registrant_is_not_written_as_inactive(tmp_path):
+    """A bond/factoring issuer that never had listed stock must not be asserted delisted."""
+    with client_for([row("THYAO")]) as client:
+        result = build_listing_status(company_map={"THYAO": 7, "ARSNF": 8}, names=NAMES,
+                                      market_id=1, archive_dir=tmp_path, pause_seconds=0,
+                                      client=client)
+    assert [r["values"]["Ticker"] for r in result["records"]] == ["THYAO"]
+    assert result["listing_survey"]["unquoted_tickers"] == ["ARSNF"]
+    assert result["listing_survey"]["quoted"] == 1
+    # An unquoted company is a review item, not a load error: errors would block --apply.
+    assert result["errors"] == []
+
+
+def test_quote_without_a_last_price_is_not_evidence(tmp_path):
+    quote = row("THYAO")
+    quote["last"] = None
+    with client_for([quote]) as client:
+        result = build_listing_status(company_map={"THYAO": 7}, names=NAMES, market_id=1,
+                                      archive_dir=tmp_path, pause_seconds=0, client=client)
+    assert result["records"] == []
+    assert result["listing_survey"]["unquoted_tickers"] == ["THYAO"]
+
+
+def test_empty_company_map_is_refused(tmp_path):
+    with pytest.raises(ValueError, match="seed dbo.Company"):
+        build_listing_status(company_map={}, names={}, market_id=1, archive_dir=tmp_path)
 
 
 def test_history_response_is_archived_by_hash(tmp_path):

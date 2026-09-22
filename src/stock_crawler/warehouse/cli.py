@@ -87,6 +87,14 @@ def parser():
     mh.add_argument('--env-file', type=Path, help='settings file supplying request pacing and the per-run request budget')
     mh.add_argument('--data-dir', type=Path, default=Path('data/warehouse'))
     mh.add_argument('--output-dir', type=Path, required=True, help='one bundle JSON per company; load them individually')
+    ls = s.add_parser('listing-status', help='survey the public quote feed and set Company.IsActive=1 for tickers the exchange actually quotes; unquoted registrants keep IsActive NULL')
+    ls.add_argument('--company-map', type=Path, required=True, help='exported ticker -> CompanyId JSON')
+    ls.add_argument('--registry', type=Path, default=Path('config/kap_companies.json'), help='supplies FullName for each ticker')
+    ls.add_argument('--market-id', type=int, required=True)
+    ls.add_argument('--batch-size', type=int, default=20, help='symbols per request, 1..20 (provider limit)')
+    ls.add_argument('--pause-seconds', type=float, default=1.2, help='polite delay between batches, 0..60')
+    ls.add_argument('--data-dir', type=Path, default=Path('data/warehouse'))
+    ls.add_argument('--output', type=Path, required=True)
     l = s.add_parser('load', help='dry-run by default; --apply stages and promotes eligible rows to existing client tables')
     l.add_argument('--input', type=Path, required=True)
     l.add_argument('--apply', action='store_true')
@@ -318,6 +326,21 @@ def run(args):
             pause_seconds=args.pause_seconds, allow_intraday=args.allow_intraday)
     elif args.command == 'isyatirim-history':
         return run_isyatirim_history(args)
+    elif args.command == 'listing-status':
+        from ..crawl.kap_export import CompanyRegistry
+        from .prices import build_listing_status
+        registry = CompanyRegistry(args.registry)
+        company_map = load_company_map(args.company_map)
+        unknown = sorted(set(company_map) - set(registry.by_ticker))
+        if unknown:
+            raise ValueError(f'CompanyId map holds tickers absent from the registry: {unknown}')
+        result = build_listing_status(company_map=company_map,
+            names={t: registry.by_ticker[t]['company_name'] for t in company_map},
+            market_id=args.market_id, archive_dir=args.data_dir,
+            batch_size=args.batch_size, pause_seconds=args.pause_seconds)
+        survey = result['listing_survey']
+        print(f"surveyed {survey['companies_surveyed']}: {survey['quoted']} quoted, "
+              f"{survey['unquoted']} unquoted (IsActive left NULL)")
     elif args.command == 'evds':
         profile = read_json(args.profile)
         observed = None
