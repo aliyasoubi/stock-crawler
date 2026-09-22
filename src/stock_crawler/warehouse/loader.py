@@ -34,6 +34,10 @@ INTS = {'MarketId': 2147483647, 'CompanyId': 2147483647, 'IndexId': 2147483647,
         'FiscalYear': 32767, 'FiscalQuarter': 4, 'Volume': 9223372036854775807,
         'SourcePriority': 255, 'IsActive': 1}
 DATES = {'TradeDate', 'AsOfDate', 'PublishDate', 'PeriodEndDate', 'IpoDate'}
+# The only MarketData column allowed to be absent. İş Yatırım's historical feed reports no
+# opening price at all; the daily snapshot does. A backfilled row is therefore complete
+# except for OpenPrice, and rejecting it would discard every pre-adapter trading day.
+MARKETDATA_NULLABLE = frozenset({'OpenPrice'})
 DECIMALS = {f: (22, 4) for f in TARGET_FIELDS[5:]}
 DECIMALS.update(Eps=(14, 4), SharesOutstanding=(22, 2), OpenPrice=(18, 4), HighPrice=(18, 4),
                 LowPrice=(18, 4), ClosePrice=(18, 4), ValueTraded=(24, 4), Gdp=(24, 4),
@@ -85,15 +89,17 @@ def validate_record(record, *, allow_partial=False):
         if allow_partial and not any(normalized.get(f) is not None for f in TARGET_FIELDS[5:]):
             issues.append('fundamental row contains no observation')
     if table == 'MarketData':
-        required |= set(COLUMNS[table])
+        required |= set(COLUMNS[table]) - MARKETDATA_NULLABLE
         if record.get('source', {}).get('price_basis') != 'as_traded':
             issues.append('verified as_traded price basis required')
         priority = record.get('source', {}).get('source_priority')
         if priority != normalized.get('SourcePriority'):
             issues.append('SourcePriority must match reviewed source metadata source_priority')
-        if all(normalized.get(f) is not None for f in ('OpenPrice', 'HighPrice', 'LowPrice', 'ClosePrice')):
-            o, h, l, c = (Decimal(normalized[f]) for f in ('OpenPrice', 'HighPrice', 'LowPrice', 'ClosePrice'))
-            if not 0 < l <= min(o, c) <= max(o, c) <= h:
+        if all(normalized.get(f) is not None for f in ('HighPrice', 'LowPrice', 'ClosePrice')):
+            h, l, c = (Decimal(normalized[f]) for f in ('HighPrice', 'LowPrice', 'ClosePrice'))
+            # An absent open still leaves low <= close <= high checkable; never skip the range test.
+            traded = [c] if normalized.get('OpenPrice') is None else [c, Decimal(normalized['OpenPrice'])]
+            if not 0 < l <= min(traded) <= max(traded) <= h:
                 issues.append('invalid OHLC range')
         if normalized.get('ValueTraded') is not None and Decimal(normalized['ValueTraded']) < 0:
             issues.append('ValueTraded must be nonnegative')

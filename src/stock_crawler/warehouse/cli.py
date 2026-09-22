@@ -74,6 +74,19 @@ def parser():
     md.add_argument('--allow-intraday', action='store_true', help='allow today before 18:15 Türkiye time; not recommended')
     md.add_argument('--data-dir', type=Path, default=Path('data/warehouse'))
     md.add_argument('--output', type=Path, required=True)
+    mh = s.add_parser('isyatirim-history', help='backfill daily MarketData history; one request per company. This product reports no opening price and no share count: OpenPrice is NULL and Volume is derived from turnover / VWAP')
+    mh.add_argument('--company-map', type=Path, required=True, help='exported ticker -> CompanyId JSON')
+    history_selection = mh.add_mutually_exclusive_group()
+    history_selection.add_argument('--tickers', help='comma-separated subset; default is every company-map key')
+    history_selection.add_argument('--company-file', type=Path, help='ticker subset file')
+    mh.add_argument('--start', required=True, help='first trade date, YYYY-MM-DD')
+    mh.add_argument('--end', required=True, help='last trade date, YYYY-MM-DD')
+    mh.add_argument('--source-priority', type=int, default=3, help='lower wins; weaker than the daily snapshot (2) because Volume is derived and OpenPrice is absent')
+    mh.add_argument('--max-symbols', type=int, help='pilot safety limit applied after selection')
+    mh.add_argument('--overwrite', action='store_true', help='refetch companies whose bundle already exists; default resumes')
+    mh.add_argument('--env-file', type=Path, help='settings file supplying request pacing and the per-run request budget')
+    mh.add_argument('--data-dir', type=Path, default=Path('data/warehouse'))
+    mh.add_argument('--output-dir', type=Path, required=True, help='one bundle JSON per company; load them individually')
     l = s.add_parser('load', help='dry-run by default; --apply stages and promotes eligible rows to existing client tables')
     l.add_argument('--input', type=Path, required=True)
     l.add_argument('--apply', action='store_true')
@@ -148,6 +161,84 @@ def expand_inputs(paths, root):
             write_atomic(target, data)
             outputs.append(target)
     return outputs
+
+
+def run_isyatirim_history(args):
+    """Backfill one bundle per company. Resumable: a symbol whose bundle exists is skipped.
+
+    Kept out of `run` because it writes many outputs rather than one, and because a stop
+    signal (budget, cooldown, block) must end the run with the remaining work named instead
+    of continuing a request storm across hundreds of symbols.
+    """
+    from datetime import date
+    import httpx
+    from ..core.config import Settings, load_company_file, parse_ticker_argument
+    from ..core.storage import StateStore
+    from ..crawl.client_export import load_company_map
+    from ..crawl.fetch import AccessBlocked, BudgetExhausted, FetchError, HostCoolingDown, HostThrottled, PacedClient
+    from .prices import HISTORY_HOSTS, build_isyatirim_history
+
+    start, end = date.fromisoformat(args.start), date.fromisoformat(args.end)
+    if end < start:
+        raise ValueError('--end precedes --start')
+    company_map = load_company_map(args.company_map)
+    tickers = (parse_ticker_argument(args.tickers) if args.tickers else
+               load_company_file(args.company_file) if args.company_file else
+               sorted(company_map))
+    unknown = sorted(set(tickers) - set(company_map))
+    if unknown:
+        raise ValueError(f'tickers missing from the exported CompanyId map: {unknown}')
+    if args.max_symbols is not None:
+        if args.max_symbols < 1:
+            raise ValueError('--max-symbols must be positive')
+        tickers = tickers[:args.max_symbols]
+
+    settings = Settings(_env_file=args.env_file) if args.env_file else Settings()
+    client = httpx.Client(headers={'User-Agent': settings.http_user_agent})
+    fetcher = PacedClient(client, settings, StateStore(args.data_dir), allowed_hosts=HISTORY_HOSTS)
+    written, skipped, failed, pending = [], [], [], []
+    stopped = None
+    try:
+        for ticker in tickers:
+            target = args.output_dir / f'{ticker}.json'
+            if target.exists() and not args.overwrite:
+                skipped.append(ticker)
+                continue
+            if stopped is not None:
+                pending.append(ticker)
+                continue
+            try:
+                result = build_isyatirim_history(ticker, company_map[ticker], start=start, end=end,
+                    fetcher=fetcher, archive_dir=args.data_dir, source_priority=args.source_priority)
+            except (BudgetExhausted, HostThrottled, AccessBlocked, HostCoolingDown) as exc:
+                stopped = str(exc)
+                pending.append(ticker)
+                continue
+            except (FetchError, ValueError, TypeError) as exc:
+                failed.append({'ticker': ticker, 'error': str(exc)})
+                continue
+            write_atomic(target, dump_json(result).encode())
+            summary = result.get('summary', {})
+            written.append({'ticker': ticker, 'rows': summary.get('records', 0),
+                            'ready': summary.get('ready', 0), 'errors': len(result.get('errors', []))})
+            print(f"  {ticker:<8} {summary.get('records', 0):>5} rows  {summary.get('ready', 0):>5} ready  "
+                  f"{len(result.get('errors', [])):>3} skipped  -> {target}")
+    finally:
+        fetcher.close()
+
+    print(dump_json({'companies_written': len(written), 'companies_skipped_existing': len(skipped),
+                     'companies_failed': len(failed), 'companies_pending': len(pending),
+                     'rows_written': sum(item['rows'] for item in written),
+                     'rows_ready': sum(item['ready'] for item in written),
+                     'http_attempts': fetcher.attempts, 'stopped_reason': stopped,
+                     'open_price': 'NULL for every backfilled row; this product reports no opening price',
+                     'output_dir': str(args.output_dir)}))
+    for item in failed:
+        print(f"  failed {item['ticker']}: {item['error']}", file=sys.stderr)
+    if stopped:
+        print(f'stopped: {stopped}; rerun the same command to resume ({len(pending)} companies pending)', file=sys.stderr)
+        return 2
+    return 1 if failed or not written else 0
 
 
 def run(args):
@@ -225,6 +316,8 @@ def run(args):
             company_codes=companies, index_codes=indices, archive_dir=args.data_dir,
             source_priority=args.source_priority, batch_size=args.batch_size,
             pause_seconds=args.pause_seconds, allow_intraday=args.allow_intraday)
+    elif args.command == 'isyatirim-history':
+        return run_isyatirim_history(args)
     elif args.command == 'evds':
         profile = read_json(args.profile)
         observed = None

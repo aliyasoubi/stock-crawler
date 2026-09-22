@@ -1,13 +1,19 @@
-"""No-login daily BIST snapshot ingestion from İş Yatırım's public page feed.
+"""No-login BIST price ingestion from İş Yatırım's public page feeds.
 
-This adapter is deliberately limited to the current/latest trading-day snapshot.
-It is not a historical backfill API and it does not manufacture turnover from
-closing price multiplied by volume.
+Two separate products, deliberately kept apart:
+
+* ``build_isyatirim_daily`` reads the current/latest trading-day snapshot
+  (``OneEndeks``). It reports open, high, low, close, share quantity and TRY turnover.
+* ``build_isyatirim_history`` reads the daily history of one symbol (``HisseTekil``).
+  It reports NO opening price and NO share quantity, so backfilled rows carry a NULL
+  OpenPrice and a Volume derived from turnover / VWAP.
+
+Neither manufactures turnover from closing price multiplied by volume.
 """
 from __future__ import annotations
 
-from datetime import datetime, time, timezone
-from decimal import Decimal, InvalidOperation
+from datetime import date, datetime, time, timezone
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 import json
 from pathlib import Path
 import re
@@ -21,10 +27,31 @@ from .loader import bundle
 
 
 ENDPOINT = "https://www.isyatirim.com.tr/_layouts/15/Isyatirim.Website/Common/Data.aspx/OneEndeks"
+HISTORY_ENDPOINT = "https://www.isyatirim.com.tr/_layouts/15/Isyatirim.Website/Common/Data.aspx/HisseTekil"
 PROVIDER = "isyatirim_public_daily"
+HISTORY_PROVIDER = "isyatirim_public_history"
+HISTORY_HOSTS = {"www.isyatirim.com.tr", "isyatirim.com.tr"}
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
+# One symbol's full history is large: ASELS 2015-2026 is 2,939 rows / ~2 MB.
+MAX_HISTORY_RESPONSE_BYTES = 64 * 1024 * 1024
+MAX_HISTORY_ROWS = 20000
 SYMBOL = re.compile(r"[A-Z0-9]{1,20}")
 ISTANBUL = ZoneInfo("Europe/Istanbul")
+
+# HisseTekil serves two parallel series per row. HG_* is the raw as-traded series: it was
+# verified against the row's own market cap (HG_KAPANIS == PD / SERMAYE exactly, on every
+# sampled row for ASELS, THYAO and GARAN). HGDG_* is back-adjusted for bonus issues and
+# splits and drifts from the traded price the further back you read (ASELS 2015-01-02:
+# 1.42 adjusted vs 12.00 traded). The warehouse contract requires price_basis="as_traded",
+# so ONLY the HG_* fields may be mapped. The date and symbol carry the HGDG_ prefix but are
+# not part of either price series.
+HISTORY_DATE = "HGDG_TARIH"
+HISTORY_SYMBOL = "HGDG_HS_KODU"
+HISTORY_CLOSE = "HG_KAPANIS"
+HISTORY_LOW = "HG_MIN"
+HISTORY_HIGH = "HG_MAX"
+HISTORY_VWAP = "HG_AOF"
+HISTORY_TURNOVER = "HG_HACIM"
 
 
 def _decimal(value, field, *, positive=False, nonnegative=False):
@@ -135,6 +162,133 @@ def fetch_isyatirim_snapshots(codes, *, archive_dir, batch_size=20,
         if own:
             client.close()
     return snapshots
+
+
+def _history_date(value):
+    """HGDG_TARIH is rendered DD-MM-YYYY, unlike the ISO timestamps in the daily feed."""
+    try:
+        day, month, year = str(value).split("-")
+        return date(int(year), int(month), int(day))
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise ValueError(f"{HISTORY_DATE}: DD-MM-YYYY required, got {value!r}") from exc
+
+
+def history_url(symbol, start, end):
+    symbol = _validate_codes([symbol])[0]
+    if end < start:
+        raise ValueError("end date precedes start date")
+    return (f"{HISTORY_ENDPOINT}?hisse={symbol}"
+            f"&startdate={start.strftime('%d-%m-%Y')}&enddate={end.strftime('%d-%m-%Y')}")
+
+
+def fetch_isyatirim_history(symbol, *, start, end, fetcher, archive_dir):
+    """One paced GET for one symbol's daily history. Returns (rows, raw_sha256).
+
+    `fetcher` is a PacedClient: the whole backfill is hundreds of single-symbol requests,
+    so it needs the budget, host cooldown and Retry-After handling the daily snapshot
+    (a handful of batched requests) can do without.
+    """
+    result = fetcher.get(history_url(symbol, start, end),
+                         accept="application/json, text/javascript, */*; q=0.01")
+    data = result.content
+    if not data or len(data) > MAX_HISTORY_RESPONSE_BYTES:
+        raise ValueError("İş Yatırım returned an empty or oversized history response")
+    try:
+        payload = json.loads(data.decode("utf-8-sig"), parse_float=Decimal)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("İş Yatırım history response is not valid JSON") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("İş Yatırım history response must be a JSON object")
+    if payload.get("ok") is not True or payload.get("errorCode"):
+        raise ValueError(f"İş Yatırım rejected the history request: "
+                         f"{payload.get('errorCode')} - {payload.get('errorDescription')}")
+    rows = payload.get("value")
+    if not isinstance(rows, list) or not all(isinstance(row, dict) for row in rows):
+        raise ValueError("İş Yatırım history payload carries no row array")
+    if len(rows) > MAX_HISTORY_ROWS:
+        raise ValueError(f"history response exceeds {MAX_HISTORY_ROWS} rows; narrow the date range")
+    digest = sha256_bytes(data)
+    write_atomic(Path(archive_dir) / "raw" / HISTORY_PROVIDER / digest / "source.json", data)
+    return rows, digest
+
+
+def build_isyatirim_history(symbol, company_id, *, start, end, fetcher,
+                            archive_dir=Path("data/warehouse"), source_priority=3,
+                            observed_at=None):
+    """MarketData rows for one symbol from the daily-history feed.
+
+    Two documented departures from the daily snapshot, both recorded per row:
+    the product reports no opening price, so OpenPrice is NULL; and it reports no share
+    quantity, so Volume is derived as turnover / VWAP. That quotient is exact when AOF is
+    a true volume-weighted average price, because turnover / shares is the definition of
+    VWAP. Days whose AOF is zero yield no share count and are reported as errors rather
+    than loaded with a guessed volume.
+    """
+    symbol = _validate_codes([symbol])[0]
+    if not 1 <= int(source_priority) <= 255:
+        raise ValueError("source_priority must be between 1 and 255")
+    captured = observed_at or utcnow().isoformat()
+    rows, digest = fetch_isyatirim_history(symbol, start=start, end=end,
+                                           fetcher=fetcher, archive_dir=archive_dir)
+    records, errors, seen = [], [], set()
+    for row in rows:
+        trade_date = None
+        try:
+            found = str(row.get(HISTORY_SYMBOL, "")).strip().upper()
+            if found != symbol:
+                raise ValueError(f"row reports symbol {found!r}, requested {symbol!r}")
+            trade_date = _history_date(row.get(HISTORY_DATE))
+            if not start <= trade_date <= end:
+                raise ValueError("row falls outside the requested date range")
+            if trade_date in seen:
+                raise ValueError("duplicate trade date in provider response")
+            seen.add(trade_date)
+            close = _decimal(row.get(HISTORY_CLOSE), HISTORY_CLOSE, positive=True)
+            high = _decimal(row.get(HISTORY_HIGH), HISTORY_HIGH, positive=True)
+            low = _decimal(row.get(HISTORY_LOW), HISTORY_LOW, positive=True)
+            turnover = _decimal(row.get(HISTORY_TURNOVER), HISTORY_TURNOVER, nonnegative=True)
+            vwap = _decimal(row.get(HISTORY_VWAP), HISTORY_VWAP, nonnegative=True)
+            if vwap <= 0:
+                raise ValueError(f"{HISTORY_VWAP} is zero; share volume cannot be derived from turnover")
+            volume = int((turnover / vwap).to_integral_value(rounding=ROUND_HALF_UP))
+            records.append({"table": "MarketData", "values": {
+                "TradeDate": trade_date.isoformat(),
+                "CompanyId": int(company_id),
+                "OpenPrice": None,
+                "HighPrice": str(high),
+                "LowPrice": str(low),
+                "ClosePrice": str(close),
+                "Volume": volume,
+                "ValueTraded": str(turnover),
+                "SourcePriority": int(source_priority),
+            }, "source": {
+                "provider": HISTORY_PROVIDER,
+                "observed_at": captured,
+                "raw_sha256": digest,
+                "source_url": HISTORY_ENDPOINT,
+                "parser_version": "warehouse-isyatirim-history-1.0.0",
+                "symbol": symbol,
+                "currency": "TRY",
+                "price_basis": "as_traded",
+                "price_series": "HG_* raw traded series; HGDG_* back-adjusted series not used",
+                "source_priority": int(source_priority),
+                "snapshot_scope": "daily_history_replay",
+                "field_semantics": {
+                    "OpenPrice": "not reported by this product; the daily snapshot supplies it going forward",
+                    "HighPrice": f"provider {HISTORY_HIGH}", "LowPrice": f"provider {HISTORY_LOW}",
+                    "ClosePrice": f"provider {HISTORY_CLOSE}; equals PD / SERMAYE in the source row",
+                    "ValueTraded": f"provider {HISTORY_TURNOVER}; actual TRY turnover",
+                    "Volume": f"derived {HISTORY_TURNOVER} / {HISTORY_VWAP} (turnover / VWAP), rounded half-up; "
+                              "the published VWAP carries three decimals, so the share count can differ "
+                              "from the exchange figure by a few shares (~0.0001% on a 19.5M-share day)",
+                },
+                "derivations": {"Volume": {"method": "turnover_divided_by_vwap",
+                                           "turnover": str(turnover), "vwap": str(vwap)}},
+            }})
+        except (ValueError, TypeError, ArithmeticError) as exc:
+            errors.append({"symbol": symbol, "trade_date": trade_date.isoformat() if trade_date else None,
+                           "error": str(exc)})
+    return bundle(records, errors)
 
 
 def build_isyatirim_daily(*, company_map=None, index_map=None, company_codes=None,

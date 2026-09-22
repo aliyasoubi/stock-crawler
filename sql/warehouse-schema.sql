@@ -64,7 +64,7 @@ IF OBJECT_ID(N'dbo.MarketData', N'U') IS NULL
 CREATE TABLE dbo.MarketData (
  TradeDate date NOT NULL,
  CompanyId int NOT NULL REFERENCES dbo.Company(CompanyId),
- OpenPrice decimal(18,4) NOT NULL,
+ OpenPrice decimal(18,4) NULL,
  HighPrice decimal(18,4) NOT NULL,
  LowPrice decimal(18,4) NOT NULL,
  ClosePrice decimal(18,4) NOT NULL,
