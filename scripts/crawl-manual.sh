@@ -76,7 +76,7 @@ else
   [[ -f config/companies_manual.txt ]] || { echo 'Missing config/companies_manual.txt.' >&2; exit 2; }
   selection=(--company-file /app/config/companies_manual.txt)
 fi
-for file in docker-compose.yml compose.db-local.yml compose.proxy-host.yml src/stock_crawler/main.py; do
+for file in docker-compose.yml compose.db-local.yml compose.proxy-host.yml src/stock_crawler/crawl/cli.py; do
   [[ -f "$file" ]] || { echo "Missing project file: $file. Copy this script into your project's scripts folder." >&2; exit 2; }
 done
 export CRAWLER_PROXY_URL="${CRAWLER_PROXY_URL:-socks5h://127.0.0.1:10808}"
@@ -91,7 +91,7 @@ args=("${compose[@]}" run --rm --no-deps --pull never
   --env REQUEST_DELAY_MIN_SECONDS=15 --env REQUEST_DELAY_MAX_SECONDS=30
   --env REQUEST_TIMEOUT_SECONDS=60 --env MAX_RETRIES=2
   --env DISCOVERY_INTERVAL_HOURS=24
-  --entrypoint python crawler -m stock_crawler.main sync
+  --entrypoint python crawler -m stock_crawler.crawl.cli sync
   "${selection[@]}" --limit "$limit")
 (( refresh == 0 )) || args+=(--refresh)
 if (( dry_run )); then

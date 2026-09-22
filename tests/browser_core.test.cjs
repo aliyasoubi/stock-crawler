@@ -1,6 +1,6 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
-const core = require('../src/stock_crawler/browser/core.js');
+const core = require('../src/stock_crawler/crawl/browser/core.js');
 test('Retry-After dates and seconds are persisted with at least an hour cooldown', () => {
   assert.equal(core.retryUntil('7200', 0), 7200000);
   assert.equal(core.retryUntil('10', 0), 3600000);

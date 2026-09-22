@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-21",
+  "python_tests": {
+    "passed": 223,
+    "skipped": 1,
+    "skip_reason": "SQL Server integration requires an explicitly configured reachable server"
+  },
+  "new_warehouse_tests_passed": 25,
+  "browser_tests_passed": 3,
+  "sample": {
+    "company": "ASELS",
+    "fiscal_year": 2025,
+    "periods": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "input_workbooks": 2,
+    "records": 4,
+    "source_errors": 0,
+    "financial_fields_available": 8,
+    "financial_fields_missing": 7,
+    "company_id_supplied": false,
+    "live_source_requests": 0,
+    "sql_writes": 0
+  },
+  "not_exercised": [
+    "SQL Server staging/promotion execution",
+    "live extended KAP request",
+    "live BIST/Is Yatirim data request",
+    "live authenticated EVDS request",
+    "Docker rebuild"
+  ]
+}

@@ -1,3 +1,7 @@
+> **Start here for the seven requested tables:** [docs/warehouse-quickstart.md](docs/warehouse-quickstart.md). Includes setup, static seeds, real ID exports, TCMB FX, imports and SQL/Grafana queries.
+
+> New client warehouse workflow: see [docs/WAREHOUSE-IMPLEMENTATION.md](docs/WAREHOUSE-IMPLEMENTATION.md) for quarterly KAP imports and the seven target tables (FactorStore excluded).
+
 # Stock Fundamental Crawler
 
 Collect KAP annual financial statement comparison exports, retain the original
@@ -9,7 +13,7 @@ This guide matches the supplied project version: Python package `0.2.1`, SQL Ser
 
 ## Choose your starting point
 
-- **September 19 crash / upgrading an existing installation:** follow [FIXES-2026-09-19.md](FIXES-2026-09-19.md). Rebuild the crawler image before applying the schema migration or syncing.
+- **September 19 crash / upgrading an existing installation:** follow [docs/history/FIXES-2026-09-19.md](docs/history/FIXES-2026-09-19.md). Rebuild the crawler image before applying the schema migration or syncing.
 - **Already installed and working:** use [Everyday crawling](#everyday-crawling).
 - **New installation:** follow [First installation on Ubuntu](#first-installation-on-ubuntu).
 - **Expand beyond THYAO and ASELS:** follow [Collect the candidate company list](#collect-the-candidate-company-list).
@@ -599,7 +603,7 @@ Do not add `-v` when you intend to preserve database and Grafana volumes.
 
 Docker is the primary installation path above. The optional `native` helper mode
 expects `.venv-native/bin/stock-crawler` and uses the same local SQL port, proxy,
-and project data directory. See [UBUNTU-PROXY.md](UBUNTU-PROXY.md) for native setup,
+and project data directory. See [docs/ubuntu-proxy.md](docs/ubuntu-proxy.md) for native setup,
 including Python 3.12 and Microsoft ODBC Driver 18. Merely selecting `native`
 does not install its virtual environment.
 
@@ -647,7 +651,7 @@ another environment do not verify your installation's live KAP access.
 | `scripts/crawler-ubuntu.sh` | Ubuntu Docker/native launcher |
 | `scripts/review-run.py` | Summarise the newest run; `--write-pending FILE` |
 
-See [REVIEW-2026-09-21.md](REVIEW-2026-09-21.md) for the September 19 run analysis and the
+See [docs/history/REVIEW-2026-09-21.md](docs/history/REVIEW-2026-09-21.md) for the September 19 run analysis and the
 decisions behind per-year freshness, HOLDING support, title normalization and the client
-export's scope policy; [FIXES-2026-09-19.md](FIXES-2026-09-19.md) and [REVIEW.md](REVIEW.md)
+export's scope policy; [docs/history/FIXES-2026-09-19.md](docs/history/FIXES-2026-09-19.md) and [docs/history/REVIEW.md](docs/history/REVIEW.md)
 for earlier ones.

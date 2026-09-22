@@ -12,6 +12,7 @@ Usage: bash scripts/crawler-ubuntu.sh MODE [crawler arguments]
   db                         Start the existing SQL container with a loopback port.
   docker probe-source        Run the crawler using Ubuntu host networking.
   docker sync --tickers THYAO,ASELS
+  warehouse --help            Run the warehouse CLI using the same SQL/proxy setup.
   native probe-source        Run .venv-native/bin/stock-crawler on Ubuntu.
   native sync --tickers THYAO,ASELS
 Optional exported settings:
@@ -40,9 +41,13 @@ case "$mode" in
     if (( $# == 0 )); then set -- --help; fi
     exec "${compose[@]}" -f compose.proxy-host.yml run --rm crawler "$@"
     ;;
+  warehouse)
+    if (( $# == 0 )); then set -- --help; fi
+    exec "${compose[@]}" -f compose.proxy-host.yml run --rm --no-deps --entrypoint stock-warehouse crawler "$@"
+    ;;
   native)
     [[ -x .venv-native/bin/stock-crawler ]] || {
-      echo 'Install this project in .venv-native with Python 3.12; see UBUNTU-PROXY.md.' >&2
+      echo 'Install this project in .venv-native with Python 3.12; see docs/ubuntu-proxy.md.' >&2
       exit 2
     }
     export MSSQL_HOST=127.0.0.1 MSSQL_PORT="$CRAWLER_DB_HOST_PORT"

@@ -1,0 +1,764 @@
+{
+  "errors": [],
+  "http_attempts": 0,
+  "kind": "warehouse_bundle",
+  "parser_version": "warehouse-kap-1.0.0",
+  "records": [
+    {
+      "missing_required_fields": [
+        "CompanyId",
+        "Ebitda",
+        "TotalDebtShort",
+        "TotalDebtLong",
+        "CashAndEquivalents",
+        "FreeCashFlow",
+        "Eps",
+        "SharesOutstanding"
+      ],
+      "source": {
+        "balance_sheet_basis": "period_end",
+        "currency": "TRY",
+        "currency_scale": 1000,
+        "fields": {
+          "CurrentLiabilities": {
+            "definition": null,
+            "evidence": null,
+            "header": "Current Liabilities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "74.403.620",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "Equity": {
+            "definition": null,
+            "evidence": null,
+            "header": "Total Equity",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "157.722.276",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "NetIncome": {
+            "definition": null,
+            "evidence": null,
+            "header": "Net Profit (Loss)",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "2.133.491",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "NonCurrentLiabilities": {
+            "definition": null,
+            "evidence": null,
+            "header": "Non-current Liabilities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "37.919.885",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "OperatingIncome": {
+            "definition": null,
+            "evidence": null,
+            "header": "Profit (Loss) From Operating Activities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "7.406.479",
+            "scale": "1000",
+            "workbook_sha256": [
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "Revenue": {
+            "definition": null,
+            "evidence": null,
+            "header": "Revenue",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "22.790.773",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "TotalAssets": {
+            "definition": null,
+            "evidence": null,
+            "header": "Total Assets",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "270.045.781",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "TotalLiabilities": {
+            "definition": null,
+            "evidence": null,
+            "header": "Total Liabilities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "112.323.505",
+            "scale": "1000",
+            "workbook_sha256": [
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          }
+        },
+        "measuring_unit_date": "2025-03-31",
+        "net_income_basis": "total-profit",
+        "notification_id": "1431115",
+        "observed_at": "2026-09-21T10:41:16.432012+00:00",
+        "parser_version": "warehouse-kap-1.0.0",
+        "period_basis": "YTD",
+        "period_dates_inferred": true,
+        "provider": "kap_compare",
+        "published_at": "2025-04-29T15:30:43+00:00",
+        "raw_headers": {
+          "Company": "ASELSAN ELEKTRONİK SANAYİ VE TİCARET A.Ş.",
+          "Cost of Sales": "-15.969.400",
+          "Current Liabilities": "74.403.620",
+          "Gross Profit (Loss)": "6.821.373",
+          "Nature of Financial Statement": "Consolidated",
+          "Net Profit (Loss)": "2.133.491",
+          "Non-current Liabilities": "37.919.885",
+          "Notification ID": "1431115",
+          "Period": "1",
+          "Presentation Currency": "1000TL",
+          "Profit (Loss) Attributable To, Non-controlling Interests": "-141.325",
+          "Profit (Loss) Attributable To, Owners of Parent": "2.274.816",
+          "Profit (Loss) From Operating Activities": "7.406.479",
+          "Publish Date": "29-04-2025 18:30:43",
+          "Revenue": "22.790.773",
+          "Sectoral Statement Type": "general",
+          "Total Assets": "270.045.781",
+          "Total Equity": "157.722.276",
+          "Total Liabilities": "112.323.505",
+          "Total Liabilities and Equity": "270.045.781",
+          "Year": "2025"
+        },
+        "scope": "consolidated",
+        "statement_type": "general",
+        "warning": "Latest current-column snapshots; not a point-in-time or restatement-complete history. Do not subtract IAS29 YTD periods without matching measuring units.",
+        "workbook_sha256": [
+          "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+          "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+        ]
+      },
+      "table": "CompanyFundamental",
+      "ticker": "ASELS",
+      "validation_issues": [],
+      "values": {
+        "CashAndEquivalents": null,
+        "CompanyId": null,
+        "CurrentLiabilities": "74403620000.0000",
+        "Ebitda": null,
+        "Eps": null,
+        "Equity": "157722276000.0000",
+        "FiscalQuarter": 1,
+        "FiscalYear": 2025,
+        "FreeCashFlow": null,
+        "NetIncome": "2133491000.0000",
+        "NonCurrentLiabilities": "37919885000.0000",
+        "OperatingIncome": "7406479000.0000",
+        "PeriodEndDate": "2025-03-31",
+        "PublishDate": "2025-04-29",
+        "Revenue": "22790773000.0000",
+        "SharesOutstanding": null,
+        "TotalAssets": "270045781000.0000",
+        "TotalDebtLong": null,
+        "TotalDebtShort": null,
+        "TotalLiabilities": "112323505000.0000"
+      }
+    },
+    {
+      "missing_required_fields": [
+        "CompanyId",
+        "Ebitda",
+        "TotalDebtShort",
+        "TotalDebtLong",
+        "CashAndEquivalents",
+        "FreeCashFlow",
+        "Eps",
+        "SharesOutstanding"
+      ],
+      "source": {
+        "balance_sheet_basis": "period_end",
+        "currency": "TRY",
+        "currency_scale": 1000,
+        "fields": {
+          "CurrentLiabilities": {
+            "definition": null,
+            "evidence": null,
+            "header": "Current Liabilities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "90.697.997",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "Equity": {
+            "definition": null,
+            "evidence": null,
+            "header": "Total Equity",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "170.245.602",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "NetIncome": {
+            "definition": null,
+            "evidence": null,
+            "header": "Net Profit (Loss)",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "6.410.609",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "NonCurrentLiabilities": {
+            "definition": null,
+            "evidence": null,
+            "header": "Non-current Liabilities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "29.328.706",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "OperatingIncome": {
+            "definition": null,
+            "evidence": null,
+            "header": "Profit (Loss) From Operating Activities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "17.458.086",
+            "scale": "1000",
+            "workbook_sha256": [
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "Revenue": {
+            "definition": null,
+            "evidence": null,
+            "header": "Revenue",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "53.710.197",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "TotalAssets": {
+            "definition": null,
+            "evidence": null,
+            "header": "Total Assets",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "290.272.305",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "TotalLiabilities": {
+            "definition": null,
+            "evidence": null,
+            "header": "Total Liabilities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "120.026.703",
+            "scale": "1000",
+            "workbook_sha256": [
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          }
+        },
+        "measuring_unit_date": "2025-06-30",
+        "net_income_basis": "total-profit",
+        "notification_id": "1472637",
+        "observed_at": "2026-09-21T10:41:16.432012+00:00",
+        "parser_version": "warehouse-kap-1.0.0",
+        "period_basis": "YTD",
+        "period_dates_inferred": true,
+        "provider": "kap_compare",
+        "published_at": "2025-08-05T16:33:50+00:00",
+        "raw_headers": {
+          "Company": "ASELSAN ELEKTRONİK SANAYİ VE TİCARET A.Ş.",
+          "Cost of Sales": "-36.522.229",
+          "Current Liabilities": "90.697.997",
+          "Gross Profit (Loss)": "17.187.968",
+          "Nature of Financial Statement": "Consolidated",
+          "Net Profit (Loss)": "6.410.609",
+          "Non-current Liabilities": "29.328.706",
+          "Notification ID": "1472637",
+          "Period": "2",
+          "Presentation Currency": "1000TL",
+          "Profit (Loss) Attributable To, Non-controlling Interests": "5.865",
+          "Profit (Loss) Attributable To, Owners of Parent": "6.404.744",
+          "Profit (Loss) From Operating Activities": "17.458.086",
+          "Publish Date": "05-08-2025 19:33:50",
+          "Revenue": "53.710.197",
+          "Sectoral Statement Type": "general",
+          "Total Assets": "290.272.305",
+          "Total Equity": "170.245.602",
+          "Total Liabilities": "120.026.703",
+          "Total Liabilities and Equity": "290.272.305",
+          "Year": "2025"
+        },
+        "scope": "consolidated",
+        "statement_type": "general",
+        "warning": "Latest current-column snapshots; not a point-in-time or restatement-complete history. Do not subtract IAS29 YTD periods without matching measuring units.",
+        "workbook_sha256": [
+          "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+          "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+        ]
+      },
+      "table": "CompanyFundamental",
+      "ticker": "ASELS",
+      "validation_issues": [],
+      "values": {
+        "CashAndEquivalents": null,
+        "CompanyId": null,
+        "CurrentLiabilities": "90697997000.0000",
+        "Ebitda": null,
+        "Eps": null,
+        "Equity": "170245602000.0000",
+        "FiscalQuarter": 2,
+        "FiscalYear": 2025,
+        "FreeCashFlow": null,
+        "NetIncome": "6410609000.0000",
+        "NonCurrentLiabilities": "29328706000.0000",
+        "OperatingIncome": "17458086000.0000",
+        "PeriodEndDate": "2025-06-30",
+        "PublishDate": "2025-08-05",
+        "Revenue": "53710197000.0000",
+        "SharesOutstanding": null,
+        "TotalAssets": "290272305000.0000",
+        "TotalDebtLong": null,
+        "TotalDebtShort": null,
+        "TotalLiabilities": "120026703000.0000"
+      }
+    },
+    {
+      "missing_required_fields": [
+        "CompanyId",
+        "Ebitda",
+        "TotalDebtShort",
+        "TotalDebtLong",
+        "CashAndEquivalents",
+        "FreeCashFlow",
+        "Eps",
+        "SharesOutstanding"
+      ],
+      "source": {
+        "balance_sheet_basis": "period_end",
+        "currency": "TRY",
+        "currency_scale": 1000,
+        "fields": {
+          "CurrentLiabilities": {
+            "definition": null,
+            "evidence": null,
+            "header": "Current Liabilities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "98.423.385",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "Equity": {
+            "definition": null,
+            "evidence": null,
+            "header": "Total Equity",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "187.622.247",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "NetIncome": {
+            "definition": null,
+            "evidence": null,
+            "header": "Net Profit (Loss)",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "11.587.759",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "NonCurrentLiabilities": {
+            "definition": null,
+            "evidence": null,
+            "header": "Non-current Liabilities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "38.273.720",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "OperatingIncome": {
+            "definition": null,
+            "evidence": null,
+            "header": "Profit (Loss) From Operating Activities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "26.273.798",
+            "scale": "1000",
+            "workbook_sha256": [
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "Revenue": {
+            "definition": null,
+            "evidence": null,
+            "header": "Revenue",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "90.872.870",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "TotalAssets": {
+            "definition": null,
+            "evidence": null,
+            "header": "Total Assets",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "324.319.352",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "TotalLiabilities": {
+            "definition": null,
+            "evidence": null,
+            "header": "Total Liabilities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "136.697.105",
+            "scale": "1000",
+            "workbook_sha256": [
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          }
+        },
+        "measuring_unit_date": "2025-09-30",
+        "net_income_basis": "total-profit",
+        "notification_id": "1511313",
+        "observed_at": "2026-09-21T10:41:16.432012+00:00",
+        "parser_version": "warehouse-kap-1.0.0",
+        "period_basis": "YTD",
+        "period_dates_inferred": true,
+        "provider": "kap_compare",
+        "published_at": "2025-11-04T15:37:58+00:00",
+        "raw_headers": {
+          "Company": "ASELSAN ELEKTRONİK SANAYİ VE TİCARET A.Ş.",
+          "Cost of Sales": "-62.784.749",
+          "Current Liabilities": "98.423.385",
+          "Gross Profit (Loss)": "28.088.121",
+          "Nature of Financial Statement": "Consolidated",
+          "Net Profit (Loss)": "11.587.759",
+          "Non-current Liabilities": "38.273.720",
+          "Notification ID": "1511313",
+          "Period": "3",
+          "Presentation Currency": "1000TL",
+          "Profit (Loss) Attributable To, Non-controlling Interests": "-62.929",
+          "Profit (Loss) Attributable To, Owners of Parent": "11.650.688",
+          "Profit (Loss) From Operating Activities": "26.273.798",
+          "Publish Date": "04-11-2025 18:37:58",
+          "Revenue": "90.872.870",
+          "Sectoral Statement Type": "general",
+          "Total Assets": "324.319.352",
+          "Total Equity": "187.622.247",
+          "Total Liabilities": "136.697.105",
+          "Total Liabilities and Equity": "324.319.352",
+          "Year": "2025"
+        },
+        "scope": "consolidated",
+        "statement_type": "general",
+        "warning": "Latest current-column snapshots; not a point-in-time or restatement-complete history. Do not subtract IAS29 YTD periods without matching measuring units.",
+        "workbook_sha256": [
+          "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+          "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+        ]
+      },
+      "table": "CompanyFundamental",
+      "ticker": "ASELS",
+      "validation_issues": [],
+      "values": {
+        "CashAndEquivalents": null,
+        "CompanyId": null,
+        "CurrentLiabilities": "98423385000.0000",
+        "Ebitda": null,
+        "Eps": null,
+        "Equity": "187622247000.0000",
+        "FiscalQuarter": 3,
+        "FiscalYear": 2025,
+        "FreeCashFlow": null,
+        "NetIncome": "11587759000.0000",
+        "NonCurrentLiabilities": "38273720000.0000",
+        "OperatingIncome": "26273798000.0000",
+        "PeriodEndDate": "2025-09-30",
+        "PublishDate": "2025-11-04",
+        "Revenue": "90872870000.0000",
+        "SharesOutstanding": null,
+        "TotalAssets": "324319352000.0000",
+        "TotalDebtLong": null,
+        "TotalDebtShort": null,
+        "TotalLiabilities": "136697105000.0000"
+      }
+    },
+    {
+      "missing_required_fields": [
+        "CompanyId",
+        "Ebitda",
+        "TotalDebtShort",
+        "TotalDebtLong",
+        "CashAndEquivalents",
+        "FreeCashFlow",
+        "Eps",
+        "SharesOutstanding"
+      ],
+      "source": {
+        "balance_sheet_basis": "period_end",
+        "currency": "TRY",
+        "currency_scale": 1000,
+        "fields": {
+          "CurrentLiabilities": {
+            "definition": null,
+            "evidence": null,
+            "header": "Current Liabilities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "126.229.330",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "Equity": {
+            "definition": null,
+            "evidence": null,
+            "header": "Total Equity",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "251.786.294",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "NetIncome": {
+            "definition": null,
+            "evidence": null,
+            "header": "Net Profit (Loss)",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "29.917.727",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "NonCurrentLiabilities": {
+            "definition": null,
+            "evidence": null,
+            "header": "Non-current Liabilities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "53.571.705",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "OperatingIncome": {
+            "definition": null,
+            "evidence": null,
+            "header": "Profit (Loss) From Operating Activities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "49.145.855",
+            "scale": "1000",
+            "workbook_sha256": [
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "Revenue": {
+            "definition": null,
+            "evidence": null,
+            "header": "Revenue",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "180.444.938",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "TotalAssets": {
+            "definition": null,
+            "evidence": null,
+            "header": "Total Assets",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "431.587.329",
+            "scale": "1000",
+            "workbook_sha256": [
+              "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          },
+          "TotalLiabilities": {
+            "definition": null,
+            "evidence": null,
+            "header": "Total Liabilities",
+            "item_id": null,
+            "method": "reported",
+            "raw_value": "179.801.035",
+            "scale": "1000",
+            "workbook_sha256": [
+              "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+            ]
+          }
+        },
+        "measuring_unit_date": "2025-12-31",
+        "net_income_basis": "total-profit",
+        "notification_id": "1561039",
+        "observed_at": "2026-09-21T10:41:16.432012+00:00",
+        "parser_version": "warehouse-kap-1.0.0",
+        "period_basis": "YTD",
+        "period_dates_inferred": true,
+        "provider": "kap_compare",
+        "published_at": "2026-02-24T15:27:36+00:00",
+        "raw_headers": {
+          "Company": "ASELSAN ELEKTRONİK SANAYİ VE TİCARET A.Ş.",
+          "Cost of Sales": "-123.017.908",
+          "Current Liabilities": "126.229.330",
+          "Gross Profit (Loss)": "57.427.030",
+          "Nature of Financial Statement": "Consolidated",
+          "Net Profit (Loss)": "29.917.727",
+          "Non-current Liabilities": "53.571.705",
+          "Notification ID": "1561039",
+          "Period": "4",
+          "Presentation Currency": "1000TL",
+          "Profit (Loss) Attributable To, Non-controlling Interests": "-31.790",
+          "Profit (Loss) Attributable To, Owners of Parent": "29.949.517",
+          "Profit (Loss) From Operating Activities": "49.145.855",
+          "Publish Date": "24-02-2026 18:27:36",
+          "Revenue": "180.444.938",
+          "Sectoral Statement Type": "general",
+          "Total Assets": "431.587.329",
+          "Total Equity": "251.786.294",
+          "Total Liabilities": "179.801.035",
+          "Total Liabilities and Equity": "431.587.329",
+          "Year": "2025"
+        },
+        "scope": "consolidated",
+        "statement_type": "general",
+        "warning": "Latest current-column snapshots; not a point-in-time or restatement-complete history. Do not subtract IAS29 YTD periods without matching measuring units.",
+        "workbook_sha256": [
+          "4101d70acae9b08ed60371a7655de2c9676ea8e5e6bc0a08c1dbbe26065ec426",
+          "476fca9d4a2fe07699a0e23cd1af858ec26e4c808bd710b347658192b497b7f0"
+        ]
+      },
+      "table": "CompanyFundamental",
+      "ticker": "ASELS",
+      "validation_issues": [],
+      "values": {
+        "CashAndEquivalents": null,
+        "CompanyId": null,
+        "CurrentLiabilities": "126229330000.0000",
+        "Ebitda": null,
+        "Eps": null,
+        "Equity": "251786294000.0000",
+        "FiscalQuarter": 4,
+        "FiscalYear": 2025,
+        "FreeCashFlow": null,
+        "NetIncome": "29917727000.0000",
+        "NonCurrentLiabilities": "53571705000.0000",
+        "OperatingIncome": "49145855000.0000",
+        "PeriodEndDate": "2025-12-31",
+        "PublishDate": "2026-02-24",
+        "Revenue": "180444938000.0000",
+        "SharesOutstanding": null,
+        "TotalAssets": "431587329000.0000",
+        "TotalDebtLong": null,
+        "TotalDebtShort": null,
+        "TotalLiabilities": "179801035000.0000"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "source_workbooks": 2,
+  "summary": {
+    "missing_fields": {
+      "CashAndEquivalents": 4,
+      "CompanyId": 4,
+      "Ebitda": 4,
+      "Eps": 4,
+      "FreeCashFlow": 4,
+      "SharesOutstanding": 4,
+      "TotalDebtLong": 4,
+      "TotalDebtShort": 4
+    },
+    "ready": 0,
+    "records": 4
+  }
+}

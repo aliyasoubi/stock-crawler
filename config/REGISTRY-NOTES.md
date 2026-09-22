@@ -3,7 +3,7 @@
 The registry uses exact, whitespace/case-normalized names and explicit aliases.
 Never infer identity from XLSX row order or a partial name.
 
-Two mechanisms were added on 2026-09-21 (see `REVIEW-2026-09-21.md`):
+Two mechanisms were added on 2026-09-21 (see `docs/history/REVIEW-2026-09-21.md`):
 
 - **Normalized matching** (`kap_export.loose_key`): tried only when the exact key
   finds nothing. It folds diacritics and punctuation, drops `VE` and a trailing

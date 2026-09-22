@@ -1,0 +1,17 @@
+{
+  "verified": false,
+  "catalog_evidence": "REPLACE: official catalog URL, retrieval date, and confirmed series definition",
+  "base_url": "https://evds3.tcmb.gov.tr/igmevdsms-dis/",
+  "date_key": "Tarih",
+  "series": [
+    {
+      "target": "FxRateUsd",
+      "code": "REPLACE_WITH_CURRENT_VERIFIED_CODE",
+      "json_key": "REPLACE_WITH_OBSERVED_RESPONSE_KEY",
+      "frequency": "D",
+      "unit": "TRY per USD",
+      "definition": "TCMB USD foreign-exchange buying rate; not selling rate or banknote rate",
+      "scale": "1"
+    }
+  ]
+}

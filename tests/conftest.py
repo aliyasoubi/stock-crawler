@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from stock_crawler.config import Settings
-from stock_crawler.kap import FixtureSourceClient
-from stock_crawler.pipeline import Pipeline
-from stock_crawler.storage import RawStore, StateStore
+from stock_crawler.core.config import Settings
+from stock_crawler.crawl.kap import FixtureSourceClient
+from stock_crawler.crawl.pipeline import Pipeline
+from stock_crawler.core.storage import RawStore, StateStore
 
 from .fakes import InMemoryRepository
 

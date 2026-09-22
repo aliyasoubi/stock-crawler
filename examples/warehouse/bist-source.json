@@ -1,0 +1,9 @@
+{
+  "provider": "bist",
+  "source_priority": 1,
+  "price_basis": "as_traded",
+  "currency": "TRY",
+  "volume_unit": "shares",
+  "value_traded_unit": "TRY",
+  "note": "Use only after confirming these semantics in the supplied BIST file. Add source_url and observed_at from the capture metadata."
+}

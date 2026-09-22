@@ -1,0 +1,28 @@
+{
+  "verified": false,
+  "evidence": "REPLACE: actual file name, BIST format version, date and unit confirmation",
+  "table": "MarketData",
+  "format": "csv",
+  "encoding": "utf-8-sig",
+  "delimiter": ";",
+  "source": {
+    "provider": "bist",
+    "source_priority": 1,
+    "price_basis": "as_traded",
+    "volume_unit": "shares; confirm conversion from lots if applicable",
+    "value_traded_unit": "TRY",
+    "currency": "TRY"
+  },
+  "filters": {},
+  "fields": {
+    "CompanyId": {"column": "REPLACE_TICKER_HEADER", "lookup": {}},
+    "TradeDate": {"column": "REPLACE_DATE_HEADER", "date_format": "%d.%m.%Y"},
+    "OpenPrice": {"column": "REPLACE_OPEN_HEADER", "number_format": "english_grouped"},
+    "HighPrice": {"column": "REPLACE_HIGH_HEADER", "number_format": "english_grouped"},
+    "LowPrice": {"column": "REPLACE_LOW_HEADER", "number_format": "english_grouped"},
+    "ClosePrice": {"column": "REPLACE_CLOSE_HEADER", "number_format": "english_grouped"},
+    "Volume": {"column": "REPLACE_VOLUME_HEADER", "number_format": "english_grouped", "scale": "1"},
+    "ValueTraded": {"column": "REPLACE_VALUE_HEADER", "number_format": "english_grouped", "scale": "1"},
+    "SourcePriority": {"constant": 1}
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "REPLACE_WITH_EXACT_CASH_HEADER": {
+    "target": "CashAndEquivalents",
+    "unit": "money",
+    "item_id": "REPLACE_WITH_CAPTURED_ITEM_ID",
+    "evidence": "REPLACE: KAP request filename, response workbook hash, notification and mapping review date"
+  },
+  "REPLACE_WITH_EXACT_EPS_HEADER": {
+    "target": "Eps",
+    "unit": "per_share",
+    "scale": "1",
+    "definition": "REPLACE: basic/diluted; currency per legal share or per nominal trading unit; verified unit scale",
+    "item_id": "REPLACE_WITH_CAPTURED_ITEM_ID",
+    "evidence": "REPLACE: captured request and same-notification source note"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "provider": "bist_reference",
+  "evidence": "REPLACE: current official listing/reference file, effective date and identity reconciliation",
+  "ipo_date_definition": "Confirm whether client means offering date or first trading date. They are not automatically the same."
+}

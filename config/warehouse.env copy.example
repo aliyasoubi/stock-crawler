@@ -1,0 +1,12 @@
+# Copy to config/warehouse.env. This file takes precedence over Docker MSSQL_* variables.
+# Ubuntu warehouse wrapper uses host networking, so the published SQL port is on loopback.
+MSSQL_HOST=127.0.0.1
+MSSQL_PORT=1433
+MSSQL_DATABASE=StockFundamentals
+MSSQL_USER=crawler_writer
+MSSQL_PASSWORD=REPLACE_WITH_EXISTING_CRAWLER_WRITER_PASSWORD
+MSSQL_ENCRYPT=true
+MSSQL_TRUST_SERVER_CERTIFICATE=true
+# For init-db only: make a separate warehouse-admin.env with an existing DDL-capable
+# SQL login (for example sa and its existing password). The database must exist.
+# For ordinary docker compose networking use MSSQL_HOST=mssql instead of 127.0.0.1.

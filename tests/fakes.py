@@ -5,8 +5,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from stock_crawler.db import CompanyRow, DatabaseError, IdentityConflict, ReportVersionRow
-from stock_crawler.models import CompanyIdentity, FundamentalRecord, ReportRecord
+from stock_crawler.core.db import CompanyRow, DatabaseError, IdentityConflict, ReportVersionRow
+from stock_crawler.core.models import CompanyIdentity, FundamentalRecord, ReportRecord
 
 
 class InMemoryRepository:

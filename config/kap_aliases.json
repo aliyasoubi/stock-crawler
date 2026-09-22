@@ -1,0 +1,265 @@
+{
+  "aliases": [
+    {
+      "evidence": {
+        "method": "single_company_export",
+        "notifications": [
+          {
+            "fiscal_year": 2021,
+            "notification_id": "1004137"
+          },
+          {
+            "fiscal_year": 2022,
+            "notification_id": "1113296"
+          },
+          {
+            "fiscal_year": 2023,
+            "notification_id": "1280778"
+          }
+        ],
+        "request": {
+          "mkkMemberIdList": [
+            "402821824bf524dc014bff15df9f2027"
+          ],
+          "yearList": [
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025"
+          ]
+        },
+        "workbook_sha256": "7524e5fb3b672c724541feb817173e9b4b98c0693beec65ed9b3df2717422335"
+      },
+      "ticker": "INTEK",
+      "title": "UZERTAŞ BOYA SANAYİ TİCARET VE YATIRIM A.Ş.",
+      "verified_at": "2026-09-22T10:38:24.135503+00:00"
+    },
+    {
+      "evidence": {
+        "method": "single_company_export",
+        "notifications": [
+          {
+            "fiscal_year": 2021,
+            "notification_id": "1002617"
+          },
+          {
+            "fiscal_year": 2022,
+            "notification_id": "1117948"
+          },
+          {
+            "fiscal_year": 2023,
+            "notification_id": "1268741"
+          }
+        ],
+        "request": {
+          "mkkMemberIdList": [
+            "4028e4a240f2ef4701411763ed38047c"
+          ],
+          "yearList": [
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025"
+          ]
+        },
+        "workbook_sha256": "84679d1e403e8d91a4c1070193a27e69beffaeb6e6748c1b2613764b6ef92ee6"
+      },
+      "ticker": "LYDHO",
+      "title": "MİLPA TİCARİ VE SINAİ ÜRÜNLER PAZARLAMA SANAYİ VE TİCARET A.Ş.",
+      "verified_at": "2026-09-22T10:39:19.224353+00:00"
+    },
+    {
+      "evidence": {
+        "method": "single_company_export",
+        "notifications": [
+          {
+            "fiscal_year": 2021,
+            "notification_id": "1009676"
+          },
+          {
+            "fiscal_year": 2022,
+            "notification_id": "1126507"
+          },
+          {
+            "fiscal_year": 2023,
+            "notification_id": "1250870"
+          }
+        ],
+        "request": {
+          "mkkMemberIdList": [
+            "4028e4a241a25fcb0141a7c3f3302405"
+          ],
+          "yearList": [
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025"
+          ]
+        },
+        "workbook_sha256": "d26bece383aae37aee9b3ae48257496f2df201b8388f53f959c5c8f960ac1cf4"
+      },
+      "ticker": "LYDYE",
+      "title": "TETAMAT GIDA YATIRIMLARI A.Ş.",
+      "verified_at": "2026-09-22T10:39:49.794296+00:00"
+    },
+    {
+      "evidence": {
+        "method": "single_company_export",
+        "notifications": [
+          {
+            "fiscal_year": 2021,
+            "notification_id": "1027899"
+          },
+          {
+            "fiscal_year": 2022,
+            "notification_id": "1105077"
+          },
+          {
+            "fiscal_year": 2023,
+            "notification_id": "1250241"
+          }
+        ],
+        "request": {
+          "mkkMemberIdList": [
+            "8acae2c468aeffb70169914527d01563"
+          ],
+          "yearList": [
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025"
+          ]
+        },
+        "workbook_sha256": "f689dfed14bccbaef91d5298352491fda99dc47f10ba4fe8acde66cf332dd451"
+      },
+      "ticker": "QNBVK",
+      "title": "QNB FİNANS VARLIK KİRALAMA A.Ş.",
+      "verified_at": "2026-09-22T10:40:18.201277+00:00"
+    },
+    {
+      "evidence": {
+        "method": "single_company_export",
+        "notifications": [
+          {
+            "fiscal_year": 2021,
+            "notification_id": "1000000"
+          },
+          {
+            "fiscal_year": 2022,
+            "notification_id": "1123084"
+          },
+          {
+            "fiscal_year": 2023,
+            "notification_id": "1287944"
+          }
+        ],
+        "request": {
+          "mkkMemberIdList": [
+            "4028e4a14158e41f01415a8ea74c4fbe"
+          ],
+          "yearList": [
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025"
+          ]
+        },
+        "workbook_sha256": "233009fedcfb71cddb9f5b3ad18d810e22338c389a6983118833ecd6134190c8"
+      },
+      "ticker": "RUZYE",
+      "title": "ALTINYAĞ MADENCİLİK VE ENERJİ YATIRIMLARI SANAYİ VE TİCARET A.Ş.",
+      "verified_at": "2026-09-22T10:40:50.701908+00:00"
+    },
+    {
+      "evidence": {
+        "method": "single_company_export",
+        "notifications": [
+          {
+            "fiscal_year": 2023,
+            "notification_id": "1277072"
+          }
+        ],
+        "request": {
+          "mkkMemberIdList": [
+            "8acae2c586d22c51018adff79d0f2d15"
+          ],
+          "yearList": [
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025"
+          ]
+        },
+        "workbook_sha256": "1a3dabfd3baa0e6aff99a59d9adb03ca2f607deeb68a3113a16c4db05d1e1bd5"
+      },
+      "ticker": "MEKAG",
+      "title": "MEKA BETON SANTRALLERİ İMALAT SANAYİ VE TİCARET A.Ş.",
+      "verified_at": "2026-09-22T10:41:11.963352+00:00"
+    },
+    {
+      "evidence": {
+        "method": "single_company_export",
+        "notifications": [
+          {
+            "fiscal_year": 2021,
+            "notification_id": "1009960"
+          },
+          {
+            "fiscal_year": 2022,
+            "notification_id": "1123882"
+          },
+          {
+            "fiscal_year": 2023,
+            "notification_id": "1288606"
+          },
+          {
+            "fiscal_year": 2024,
+            "notification_id": "1404599"
+          },
+          {
+            "fiscal_year": 2025,
+            "notification_id": "1597844"
+          }
+        ],
+        "request": {
+          "mkkMemberIdList": [
+            "4028e4a140f2ed720141080991640264"
+          ],
+          "yearList": [
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025"
+          ]
+        },
+        "workbook_sha256": "7db37ad3fb3d61b0f3bb6387b886a86b0d482522be78afa7b8a942d83ebb626b"
+      },
+      "ticker": "USHOL",
+      "title": "MARKA YATIRIM HOLDİNG A.Ş.",
+      "verified_at": "2026-09-22T10:42:33.325256+00:00"
+    }
+  ],
+  "generated_by": "stock-crawler verify-aliases",
+  "updated_at": "2026-09-22T10:42:33.357945+00:00",
+  "verified_empty": [
+    {
+      "ticker": "AAGYO",
+      "verified_at": "2026-09-22T10:42:05.821411+00:00",
+      "workbook_sha256": "c844f1b06d092e9dd385dcf281947ecd479aac479a266e1be8defe67df270b16",
+      "years": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ]
+    }
+  ]
+}

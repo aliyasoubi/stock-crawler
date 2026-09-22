@@ -28,7 +28,8 @@ dev = [
 ]
 
 [project.scripts]
-stock-crawler = "stock_crawler.main:main"
+stock-crawler = "stock_crawler.crawl.cli:main"
+stock-warehouse = "stock_crawler.warehouse.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -42,4 +43,4 @@ markers = [
 ]
 
 [tool.setuptools.package-data]
-stock_crawler = ["sql/*.sql", "browser/*.js"]
+stock_crawler = ["sql/*.sql", "crawl/browser/*.js"]
