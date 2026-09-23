@@ -8,7 +8,8 @@ import httpx
 import pytest
 
 from stock_crawler.warehouse.fundamentals import build_fundamentals, load_mapping
-from stock_crawler.warehouse.loader import validate_record, import_csv, should_replace, load_bundle
+from stock_crawler.warehouse.loader import (validate_record, import_csv, should_replace, load_bundle,
+                                           bundle, is_fatal_error, macro_field_changes)
 from stock_crawler.warehouse.sources import import_evds, evds_url, fetch_snapshot, normalize_vendor_csv
 from stock_crawler.warehouse.cli import main
 
@@ -106,7 +107,7 @@ def market_record(priority=1):
         'OpenPrice': '10', 'HighPrice': '12', 'LowPrice': '9', 'ClosePrice': '11',
         'Volume': '100', 'ValueTraded': '1100', 'SourcePriority': priority},
         'source': {'provider': 'test', 'observed_at': '2025-01-03T00:00:00+00:00',
-                   'price_basis': 'as_traded', 'source_priority': priority}}
+                   'price_basis': 'as_traded', 'currency': 'TRY', 'source_priority': priority}}
 
 
 def test_ohlc_units_volume_and_overflow():
@@ -143,12 +144,13 @@ def test_factorstore_refused():
 def test_csv_duplicate_conflict_and_provenance(tmp_path):
     p = tmp_path / 'index.csv'
     p.write_text('TradeDate,IndexId,ClosePrice\n2025-01-02,5,10000\n')
-    result = import_csv(p, 'MarketIndexData', source={'provider': 'test'}, archive_dir=tmp_path)
+    index_source = {'provider': 'test', 'currency': 'TRY'}
+    result = import_csv(p, 'MarketIndexData', source=index_source, archive_dir=tmp_path)
     assert len(result['records'][0]['source']['raw_sha256']) == 64
     assert result['summary']['ready'] == 1
     p.write_text(p.read_text() + '2025-01-02,5,9999\n')
     with pytest.raises(ValueError, match='conflicting'):
-        import_csv(p, 'MarketIndexData', source={'provider': 'test'}, archive_dir=tmp_path)
+        import_csv(p, 'MarketIndexData', source=index_source, archive_dir=tmp_path)
 
 
 def evds_profile(frequency='M'):
@@ -289,3 +291,135 @@ def test_fcf_and_ebitda_only_from_explicit_matching_inputs(monkeypatch):
     assert r['values']['FreeCashFlow'] == '3000000.0000'
     assert r['values']['Ebitda'] == '49145955000.0000'
     assert r['values']['TotalDebtShort'] is None  # liabilities are not borrowing debt
+
+
+# --- review regressions: batch omissions, scope promotion, currency precedence, --------
+# --- per-field macro vintages and history resume identity -----------------------------
+
+class NotSqlServer:
+    """Stands in for an engine far enough to prove the batch passed the error gate."""
+    dialect = type('d', (), {'name': 'sqlite'})()
+
+
+def macro_record(field, value, observed, *, market_id=1, as_of='2025-01-31'):
+    return validate_record({'table': 'MacroSovereign', 'values': {
+        'MarketId': market_id, 'AsOfDate': as_of, 'PeriodType': 'M', field: value},
+        'source': {'provider': 'tcmb_evds', 'observed_at': observed,
+                   'series_metadata': {field: {'code': f'TP.{field}', 'frequency': 'M',
+                                               'unit': 'x', 'definition': 'd', 'scale': '1'}}}})
+
+
+def test_symbol_omission_does_not_block_the_rest_of_the_batch():
+    """F1: one absent symbol must not suppress every other valid row."""
+    omission = {'symbol': 'ASELS', 'error': 'symbol_missing_from_provider_response'}
+    document = bundle([market_record()], [omission])
+    dry = load_bundle(document)
+    assert (dry['ready'], dry['source_errors'], dry['source_omissions']) == (1, 0, 1)
+    assert dry['omitted_symbols'] == ['ASELS']
+    # The omission is recoverable, so the batch reaches SQL instead of being refused.
+    with pytest.raises(ValueError, match='SQL Server only'):
+        load_bundle(document, engine=NotSqlServer(), apply=True)
+    # An unscoped failure still aborts: it says nothing about which rows are trustworthy.
+    with pytest.raises(ValueError, match='resolve source errors'):
+        load_bundle(bundle([market_record()], [{'error': 'provider rejected the request'}]),
+                    engine=NotSqlServer(), apply=True)
+    assert is_fatal_error({'error': 'boom'}) and not is_fatal_error({'ticker': 'THYAO', 'error': 'x'})
+    assert is_fatal_error({'symbol': 'ASELS', 'error': 'x', 'fatal': True})
+
+
+def fundamental_source(scope, published, notification):
+    return {'provider': 'kap_compare', 'observed_at': '2025-03-01T00:00:00+00:00',
+            'currency': 'TRY', 'scope': scope, 'net_income_basis': 'total',
+            'published_at': published, 'notification_id': notification}
+
+
+def test_consolidated_filing_may_take_over_an_unconsolidated_fallback():
+    """F3: the default consolidated-else-unconsolidated policy must hold across runs."""
+    prior = fundamental_source('unconsolidated', '2025-03-01T00:00:00+00:00', 111)
+    later = fundamental_source('consolidated', '2025-03-10T00:00:00+00:00', 222)
+    row = {'values': {'Revenue': '10'}, 'source': later}
+    assert should_replace('CompanyFundamental', row, {'Revenue': Decimal(5)}, prior)
+    # Never the reverse: a newer unconsolidated filing does not demote a consolidated row.
+    demotion = {'values': {'Revenue': '10'},
+                'source': fundamental_source('unconsolidated', '2025-04-01T00:00:00+00:00', 333)}
+    assert not should_replace('CompanyFundamental', demotion,
+                              {'Revenue': Decimal(5)}, fundamental_source('consolidated', '2025-03-10T00:00:00+00:00', 222))
+    # Nor does an older consolidated filing outrank a newer one already loaded.
+    stale = {'values': {'Revenue': '10'},
+             'source': fundamental_source('consolidated', '2025-01-01T00:00:00+00:00', 1)}
+    assert not should_replace('CompanyFundamental', stale, {'Revenue': Decimal(5)}, prior)
+
+
+def test_price_currency_is_checked_before_source_priority():
+    """F4: priority ranks comparable observations only, never a different currency."""
+    tr = market_record(2)
+    usd = market_record(1)
+    usd['source'] = dict(usd['source'], currency='USD')
+    existing = {'SourcePriority': 2, 'ClosePrice': Decimal(11)}
+    assert not should_replace('MarketData', validate_record(usd), existing, tr['source'])
+    # A better priority in the same currency is still allowed to win.
+    assert should_replace('MarketData', validate_record(market_record(1)), existing, tr['source'])
+    # And a price feed that declares no currency cannot be compared at all.
+    no_currency = market_record()
+    no_currency['source'] = {k: v for k, v in no_currency['source'].items() if k != 'currency'}
+    assert 'reviewed three-letter price currency required in source metadata' in \
+        validate_record(no_currency)['validation_issues']
+
+
+def test_macro_series_update_independently_of_load_order():
+    """F5: an unrelated later capture must not lock an empty metric out of its own row."""
+    existing = {'Cpi': Decimal('100'), 'TaxRevenue': None}
+    prior = macro_record('Cpi', '100', '2025-02-01T10:00:00+00:00')['source']
+    earlier_tax = macro_record('TaxRevenue', '250', '2025-02-01T09:00:00+00:00')
+    assert should_replace('MacroSovereign', earlier_tax, existing, prior)
+    assert macro_field_changes(earlier_tax, existing, prior) == {'TaxRevenue': '250.0000'}
+    # An older capture of a metric that is already published must not overwrite it.
+    stale_cpi = macro_record('Cpi', '99', '2025-01-01T00:00:00+00:00')
+    prior_with_times = dict(prior, field_observed_at={'Cpi': '2025-02-01T10:00:00+00:00'})
+    assert macro_field_changes(stale_cpi, existing, prior_with_times) == {}
+    assert not should_replace('MacroSovereign', stale_cpi, existing, prior_with_times)
+
+
+def test_history_resume_requires_a_matching_request(tmp_path):
+    """F6: resume must compare the request, not merely the existence of the output file."""
+    from stock_crawler.warehouse.cli import history_request_covered
+    from stock_crawler.warehouse.prices import HISTORY_VERSION
+    target = tmp_path / 'ASELS.json'
+    request = {'symbol': 'ASELS', 'company_id': 1, 'start': '2015-01-01', 'end': '2015-01-31',
+               'parser_version': HISTORY_VERSION, 'completed': True}
+    target.write_text(json.dumps({'kind': 'warehouse_bundle', 'request': request}))
+    covered = lambda **kw: history_request_covered(
+        target, kw.get('ticker', 'ASELS'), kw.get('company_id', 1),
+        date.fromisoformat(kw.get('start', '2015-01-01')),
+        date.fromisoformat(kw.get('end', '2015-01-31')), HISTORY_VERSION)
+    assert covered()
+    assert not covered(end='2015-02-28')      # a widened range is not already delivered
+    assert not covered(company_id=7)          # a different CompanyId map is a different job
+    target.write_text(json.dumps({'kind': 'warehouse_bundle',
+                                  'request': dict(request, completed=False)}))
+    assert not covered()                      # a bundle with no loadable row is refetched
+    target.write_text(json.dumps({'kind': 'warehouse_bundle'}))
+    assert not covered()                      # bundles written before request manifests
+
+
+def test_history_run_reports_an_empty_bundle_as_failure(tmp_path, monkeypatch, capsys):
+    """F6: a bundle with no loadable row must not exit 0 and must not be resumed past."""
+    import stock_crawler.warehouse.prices as prices
+    from stock_crawler.warehouse.loader import bundle as make_bundle
+    calls = []
+
+    def fake_history(symbol, company_id, **kwargs):
+        calls.append(symbol)
+        return make_bundle([], [{'symbol': symbol, 'trade_date': '2015-01-05',
+                                 'error': 'HG_AOF is zero; share volume cannot be derived'}])
+
+    monkeypatch.setattr(prices, 'build_isyatirim_history', fake_history)
+    company_map = tmp_path / 'ids.json'
+    company_map.write_text(json.dumps({'ASELS': 1}))
+    argv = ['isyatirim-history', '--company-map', str(company_map), '--start', '2015-01-01',
+            '--end', '2015-01-31', '--output-dir', str(tmp_path), '--data-dir', str(tmp_path)]
+    assert main(argv) == 1
+    assert 'no loadable row' in capsys.readouterr().err
+    # The failed symbol is retried instead of being skipped forever by file existence.
+    assert main(argv) == 1
+    assert calls == ['ASELS', 'ASELS']

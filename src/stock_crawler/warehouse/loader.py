@@ -48,6 +48,14 @@ DATES = {'TradeDate', 'AsOfDate', 'PublishDate', 'PeriodEndDate', 'IpoDate'}
 # opening price at all; the daily snapshot does. A backfilled row is therefore complete
 # except for OpenPrice, and rejecting it would discard every pre-adapter trading day.
 MARKETDATA_NULLABLE = frozenset({'OpenPrice'})
+# A source error aborts the batch unless it is scoped to one symbol, row or file. One
+# ticker the provider does not quote must not block every other valid row; the omission
+# stays in the batch payload so delivered-versus-expected coverage remains explicit.
+# An adapter may force either outcome with an explicit 'fatal' flag.
+ERROR_SCOPES = ('symbol', 'ticker', 'trade_date', 'file', 'batch')
+# Default acquisition policy is consolidated-else-unconsolidated: a row that fell back to
+# unconsolidated may be promoted to consolidated, never demoted.
+SCOPE_RANK = {'consolidated': 0, 'unconsolidated': 1}
 DECIMALS = {f: (22, 4) for f in TARGET_FIELDS[5:]}
 DECIMALS.update(Eps=(14, 4), SharesOutstanding=(22, 2), OpenPrice=(18, 4), HighPrice=(18, 4),
                 LowPrice=(18, 4), ClosePrice=(18, 4), ValueTraded=(24, 4), Gdp=(24, 4),
@@ -102,6 +110,8 @@ def validate_record(record, *, allow_partial=False):
         required |= set(COLUMNS[table]) - MARKETDATA_NULLABLE
         if record.get('source', {}).get('price_basis') != 'as_traded':
             issues.append('verified as_traded price basis required')
+        if not re.fullmatch('[A-Z]{3}', str(record.get('source', {}).get('currency', ''))):
+            issues.append('reviewed three-letter price currency required in source metadata')
         priority = record.get('source', {}).get('source_priority')
         if priority != normalized.get('SourcePriority'):
             issues.append('SourcePriority must match reviewed source metadata source_priority')
@@ -115,6 +125,8 @@ def validate_record(record, *, allow_partial=False):
             issues.append('ValueTraded must be nonnegative')
     if table == 'MarketIndexData':
         required.add('ClosePrice')
+        if not re.fullmatch('[A-Z]{3}', str(record.get('source', {}).get('currency', ''))):
+            issues.append('reviewed three-letter price currency required in source metadata')
         if normalized.get('ClosePrice') is not None and Decimal(normalized['ClosePrice']) <= 0:
             issues.append('index close must be positive')
     if table == 'MacroSovereign':
@@ -185,14 +197,66 @@ def bundle(records, errors=None, *, allow_partial=False):
             'summary': {'records': len(records), 'ready': sum(not r['missing_required_fields'] and not r['validation_issues'] for r in records)}}
 
 
+def is_fatal_error(error):
+    """True when a source error invalidates the whole batch rather than one symbol.
+
+    Anything unscoped -- an auth failure, schema drift, a rejected response -- is fatal.
+    An error naming the symbol, ticker, trade date, file or batch it belongs to is an
+    omission: the remaining records were acquired correctly and may be promoted.
+    """
+    if not isinstance(error, dict):
+        return True
+    if 'fatal' in error:
+        return bool(error['fatal'])
+    return not any(error.get(key) for key in ERROR_SCOPES)
+
+
+def macro_field_changes(incoming, existing, prior_source=None):
+    """Writable macro fields, compared per series instead of per row.
+
+    One MacroSovereign row carries seven independent series with their own release
+    events. A field still NULL in the target is enrichment and cannot conflict, so a
+    TaxRevenue file may fill it even though an unrelated Cpi capture was loaded later.
+    A field that already holds a value is replaced only by a newer observation of that
+    same field, using the per-field capture times recorded by previous batches.
+    """
+    prior_times = (prior_source or {}).get('field_observed_at') or {}
+    fallback = (prior_source or {}).get('observed_at')
+    observed = incoming['source']['observed_at']
+    fixed = set(KEYS['MacroSovereign']) | {'PublishDate'}
+    changes = {}
+    for field, value in incoming['values'].items():
+        if value is None or field in fixed:
+            continue
+        if existing.get(field) is None:
+            changes[field] = value
+            continue
+        recorded = prior_times.get(field) or fallback
+        if recorded is None or datetime.fromisoformat(observed) > datetime.fromisoformat(recorded):
+            changes[field] = value
+    return changes
+
+
 def should_replace(table, incoming, existing, prior_source=None):
     """Lower source priority wins; older vintages never overwrite newer data.
+
+    Compatibility is decided before ranking: a candidate in a different currency, price
+    basis or series definition is not a better version of the existing row, whatever its
+    priority or capture time. Macro rows are compared per series and fundamentals per
+    filing, so independent observations do not block each other.
 
     Existing rows without our audit history are protected, except strictly better
     MarketData source priority. Resolve that one-time ownership issue explicitly.
     """
     if existing is None:
         return True
+    if table in ('MarketData', 'MarketIndexData') and prior_source is not None:
+        # Identity and units decide first. Source priority ranks comparable observations
+        # only: a USD quote is not a better version of a TRY row whatever its priority.
+        candidate = incoming.get('source', {})
+        if (candidate.get('currency') != prior_source.get('currency')
+                or candidate.get('price_basis') != prior_source.get('price_basis')):
+            return False
     if table == 'MarketData':
         new, old = incoming['values']['SourcePriority'], existing.get('SourcePriority')
         if old is not None and new != old:
@@ -214,17 +278,22 @@ def should_replace(table, incoming, existing, prior_source=None):
             if any(old_series[field].get(k) != new_series[field].get(k)
                    for k in ('code', 'frequency', 'unit', 'definition', 'scale')):
                 return False
-    if table in ('MarketData', 'MarketIndexData'):
-        if new.get('currency') != prior_source.get('currency') or new.get('price_basis') != prior_source.get('price_basis'):
-            return False
-        if table == 'MarketIndexData' and new.get('source_priority') is not None and prior_source.get('source_priority') is not None:
+        return bool(macro_field_changes(incoming, existing, prior_source))
+    if table == 'MarketIndexData':
+        if new.get('source_priority') is not None and prior_source.get('source_priority') is not None:
             if new['source_priority'] != prior_source['source_priority']:
                 return new['source_priority'] < prior_source['source_priority']
     if table == 'CompanyFundamental':
-        if (new['currency'] != prior_source.get('currency') or new['scope'] != prior_source.get('scope')
+        if (new['currency'] != prior_source.get('currency')
                 or new.get('net_income_basis') != prior_source.get('net_income_basis')):
             return False
         rank = lambda s: (datetime.fromisoformat(s['published_at']), int(s['notification_id']))
+        if new['scope'] != prior_source.get('scope'):
+            # A row that fell back to unconsolidated is promoted when the consolidated
+            # filing arrives; the reverse demotion and older filings are refused. The
+            # loader replaces the whole snapshot on a scope change, never mixing the two.
+            return (SCOPE_RANK.get(new['scope'], len(SCOPE_RANK)) < SCOPE_RANK.get(prior_source.get('scope'), len(SCOPE_RANK))
+                    and rank(new) >= rank(prior_source))
         if rank(new) != rank(prior_source):
             return rank(new) > rank(prior_source)
         # Same filing may be enriched, but non-null conflicts require review.
@@ -252,10 +321,15 @@ def load_bundle(document, *, engine=None, apply=False, allow_partial=False):
             if key in seen:
                 raise ValueError('duplicate target key in bundle; resolve candidates before loading')
             seen.add(key)
+    fatal = [e for e in report['errors'] if is_fatal_error(e)]
+    omitted = [e for e in report['errors'] if not is_fatal_error(e)]
+    coverage = {'source_errors': len(fatal), 'source_omissions': len(omitted),
+                'omitted_symbols': sorted({str(e.get('symbol') or e.get('ticker') or e.get('file'))
+                                           for e in omitted if isinstance(e, dict)})}
     if not apply:
-        return dict(report['summary'], mode='dry_run_no_sql', source_errors=len(report['errors']),
+        return dict(report['summary'], mode='dry_run_no_sql', **coverage,
                     partial_fundamentals=partial, allow_partial=allow_partial)
-    if report['errors']:
+    if fatal:
         raise ValueError('resolve source errors before loading this batch')
     if not report['records']:
         raise ValueError('empty batch')
@@ -278,7 +352,7 @@ def load_bundle(document, *, engine=None, apply=False, allow_partial=False):
                 for status in conn.execute(select(observations.c.Status).where(observations.c.BatchHash == batch_hash)).scalars():
                     counts[status] += 1
                     counts['staged'] += 1
-                return dict(counts, mode='already_loaded', batch_hash=batch_hash)
+                return dict(counts, mode='already_loaded', batch_hash=batch_hash, **coverage)
             conn.execute(insert(batches).values(BatchHash=batch_hash, CapturedAt=utcnow(), Payload=serialized))
             target_tables = {}
             for record in report['records']:
@@ -322,6 +396,7 @@ def load_bundle(document, *, engine=None, apply=False, allow_partial=False):
                         new_metrics = {k for k in DECIMALS if typed.get(k) is not None}
                         if old_metrics - new_metrics and existing.get('PublishDate') != typed.get('PublishDate'):
                             typed['PublishDate'] = None
+                    written_fields = ()
                     if existing is None:
                         absent = [c.name for c in target.c if not c.nullable and typed.get(c.name) is None
                                   and not c.identity and c.server_default is None and not c.computed]
@@ -332,6 +407,7 @@ def load_bundle(document, *, engine=None, apply=False, allow_partial=False):
                         else:
                             conn.execute(insert(target).values(**typed))
                             status = 'inserted'
+                            written_fields = tuple(k for k, v in typed.items() if v is not None)
                     elif should_replace(name, record, existing, prior):
                         # Never erase existing facts when a new feed omits a field.
                         changes = {k: v for k, v in typed.items() if k not in KEYS[name] and v is not None}
@@ -339,12 +415,18 @@ def load_bundle(document, *, engine=None, apply=False, allow_partial=False):
                             # A restated filing is a whole financial snapshot, never a mix
                             # of old optional balances and newly published mandatory fields.
                             same_filing = prior and all(record['source'].get(k) == prior.get(k)
-                                                        for k in ('notification_id', 'published_at'))
+                                                        for k in ('notification_id', 'published_at', 'scope'))
                             if not same_filing:
                                 changes = {k: typed.get(k) for k in COLUMNS[name] if k not in KEYS[name]}
                             invalid_nulls = [k for k, v in changes.items() if v is None and not target.c[k].nullable]
                             if invalid_nulls:
                                 raise ValueError(f'{name}: SQL NOT NULL conflict for {invalid_nulls}')
+                        if name == 'MacroSovereign':
+                            # Each series carries its own vintage; an older capture may still
+                            # fill a field nobody has published to yet, but never overwrite a
+                            # newer observation of a different series in the same row.
+                            allowed = set(macro_field_changes(record, existing, prior)) | {'PublishDate'}
+                            changes = {k: v for k, v in changes.items() if k in allowed}
                         if name == 'MacroSovereign' and typed.get('PublishDate') is None:
                             if not target.c.PublishDate.nullable:
                                 raise ValueError('MacroSovereign.PublishDate must allow NULL for unknown/mixed release dates')
@@ -352,6 +434,7 @@ def load_bundle(document, *, engine=None, apply=False, allow_partial=False):
                         if changes:
                             conn.execute(update(target).where(*where).values(**changes))
                             status = 'updated'
+                            written_fields = tuple(changes)
                         else:
                             status = 'skipped'
                     else:
@@ -362,12 +445,17 @@ def load_bundle(document, *, engine=None, apply=False, allow_partial=False):
                     fields.update({k: v for k, v in audit_source.get('fields', {}).items() if values.get(k) is not None})
                     audit_source = dict(audit_source, fields=fields,
                         workbook_sha256=sorted(set(prior.get('workbook_sha256', []) + audit_source.get('workbook_sha256', []))))
-                if name == 'MacroSovereign' and status == 'updated' and prior:
-                    audit_source = dict(audit_source, series_metadata={**prior.get('series_metadata', {}), **audit_source.get('series_metadata', {})})
+                if name == 'MacroSovereign' and status in ('inserted', 'updated'):
+                    times = dict((prior or {}).get('field_observed_at') or {})
+                    times.update({k: audit_source['observed_at'] for k in written_fields
+                                  if k not in KEYS[name] and k != 'PublishDate'})
+                    audit_source = dict(audit_source, field_observed_at=times)
+                    if prior:
+                        audit_source['series_metadata'] = {**prior.get('series_metadata', {}), **audit_source.get('series_metadata', {})}
                 conn.execute(insert(observations).values(BatchHash=batch_hash, TargetTable=name,
                     KeyHash=key_hash, KeyJson=key_json, SourceJson=dump_json(audit_source),
                     ValuesJson=dump_json(values), Status=status,
                     IssuesJson=dump_json({'missing': record['missing_required_fields'], 'issues': record['validation_issues'], 'reason': reason})))
                 counts['staged'] += 1
                 counts[status] += 1
-    return dict(counts, mode='applied', batch_hash=batch_hash)
+    return dict(counts, mode='applied', batch_hash=batch_hash, **coverage)

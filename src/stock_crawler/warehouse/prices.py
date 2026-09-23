@@ -30,6 +30,7 @@ ENDPOINT = "https://www.isyatirim.com.tr/_layouts/15/Isyatirim.Website/Common/Da
 HISTORY_ENDPOINT = "https://www.isyatirim.com.tr/_layouts/15/Isyatirim.Website/Common/Data.aspx/HisseTekil"
 PROVIDER = "isyatirim_public_daily"
 HISTORY_PROVIDER = "isyatirim_public_history"
+HISTORY_VERSION = "warehouse-isyatirim-history-1.0.0"
 HISTORY_HOSTS = {"www.isyatirim.com.tr", "isyatirim.com.tr"}
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 # One symbol's full history is large: ASELS 2015-2026 is 2,939 rows / ~2 MB.
@@ -322,7 +323,7 @@ def build_isyatirim_history(symbol, company_id, *, start, end, fetcher,
                 "observed_at": captured,
                 "raw_sha256": digest,
                 "source_url": HISTORY_ENDPOINT,
-                "parser_version": "warehouse-isyatirim-history-1.0.0",
+                "parser_version": HISTORY_VERSION,
                 "symbol": symbol,
                 "currency": "TRY",
                 "price_basis": "as_traded",

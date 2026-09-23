@@ -83,7 +83,7 @@ def parser():
     mh.add_argument('--end', required=True, help='last trade date, YYYY-MM-DD')
     mh.add_argument('--source-priority', type=int, default=3, help='lower wins; weaker than the daily snapshot (2) because Volume is derived and OpenPrice is absent')
     mh.add_argument('--max-symbols', type=int, help='pilot safety limit applied after selection')
-    mh.add_argument('--overwrite', action='store_true', help='refetch companies whose bundle already exists; default resumes')
+    mh.add_argument('--overwrite', action='store_true', help='refetch every company; default resumes only symbols whose stored bundle already covers this exact request')
     mh.add_argument('--env-file', type=Path, help='settings file supplying request pacing and the per-run request budget')
     mh.add_argument('--data-dir', type=Path, default=Path('data/warehouse'))
     mh.add_argument('--output-dir', type=Path, required=True, help='one bundle JSON per company; load them individually')
@@ -171,12 +171,34 @@ def expand_inputs(paths, root):
     return outputs
 
 
-def run_isyatirim_history(args):
-    """Backfill one bundle per company. Resumable: a symbol whose bundle exists is skipped.
+def history_request_covered(path, ticker, company_id, start, end, version):
+    """True when an existing bundle already answers exactly this request.
 
-    Kept out of `run` because it writes many outputs rather than one, and because a stop
-    signal (budget, cooldown, block) must end the run with the remaining work named instead
-    of continuing a request storm across hundreds of symbols.
+    Resume must not turn on the mere existence of `<ticker>.json`. A file written for a
+    narrower date range, a different CompanyId map or an older parser does not satisfy a
+    widened request, and a run that stopped mid-symbol left no completion marker at all.
+    Anything unreadable, unmarked or narrower is refetched rather than silently skipped.
+    """
+    try:
+        previous = json.loads(path.read_text('utf-8'))
+    except (OSError, ValueError):
+        return False
+    request = previous.get('request')
+    if not isinstance(request, dict) or request.get('completed') is not True:
+        return False
+    return (request.get('symbol') == ticker and request.get('company_id') == company_id
+            and request.get('parser_version') == version
+            and str(request.get('start', '')) <= start.isoformat()
+            and str(request.get('end', '')) >= end.isoformat())
+
+
+def run_isyatirim_history(args):
+    """Backfill one bundle per company, one bundle per output file.
+
+    Resumable: a symbol is skipped only when its stored bundle already covers this exact
+    request. Kept out of `run` because it writes many outputs rather than one, and because
+    a stop signal (budget, cooldown, block) must end the run with the remaining work named
+    instead of continuing a request storm across hundreds of symbols.
     """
     from datetime import date
     import httpx
@@ -184,7 +206,7 @@ def run_isyatirim_history(args):
     from ..core.storage import StateStore
     from ..crawl.client_export import load_company_map
     from ..crawl.fetch import AccessBlocked, BudgetExhausted, FetchError, HostCoolingDown, HostThrottled, PacedClient
-    from .prices import HISTORY_HOSTS, build_isyatirim_history
+    from .prices import HISTORY_HOSTS, HISTORY_VERSION, build_isyatirim_history
 
     start, end = date.fromisoformat(args.start), date.fromisoformat(args.end)
     if end < start:
@@ -209,7 +231,8 @@ def run_isyatirim_history(args):
     try:
         for ticker in tickers:
             target = args.output_dir / f'{ticker}.json'
-            if target.exists() and not args.overwrite:
+            if (not args.overwrite and target.exists() and history_request_covered(
+                    target, ticker, company_map[ticker], start, end, HISTORY_VERSION)):
                 skipped.append(ticker)
                 continue
             if stopped is not None:
@@ -225,8 +248,12 @@ def run_isyatirim_history(args):
             except (FetchError, ValueError, TypeError) as exc:
                 failed.append({'ticker': ticker, 'error': str(exc)})
                 continue
-            write_atomic(target, dump_json(result).encode())
             summary = result.get('summary', {})
+            document = dict(result, request={'symbol': ticker, 'company_id': company_map[ticker],
+                'start': start.isoformat(), 'end': end.isoformat(),
+                'parser_version': HISTORY_VERSION, 'source_priority': args.source_priority,
+                'completed': summary.get('ready', 0) > 0})
+            write_atomic(target, dump_json(document).encode())
             written.append({'ticker': ticker, 'rows': summary.get('records', 0),
                             'ready': summary.get('ready', 0), 'errors': len(result.get('errors', []))})
             print(f"  {ticker:<8} {summary.get('records', 0):>5} rows  {summary.get('ready', 0):>5} ready  "
@@ -234,19 +261,27 @@ def run_isyatirim_history(args):
     finally:
         fetcher.close()
 
-    print(dump_json({'companies_written': len(written), 'companies_skipped_existing': len(skipped),
+    # A bundle with no loadable row is a failed symbol, not a success: its output file is
+    # marked incomplete so the next run refetches it instead of resuming past it forever.
+    empty = [item['ticker'] for item in written if not item['ready']]
+    print(dump_json({'companies_written': len(written), 'companies_skipped_covered': len(skipped),
                      'companies_failed': len(failed), 'companies_pending': len(pending),
+                     'companies_empty': empty,
                      'rows_written': sum(item['rows'] for item in written),
                      'rows_ready': sum(item['ready'] for item in written),
+                     'rows_skipped': sum(item['errors'] for item in written),
                      'http_attempts': fetcher.attempts, 'stopped_reason': stopped,
                      'open_price': 'NULL for every backfilled row; this product reports no opening price',
                      'output_dir': str(args.output_dir)}))
     for item in failed:
         print(f"  failed {item['ticker']}: {item['error']}", file=sys.stderr)
+    for ticker in empty:
+        print(f'empty {ticker}: no loadable row in the requested range', file=sys.stderr)
     if stopped:
         print(f'stopped: {stopped}; rerun the same command to resume ({len(pending)} companies pending)', file=sys.stderr)
         return 2
-    return 1 if failed or not written else 0
+    # Nothing to do is success: a fully covered rerun is the normal steady state.
+    return 1 if failed or empty else 0
 
 
 def run(args):
