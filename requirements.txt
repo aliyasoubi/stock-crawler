@@ -1,0 +1,9 @@
+# Python 3.10+.  pip install -r requirements.txt
+# companies and market_data need nothing beyond the standard library.
+httpx>=0.27                            # fundamentals: KAP export API
+openpyxl>=3.1                          # fundamentals: reads KAP's XLSX exports
+requests>=2.31                         # market_index, sovereign
+truststore>=0.9                        # sovereign: verify TLS with the OS trust store (corporate proxies)
+tzdata>=2024.1                         # market_index: Europe/Istanbul time zone where the OS has none (Windows)
+xlrd>=2.0                              # sovereign: reads the Treasury's .xls debt workbook
+tomli>=2.0; python_version < "3.11"    # reads config/config.toml on Python 3.10

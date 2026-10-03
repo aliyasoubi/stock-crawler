@@ -1,0 +1,92 @@
+# Settings for `python -m stock_crawler`. Relative paths are relative to the project folder.
+#
+# Every key in a [section] is a command-line option of that command, with "_" for "-":
+# `market_id = 1` is the same as `--market-id 1`. An option typed on the command line wins
+# over this file. `true` switches a flag on; `false` or "" leaves the built-in default.
+# All options of a command: python -m stock_crawler COMMAND --help
+
+# How many years of history to fetch, e.g. 1, 2, 5 or 10. Used by market_data,
+# fundamentals, market_index and sovereign (companies is always today's list).
+# A section can override it with its own `years = ...`.
+#   daily data (market_data, market_index):     from the same day N years ago
+#   quarterly/annual data (fundamentals, sovereign): from 1 January N years ago
+years = 5
+
+# Commands run, in this order, by `python -m stock_crawler all`.
+# companies comes first because market_data reads the ticker list it writes, and
+# fundamental_reports comes after fundamentals because it fills that command's CSV.
+run_all = ["companies", "market_data", "market_index", "sovereign", "fundamentals", "fundamental_reports"]
+
+# Each command also appends its log to <log_dir>/<command>.log.
+log_dir = "logs"
+
+
+[companies]                 # listed companies  ->  output/companies/companies.csv
+market_id = 1               # MarketId written to every row (your database key for Borsa İstanbul)
+directory_url = "https://kap.org.tr/tr/bist-sirketler"
+listing_url = "https://www.borsaistanbul.com/datum/ilkislem.zip"
+output = "output/companies/companies.csv"
+cache_dir = "cache/companies"
+# skip_details = true       # ~1 minute instead of ~45, but SectorName and ReportingCurrency stay empty
+# proxy = "http://127.0.0.1:12334"
+# ca_bundle = "~/macos-roots.pem"
+
+
+[market_data]               # daily share prices  ->  output/market_data/
+# {d:...} is replaced by the trading day (Python date format codes).
+bulletin_url = "https://www.borsaistanbul.com/data/thb/{d:%Y}/{d:%m}/thb{d:%Y%m%d}1.zip"
+fx_url = "https://www.tcmb.gov.tr/kurlar/{d:%Y%m}/{d:%d%m%Y}.xml"
+companies = "output/companies/companies.csv"   # tickers to export (written by `companies`)
+output = "output/market_data/market_data.csv"
+split_dir = "output/market_data/prices"        # also one CSV per ticker; "" to skip
+cache_dir = "cache/market_data"
+# all_equities = true       # every share in the bulletins, incl. delisted ones (ignores `companies`)
+# no_usd = true             # skip TCMB and the UsdTry / CloseUsd columns
+# db_output = "output/market_data/market_data_db.csv"   # MarketData table layout, needs company_ids
+# company_ids = "config/company_ids.csv"                # Ticker,CompanyId exported from your Company table
+# proxy = "http://127.0.0.1:12334"
+# ca_bundle = "~/macos-roots.pem"
+
+
+[check_market_data]         # checks output/market_data/market_data.csv
+# split_dir = "output/market_data/prices"   # also compare the per-ticker files
+
+
+[fundamentals]              # quarterly financial statements  ->  output/fundamentals/
+years = 10                  # FY 2016 (KAP's first year) to today, fetched newest first: 2025-2026, 2023-2024, ...
+base_url = "https://www.kap.org.tr"
+out_dir = "output/fundamentals"
+cache_dir = "cache/fundamentals"
+min_delay = 30              # seconds between requests; KAP blocks IPs that ask faster
+max_delay = 60
+# symbols = "ASELS,THYAO"   # only these companies
+
+
+[fundamental_reports]       # fills Ebitda, TotalDebtShort/Long, CashAndEquivalents, FreeCashFlow, Eps,
+                            # SharesOutstanding in output/fundamentals/company_fundamental.csv
+years = 10                  # download reports for the same years as fundamentals
+report_url = "https://www.kap.org.tr/en/api/notification/export/excel/{id}"   # {id} = NotificationId
+market_url = "https://www.kap.org.tr/en/api/financialTable/download/{year}/{quarter}"   # every company, one quarter
+market_min_missing = 50     # use the whole-quarter file when 50+ of a quarter's reports are missing
+fundamentals_dir = "output/fundamentals"
+out_dir = "output/fundamental_reports"
+cache_dir = "cache/fundamental_reports"
+request_interval = 30       # seconds between requests; KAP answers HTTP 429 above ~10 reports per 5 minutes
+# symbols = "ASELS,THYAO"   # only these companies
+
+
+[market_index]              # BIST index closes  ->  output/market_index/
+source_url = "https://www.isyatirim.com.tr/_Layouts/15/IsYatirim.Website/Common/ChartData.aspx/IndexHistoricalAll"
+markets_csv = "config/markets.csv"    # Market table rows: edit the IDs to match your database
+indices_csv = "config/indices.csv"    # MarketIndexMaster rows: edit the IDs to match your database
+out_dir = "output/market_index"
+# indices = ["XU100", "XU030"]        # default: every index in indices_csv
+
+
+[sovereign]                 # Türkiye macro data  ->  output/sovereign/macro_sovereign_tr.csv
+market_id = 90              # MarketId written to every row
+evds_url = "https://evds3.tcmb.gov.tr/igmevdsms-dis"
+treasury_url = "https://www.hmb.gov.tr/portal/v2/pages"
+output = "output/sovereign/macro_sovereign_tr.csv"
+# cds_csv = "config/tr_cds_5y.csv"    # your daily Türkiye 5Y CDS export (columns: date,value)
+# periods = ["MONTHLY", "QUARTERLY", "ANNUAL"]
