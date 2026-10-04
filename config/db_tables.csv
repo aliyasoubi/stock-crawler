@@ -1,0 +1,8 @@
+Table,Csv,Keys
+dbo.Market,output/market_index/market.csv,MarketId
+dbo.MarketIndexMaster,output/market_index/market_index_master.csv,IndexId
+dbo.MarketIndexData,output/market_index/market_index_data.csv,TradeDate IndexId
+dbo.Company,output/companies/companies.csv,MarketId Ticker
+dbo.MarketData,output/market_data/market_data_db.csv,TradeDate CompanyId
+dbo.CompanyFundamental,output/fundamentals/company_fundamental.csv,CompanyId FiscalYear FiscalQuarter
+dbo.MacroSovereign,output/sovereign/macro_sovereign_tr.csv,MarketId AsOfDate PeriodType PublishDate

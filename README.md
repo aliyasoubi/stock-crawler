@@ -2,7 +2,8 @@
 
 Crawls Borsa İstanbul and Türkiye market data from official and public sources and writes
 one CSV per database table: listed companies, daily share prices, quarterly financial
-statements, BIST index closes and sovereign macro data.
+statements, BIST index closes and sovereign macro data. `load_db` then loads those CSV files
+into SQL Server.
 
 ```bash
 python -m stock_crawler market_data --years 5
@@ -47,7 +48,9 @@ python -m stock_crawler sovereign    # a quick first run (~1 minute)
 Before loading data into your database, set your own IDs in the config (see
 [IDs](#ids-that-must-match-your-database)).
 
-On Ubuntu, first install `sudo apt install -y python3 python3-venv curl ca-certificates`.
+On Ubuntu, first install `sudo apt install -y python3 python3-venv curl ca-certificates`,
+or run `deploy/setup_ubuntu.sh`, which also sets up SQL Server access (see
+[section 9](#on-ubuntu-set-up-test-schedule)).
 
 ## 2. What each command collects
 
@@ -60,11 +63,13 @@ On Ubuntu, first install `sudo apt install -y python3 python3-venv curl ca-certi
 | `fundamental_reports` | CompanyFundamental | fills 7 columns of `company_fundamental.csv` (+ `output/fundamental_reports/report_lines.csv`) | KAP full financial reports | ~30 min for the 10 years' quarter files, then ~6 h for the ~450 statements they lack | seconds to minutes (new statements only) |
 | `market_index` | Market, MarketIndexMaster, MarketIndexData | `output/market_index/*.csv` | İş Yatırım | ~2 min | ~2 min |
 | `sovereign` | MacroSovereign | `output/sovereign/macro_sovereign_tr.csv` | CBRT EVDS + Treasury | ~1 min | ~1 min |
-| `all` | all of the above | | | | |
+| `load_db` | every table in `config/db_tables.csv` | your SQL Server database | the CSV files above | – | – |
+| `all` | the commands in `run_all` | | | | |
 
 `market_data` reads its ticker list from `companies.csv`, so run `companies` first, and
 `fundamental_reports` fills the CSV that `fundamentals` writes, so run it after. `all` does
-this for you.
+this for you. Add `load_db` at the end of `run_all` to load the results into SQL Server
+(see [section 9](#9-loading-into-sql-server)).
 
 ## 3. Project layout
 
@@ -73,10 +78,12 @@ stock-crawler/
 ├── README.md
 ├── requirements.txt           one dependency list for every crawler
 ├── requirements-dev.txt       + pytest
+├── deploy/setup_ubuntu.sh     Ubuntu: Python, ODBC driver for SQL Server, .venv, tests
 ├── config/                    everything you are expected to edit
 │   ├── config.toml            source URLs, period (years), IDs, output paths
 │   ├── markets.csv            rows for the Market table (market_index)
-│   └── indices.csv            rows for the MarketIndexMaster table (market_index)
+│   ├── indices.csv            rows for the MarketIndexMaster table (market_index)
+│   └── db_tables.csv          which CSV goes into which SQL Server table (load_db)
 ├── stock_crawler/             the code: one sub-package per command
 │   ├── cli.py                 python -m stock_crawler: reads the config, runs commands
 │   ├── http_client.py         HTTP client shared by companies and market_data
@@ -86,7 +93,8 @@ stock-crawler/
 │   ├── fundamentals/          crawler.py
 │   ├── fundamental_reports/   crawler.py
 │   ├── market_index/          crawler.py, models.py, export.py, http_client.py
-│   └── sovereign/             crawler.py, fields.py, evds_client.py, treasury.py, ...
+│   ├── sovereign/             crawler.py, fields.py, evds_client.py, treasury.py, ...
+│   └── load_db/               loader.py: CSV files -> SQL Server
 ├── tests/                     offline tests
 ├── output/<command>/          generated CSV files      ┐
 ├── cache/<command>/           downloaded raw pages      ├ created by the crawlers,
@@ -237,6 +245,11 @@ python -m stock_crawler sovereign --years 20 --output output/sovereign/macro_sov
 python -m stock_crawler sovereign --cds-csv config/tr_cds_5y.csv
 python -m stock_crawler sovereign --list-fields             # where each column comes from
 
+# Into SQL Server
+python -m stock_crawler load_db --dry-run                   # load and count, then roll back: changes nothing
+python -m stock_crawler load_db                             # insert new rows, update changed ones
+python -m stock_crawler load_db --tables MarketIndexData MacroSovereign
+
 # Everything
 python -m stock_crawler all
 python -m stock_crawler all --years 10
@@ -283,7 +296,7 @@ Set the project interpreter to `.venv`. Create a Python run configuration with *
 | Code | Meaning |
 |---|---|
 | 0 | success |
-| 1 | failed (see the log); for `market_index`: some indices failed, the others were written; for `check_market_data`: errors found in the CSV |
+| 1 | failed (see the log); for `market_index`: some indices failed, the others were written; for `check_market_data`: errors found in the CSV; for `load_db`: some tables failed and were rolled back, the others were loaded |
 | 2 | bad settings or options; for `companies` / `market_data`: some pages or days could not be fetched, so the CSV was **not** written (rerun later, or pass `--allow-incomplete`) |
 | 3 | stopped early because the server kept refusing (`fundamentals`, `fundamental_reports`, `market_index`); what was fetched so far is written. Rerun later; `fundamentals` and `fundamental_reports` resume from their cache |
 | 130 | interrupted (Ctrl-C or `kill`); caches are kept |
@@ -603,33 +616,160 @@ except the Treasury download retry 429/5xx with growing waits and honour `Retry-
 
 ## 9. Loading into SQL Server
 
-`BULK INSERT ... WITH (FORMAT = 'CSV', FIRSTROW = 2, CODEPAGE = '65001')` loads every file.
-`FORMAT = 'CSV'` needs SQL Server 2017+, and `CODEPAGE = '65001'` keeps Turkish characters.
-The path in `BULK INSERT` is read by the SQL Server machine, not your laptop.
+`load_db` copies the CSV files from `output/` into your database:
 
-Some raw values have more decimals than the SQL column (index closes with float noise,
-Cpi averages). SQL Server rounds them to the column's scale when it converts the text to
-`decimal`.
-
-**Index tables:** load parents first.
-
-```sql
-BULK INSERT dbo.Market            FROM 'C:\data\market_index\market.csv'              WITH (FORMAT = 'CSV', FIRSTROW = 2, CODEPAGE = '65001');
-BULK INSERT dbo.MarketIndexMaster FROM 'C:\data\market_index\market_index_master.csv' WITH (FORMAT = 'CSV', FIRSTROW = 2, CODEPAGE = '65001');
-BULK INSERT dbo.MarketIndexData   FROM 'C:\data\market_index\market_index_data.csv'   WITH (FORMAT = 'CSV', FIRSTROW = 2, CODEPAGE = '65001');
+```bash
+python -m stock_crawler load_db
 ```
 
-Repeated runs overlap dates you already loaded. For regular loads, insert into a staging
-table and `MERGE` into the target, as below.
+Run it after the crawlers, or add `"load_db"` at the end of `run_all` in the config so `all`
+crawls and then loads. It reads the files on your machine and sends the rows over the
+connection, so the SQL Server can be anywhere. The tables must already exist; `load_db`
+never creates, alters or empties a table.
 
-**MarketData:** `market_data --db-output` writes exactly the table's columns: `TradeDate,
+### Setup (once)
+
+1. Install Microsoft's ODBC driver. `pyodbc` (in `requirements.txt`) uses it.
+   - macOS: `brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release`,
+     then `brew install msodbcsql18`
+   - Ubuntu: `deploy/setup_ubuntu.sh` does it (see [On Ubuntu](#on-ubuntu-set-up-test-schedule))
+   - Windows: the "ODBC Driver 18 for SQL Server" installer from Microsoft
+2. Set the server and database in `config/config.toml`. Keep the password out of the file:
+   ```toml
+   [load_db]
+   connection = "DRIVER={ODBC Driver 18 for SQL Server};SERVER=myserver,1433;DATABASE=StockDb;UID=loader;Encrypt=yes;TrustServerCertificate=yes"
+   ```
+   ```bash
+   export DB_PASSWORD='...'        # Windows: set DB_PASSWORD=...
+   ```
+   With a Windows login, write `Trusted_Connection=yes` instead of `UID=...` and skip the
+   password. `TrustServerCertificate=yes` accepts the self-signed certificate most SQL
+   Servers have; leave it out if yours has a trusted one.
+3. Check `config/db_tables.csv` against your database (next section).
+4. Try it without changing anything: `python -m stock_crawler load_db --dry-run` loads every
+   table, logs the counts and rolls back.
+
+### On Ubuntu: set up, test, schedule
+
+**1. Set up.** In the project folder (e.g. `/opt/stock-crawler`):
+
+```bash
+ACCEPT_EULA=Y bash deploy/setup_ubuntu.sh
+```
+
+`ACCEPT_EULA=Y` says you accept the licence of Microsoft's ODBC driver
+(https://aka.ms/odbc18eula). The script installs Python, the driver (package `msodbcsql18`),
+`.venv` with every requirement, and runs the offline tests. Running it again is safe.
+
+**2. Test `load_db` against SQL Server.** `tests/test_load_db_live.py` creates two tables of
+its own (`LoadDbTest_Market`, `LoadDbTest_Price`), loads small CSV files into them and
+checks inserts, reruns, updates, SourcePriority, rollback after an error, and the dry run.
+Then it drops them. Nothing else is touched, but point it at a test database:
+
+```bash
+export DB_PASSWORD='...'
+export LOAD_DB_TEST_CONNECTION="DRIVER={ODBC Driver 18 for SQL Server};SERVER=myserver,1433;DATABASE=StockDbTest;UID=loader;Encrypt=yes;TrustServerCertificate=yes"
+.venv/bin/python -m pytest tests/test_load_db_live.py -v
+```
+
+No test database? Start a throwaway SQL Server in Docker on the same machine. This accepts
+Microsoft's SQL Server licence, and the password needs 8+ characters with upper case, lower
+case and digits:
+
+```bash
+export DB_PASSWORD='Choose-A-Str0ng-One'
+docker run -d --name mssql-test -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$DB_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
+sleep 30   # first start-up
+.venv/bin/python -c "import os, pyodbc; pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;UID=sa;TrustServerCertificate=yes;PWD=' + os.environ['DB_PASSWORD'], autocommit=True).execute('CREATE DATABASE LoadDbTest')"
+export LOAD_DB_TEST_CONNECTION="DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;DATABASE=LoadDbTest;UID=sa;Encrypt=yes;TrustServerCertificate=yes"
+.venv/bin/python -m pytest tests/test_load_db_live.py -v
+docker rm -f mssql-test   # when done
+```
+
+All 6 tests must pass. If one fails, keep its output: it shows what your SQL Server does
+differently.
+
+**3. Check your real tables.** Set `connection` in `[load_db]`, then, with the CSV files in
+`output/` (run the crawlers, or copy `output/` from another machine):
+
+```bash
+.venv/bin/python -m stock_crawler load_db --dry-run
+```
+
+This loads every CSV into your real tables and rolls back. The log names each table that
+doesn't fit (a missing table or key column, a foreign key, a type), so you can fix
+`config/db_tables.csv`, the IDs, or the table before the first real load.
+
+**4. Load and schedule.** Run `.venv/bin/python -m stock_crawler load_db` once, then add
+`"load_db"` at the end of `run_all` in the config, so the daily `all` crawls and loads. Cron
+doesn't read your shell profile, so put the password at the top of your crontab
+(`crontab -e`; only you and root can read it):
+
+```cron
+DB_PASSWORD=your-password
+0 20 * * 1-5  cd /opt/stock-crawler && .venv/bin/python -m stock_crawler all >> logs/cron.log 2>&1
+```
+
+### `config/db_tables.csv`
+
+One row per table, loaded in this order (parent tables first, for foreign keys):
+
+| Table | Csv | Keys |
+|---|---|---|
+| `dbo.Market` | `output/market_index/market.csv` | `MarketId` |
+| `dbo.MarketIndexMaster` | `output/market_index/market_index_master.csv` | `IndexId` |
+| `dbo.MarketIndexData` | `output/market_index/market_index_data.csv` | `TradeDate IndexId` |
+| `dbo.Company` | `output/companies/companies.csv` | `MarketId Ticker` |
+| `dbo.MarketData` | `output/market_data/market_data_db.csv` | `TradeDate CompanyId` |
+| `dbo.CompanyFundamental` | `output/fundamentals/company_fundamental.csv` | `CompanyId FiscalYear FiscalQuarter` |
+| `dbo.MacroSovereign` | `output/sovereign/macro_sovereign_tr.csv` | `MarketId AsOfDate PeriodType PublishDate` |
+
+`Keys` are the columns that identify a row, separated by spaces: usually the table's
+primary key. Edit `Table` if your schema or table names differ. To leave a table out,
+delete its row, or pass `--tables` to load only some. A CSV that doesn't exist yet is
+skipped with a warning.
+
+### What it does
+
+Each table is loaded in one transaction:
+
+1. The CSV is copied into a temporary table with the table's column types (an empty cell
+   is NULL).
+2. Rows whose key is already in the table are updated, but only if a value changed.
+3. The other rows are inserted.
+
+- **Nothing is deleted, and running it again is safe.** Repeated runs overlap dates you
+  already loaded; those rows are left alone unless the CSV has a different value.
+- Only the CSV columns that the table has are loaded. The others are named in the log, e.g.
+  `PresentationCurrency` if your CompanyFundamental table has no such column. Every key
+  column must be in both.
+- SQL Server converts the text to each column's type, as `BULK INSERT` would. Values with
+  more decimals than the column (index closes with float noise, Cpi averages) are rounded
+  to the column's scale.
+- A CSV with an empty or repeated key is refused before the table is touched.
+- **SourcePriority:** in a table with this column (MarketData), a row never replaces one
+  from a preferred source, i.e. one with a lower `SourcePriority`.
+- If a table fails (a value that doesn't fit, a foreign key, a missing column), it is rolled
+  back and left as it was. The other tables are still loaded, and the exit code is 1.
+- `logs/load_db.log` gets one line per table: rows in the file, inserted, updated and
+  unchanged. `-v` also logs the SQL statements.
+
+If your tables have foreign keys, the IDs in the CSV files must match them; see
+[IDs that must match your database](#ids-that-must-match-your-database).
+
+### MarketData needs your CompanyIds
+
+`market_data.csv` names companies by ticker, but the MarketData table uses your database's
+`CompanyId`. `market_data --db-output` writes exactly the table's columns: `TradeDate,
 CompanyId, OpenPrice, HighPrice, LowPrice, ClosePrice, Volume, ValueTraded, SourcePriority`.
-Every value is checked to fit `decimal(18,4)`, `bigint` and `decimal(24,4)`. `CompanyId` is
-your database's key, so export it once:
+Every value is checked to fit `decimal(18,4)`, `bigint` and `decimal(24,4)`. Export the IDs
+once (and again after new listings), after Company is loaded:
 
 ```sql
 SELECT Ticker, CompanyId FROM dbo.Company WHERE MarketId = 1;   -- save as config/company_ids.csv
 ```
+
+Then switch on `db_output` and `company_ids` in `[market_data]` (or pass them):
 
 ```bash
 python -m stock_crawler market_data --db-output output/market_data/market_data_db.csv \
@@ -638,26 +778,20 @@ python -m stock_crawler market_data --db-output output/market_data/market_data_d
 
 Tickers without a `CompanyId` are left out and listed in the log. A `CompanyId` used by two
 tickers is refused, because it would break the `(TradeDate, CompanyId)` key. A lower
-`SourcePriority` means a preferred source:
+`SourcePriority` means a preferred source (`1` for the official bulletin).
+
+### By hand, with `BULK INSERT`
+
+If you have access to the SQL Server machine's disk, you can load a file yourself.
+`FORMAT = 'CSV'` needs SQL Server 2017+, and `CODEPAGE = '65001'` keeps Turkish characters.
+The path is read by the SQL Server machine, not your laptop:
 
 ```sql
-CREATE TABLE #Load (TradeDate date, CompanyId int, OpenPrice decimal(18,4), HighPrice decimal(18,4),
-                    LowPrice decimal(18,4), ClosePrice decimal(18,4), Volume bigint,
-                    ValueTraded decimal(24,4), SourcePriority tinyint);
-BULK INSERT #Load FROM 'C:\data\market_data_db.csv' WITH (FORMAT = 'CSV', FIRSTROW = 2, CODEPAGE = '65001');
-
-MERGE dbo.MarketData AS t
-USING #Load AS s ON t.TradeDate = s.TradeDate AND t.CompanyId = s.CompanyId
-WHEN MATCHED AND s.SourcePriority <= t.SourcePriority THEN UPDATE SET
-    OpenPrice = s.OpenPrice, HighPrice = s.HighPrice, LowPrice = s.LowPrice, ClosePrice = s.ClosePrice,
-    Volume = s.Volume, ValueTraded = s.ValueTraded, SourcePriority = s.SourcePriority
-WHEN NOT MATCHED THEN INSERT (TradeDate, CompanyId, OpenPrice, HighPrice, LowPrice, ClosePrice,
-                              Volume, ValueTraded, SourcePriority)
-    VALUES (s.TradeDate, s.CompanyId, s.OpenPrice, s.HighPrice, s.LowPrice, s.ClosePrice,
-            s.Volume, s.ValueTraded, s.SourcePriority);
+BULK INSERT dbo.MarketIndexData FROM 'C:\data\market_index\market_index_data.csv' WITH (FORMAT = 'CSV', FIRSTROW = 2, CODEPAGE = '65001');
 ```
 
-Rerunning the load is safe: existing days are updated, not duplicated.
+This only inserts. A second run fails on the duplicate keys, or adds duplicate rows if the
+table has no key. For repeated loads, use `load_db`.
 
 ## 10. Troubleshooting
 
@@ -702,6 +836,20 @@ Find the new code on the datagroup's page (links in section 6) and update
 statement before its computed period end. Add its stock code to `FISCAL_YEAR_START_MONTH` in
 `stock_crawler/fundamentals/crawler.py`.
 
+**`load_db`: "Can't open lib 'ODBC Driver 18 for SQL Server'" or "Data source name not
+found".** The ODBC driver is not installed, or under another name. The name in `DRIVER={...}`
+must be one that `python -c "import pyodbc; print(pyodbc.drivers())"` lists, e.g.
+`ODBC Driver 17 for SQL Server`.
+
+**`load_db`: "certificate verify failed" / "SSL Provider".** The server has a self-signed
+certificate. Add `TrustServerCertificate=yes` to `connection`.
+
+**`load_db`: "conflicted with the FOREIGN KEY constraint", "Error converting data type
+nvarchar to numeric", "would be truncated".** A value doesn't fit your table: an ID that is
+not in the parent table (see [IDs](#ids-that-must-match-your-database)), or a column type
+too small for the data. That table was rolled back, and the others were loaded. Run with
+`-v` to see the SQL.
+
 **"Cannot read config/config.toml".** Run the command from the project folder, or pass
 `--config PATH`.
 
@@ -715,6 +863,7 @@ statement before its computed period end. Add its stock code to `FISCAL_YEAR_STA
 | which EVDS series feeds a macro column | `stock_crawler/sovereign/fields.py` |
 | how KAP items map to CompanyFundamental columns | `FIELD_MAP` in `stock_crawler/fundamentals/crawler.py` |
 | how full-report lines map to the 7 extra columns | `FIELDS` in `stock_crawler/fundamental_reports/crawler.py` (no new downloads needed) |
+| which CSV goes into which SQL Server table, and its key | `config/db_tables.csv` |
 
 To add a new crawler, create `stock_crawler/<name>/crawler.py` with
 `parse_args(argv)` and `main(argv) -> int`. Add it to `COMMANDS` in `stock_crawler/cli.py`
@@ -730,4 +879,8 @@ python -m pytest
 
 The tests are offline. They cover the config and command line, including a check that every
 key in the shipped `config.toml` is accepted by its command, how `years` becomes a period,
-and the sovereign pipeline.
+the sovereign pipeline, and `load_db` (against a fake database cursor, so no SQL Server or
+ODBC driver is needed).
+
+`tests/test_load_db_live.py` tests `load_db` against a real SQL Server. It is skipped unless
+`LOAD_DB_TEST_CONNECTION` is set; see [On Ubuntu](#on-ubuntu-set-up-test-schedule).

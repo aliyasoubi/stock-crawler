@@ -16,6 +16,7 @@ years = 5
 # companies comes first because market_data reads the ticker list it writes, and
 # fundamental_reports comes after fundamentals because it fills that command's CSV.
 run_all = ["companies", "market_data", "market_index", "sovereign", "fundamentals", "fundamental_reports"]
+# Add "load_db" at the end to load the CSV files into SQL Server after crawling (see [load_db]).
 
 # Each command also appends its log to <log_dir>/<command>.log.
 log_dir = "logs"
@@ -90,3 +91,11 @@ treasury_url = "https://www.hmb.gov.tr/portal/v2/pages"
 output = "output/sovereign/macro_sovereign_tr.csv"
 # cds_csv = "config/tr_cds_5y.csv"    # your daily Türkiye 5Y CDS export (columns: date,value)
 # periods = ["MONTHLY", "QUARTERLY", "ANNUAL"]
+
+
+[load_db]                   # output/*.csv  ->  SQL Server tables (inserts new rows, updates changed ones)
+# ODBC connection string. Keep the password out of this file: export DB_PASSWORD=... instead.
+# Windows login instead of a password: replace UID=... with Trusted_Connection=yes
+connection = "DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;DATABASE=StockDb;UID=sa;Encrypt=yes;TrustServerCertificate=yes"
+tables_csv = "config/db_tables.csv"   # which CSV goes into which table, and the key columns
+# tables = ["MarketIndexData", "MacroSovereign"]   # only these (default: every row of tables_csv)

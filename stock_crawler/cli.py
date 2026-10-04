@@ -31,7 +31,9 @@ COMMANDS = {
                             "Ebitda, debt, cash, FCF, EPS, shares from KAP full reports", True),
     "market_index": ("stock_crawler.market_index.crawler", "BIST index daily closes (İş Yatırım)", True),
     "sovereign": ("stock_crawler.sovereign.crawler", "Türkiye macro data (CBRT EVDS + Treasury)", True),
+    "load_db": ("stock_crawler.load_db.loader", "load the output CSV files into SQL Server", False),
 }
+NOT_IN_ALL = ("check_market_data", "load_db")  # run by `all` only when listed in run_all
 TOP_LEVEL_KEYS = {"years", "run_all", "log_dir"}
 DEFAULT_CONFIG = Path("config/config.toml")
 LOG_FORMAT = "%(asctime)s %(levelname)-7s %(message)s"
@@ -107,7 +109,7 @@ def run_all(config: dict, extra: list[str]) -> int:
     p.add_argument("--years", type=int, help="history for every command that uses it (overrides the config)")
     p.add_argument("-v", "--verbose", action="store_true")
     args = p.parse_args(extra)
-    commands = config.get("run_all", [c for c in COMMANDS if c != "check_market_data"])
+    commands = config.get("run_all", [c for c in COMMANDS if c not in NOT_IN_ALL])
     if unknown := [c for c in commands if c not in COMMANDS]:
         log.error("run_all: unknown command(s) %s", ", ".join(unknown))
         return 2
