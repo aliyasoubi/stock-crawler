@@ -78,7 +78,10 @@ stock-crawler/
 ├── README.md
 ├── requirements.txt           one dependency list for every crawler
 ├── requirements-dev.txt       + pytest
-├── deploy/setup_ubuntu.sh     Ubuntu: Python, ODBC driver for SQL Server, .venv, tests
+├── deploy/
+│   ├── setup_ubuntu.sh        Ubuntu: Python, ODBC driver for SQL Server, .venv, tests
+│   ├── create_tables.sql      the SQL Server tables load_db fills, for a new database
+│   └── restore_db.sh          restores a StockDb backup (.bak) into the Docker SQL Server
 ├── config/                    everything you are expected to edit
 │   ├── config.toml            source URLs, period (years), IDs, output paths
 │   ├── markets.csv            rows for the Market table (market_index)
@@ -96,6 +99,7 @@ stock-crawler/
 │   ├── sovereign/             crawler.py, fields.py, evds_client.py, treasury.py, ...
 │   └── load_db/               loader.py: CSV files -> SQL Server
 ├── tests/                     offline tests
+├── backups/                  StockDb.bak backups (not version-controlled)
 ├── output/<command>/          generated CSV files      ┐
 ├── cache/<command>/           downloaded raw pages      ├ created by the crawlers,
 └── logs/<command>.log         one log per command       ┘ not version-controlled
@@ -193,9 +197,10 @@ Which EVDS *series* feeds each macro column is set in `stock_crawler/sovereign/f
 | `IndexId` | `config/indices.csv` | `market_index_master.csv`, `market_index_data.csv` |
 | `CompanyId` | your own `company_ids.csv` (optional) | `market_data --db-output`, see [section 9](#9-loading-into-sql-server) |
 
-The shipped values are placeholders: `market_id` is 1 for companies and 90 for sovereign,
-and `markets.csv` uses MarketId 1. If all three mean the same market in your database, make
-them equal. `fundamentals` uses KAP's own company code as `CompanyId`.
+The shipped values all use MarketId 1 (Borsa İstanbul, Türkiye): `market_id` for companies
+and for sovereign, and `markets.csv`. Change all three together if your database uses
+another ID; a foreign key fails when they differ. `fundamentals` uses KAP's own company
+code as `CompanyId` (see [section 9](#configdb_tablescsv)).
 
 ### Other settings
 
@@ -360,7 +365,8 @@ source does not publish stays empty.
 **Values are copied as published.** Nothing is converted to other units, rounded or recoded.
 A value keeps the source's unit (e.g. `1000TL` statements, thousand-TRY GDP) and every digit
 the source sends. Only the representation is made loadable:
-- Dates are written as `YYYY-MM-DD` (from Excel date cells, `dd-mm-yyyy` text and timestamps).
+- Dates are written as `YYYY-MM-DD` (from Excel date cells, `dd-mm-yyyy` text, timestamps, and
+  the `21.05.2020` style of twelve Borsa bulletins from May–June 2020).
 - KAP's Turkish number text is read as a number (`1.166.684` → `1166684`, `-1,5` → `-1.5`);
   otherwise SQL would read `1.166.684` as 1.166.
 - The share code `AKBNK.E` is written as the ticker `AKBNK`, to match `companies.csv`.
@@ -625,7 +631,8 @@ python -m stock_crawler load_db
 Run it after the crawlers, or add `"load_db"` at the end of `run_all` in the config so `all`
 crawls and then loads. It reads the files on your machine and sends the rows over the
 connection, so the SQL Server can be anywhere. The tables must already exist; `load_db`
-never creates, alters or empties a table.
+never creates, alters or empties a table. For a new, empty database,
+`deploy/create_tables.sql` creates them.
 
 ### Setup (once)
 
@@ -645,7 +652,9 @@ never creates, alters or empties a table.
    With a Windows login, write `Trusted_Connection=yes` instead of `UID=...` and skip the
    password. `TrustServerCertificate=yes` accepts the self-signed certificate most SQL
    Servers have; leave it out if yours has a trusted one.
-3. Check `config/db_tables.csv` against your database (next section).
+3. New, empty database: create the tables with `deploy/create_tables.sql` (see
+   [On Ubuntu](#on-ubuntu-set-up-test-schedule), step 3). Existing database: check
+   `config/db_tables.csv` against it (see below).
 4. Try it without changing anything: `python -m stock_crawler load_db --dry-run` loads every
    table, logs the counts and rolls back.
 
@@ -673,8 +682,9 @@ export LOAD_DB_TEST_CONNECTION="DRIVER={ODBC Driver 18 for SQL Server};SERVER=my
 ```
 
 No test database? Start a throwaway SQL Server in Docker on the same machine. This accepts
-Microsoft's SQL Server licence, and the password needs 8+ characters with upper case, lower
-case and digits:
+Microsoft's SQL Server licence. The password needs 8+ characters from three of: upper case,
+lower case, digits, symbols. Otherwise the container stops at start-up (`docker logs`
+says "password validation failed") and every connection times out:
 
 ```bash
 export DB_PASSWORD='Choose-A-Str0ng-One'
@@ -689,7 +699,21 @@ docker rm -f mssql-test   # when done
 All 6 tests must pass. If one fails, keep its output: it shows what your SQL Server does
 differently.
 
-**3. Check your real tables.** Set `connection` in `[load_db]`, then, with the CSV files in
+**Have a backup (`StockDb.bak`)?** Then steps 3–5 are one command, see
+[Backup and restore](#backup-and-restore).
+
+**3. Create the tables** (new, empty database only). With SQL Server in a Docker container
+named `stock-crawler-mssql` and a database `StockDb`:
+
+```bash
+docker cp deploy/create_tables.sql stock-crawler-mssql:/tmp/create_tables.sql
+docker exec -e SQLCMDPASSWORD="$DB_PASSWORD" stock-crawler-mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -d StockDb -i /tmp/create_tables.sql
+```
+
+Elsewhere, open the file in SSMS or Azure Data Studio and run it in your database. It
+creates all eight tables or none.
+
+**4. Check your real tables.** Set `connection` in `[load_db]`, then, with the CSV files in
 `output/` (run the crawlers, or copy `output/` from another machine):
 
 ```bash
@@ -700,7 +724,9 @@ This loads every CSV into your real tables and rolls back. The log names each ta
 doesn't fit (a missing table or key column, a foreign key, a type), so you can fix
 `config/db_tables.csv`, the IDs, or the table before the first real load.
 
-**4. Load and schedule.** Run `.venv/bin/python -m stock_crawler load_db` once, then add
+**5. Load and schedule.** Run `.venv/bin/python -m stock_crawler load_db` once. MarketData
+is skipped until you export the CompanyIds the Company table just made (see
+[MarketData needs your CompanyIds](#marketdata-needs-your-companyids)). Then add
 `"load_db"` at the end of `run_all` in the config, so the daily `all` crawls and loads. Cron
 doesn't read your shell profile, so put the password at the top of your crontab
 (`crontab -e`; only you and root can read it):
@@ -721,11 +747,20 @@ One row per table, loaded in this order (parent tables first, for foreign keys):
 | `dbo.MarketIndexData` | `output/market_index/market_index_data.csv` | `TradeDate IndexId` |
 | `dbo.Company` | `output/companies/companies.csv` | `MarketId Ticker` |
 | `dbo.MarketData` | `output/market_data/market_data_db.csv` | `TradeDate CompanyId` |
+| `dbo.KapCompany` | `output/fundamentals/companies.csv` | `CompanyId` |
 | `dbo.CompanyFundamental` | `output/fundamentals/company_fundamental.csv` | `CompanyId FiscalYear FiscalQuarter` |
 | `dbo.MacroSovereign` | `output/sovereign/macro_sovereign_tr.csv` | `MarketId AsOfDate PeriodType PublishDate` |
 
 `Keys` are the columns that identify a row, separated by spaces: usually the table's
-primary key. Edit `Table` if your schema or table names differ. To leave a table out,
+primary key.
+
+**Two kinds of CompanyId.** In Company and MarketData, `CompanyId` is your database's own
+ID, made by the Company table. In CompanyFundamental, it is KAP's company code (832, 833,
+…), as `fundamentals` writes it. KapCompany lists those codes with their stock codes, so
+CompanyFundamental's foreign key points at KapCompany. Pointing it at Company would match
+KAP codes to unrelated companies whose own ID happens to be the same number. To combine the
+two, join `KapCompany.StockCode` to `Company.Ticker`; a few StockCodes list two codes, e.g.
+`A1CAP, ACP`. Edit `Table` if your schema or table names differ. To leave a table out,
 delete its row, or pass `--tables` to load only some. A CSV that doesn't exist yet is
 skipped with a warning.
 
@@ -769,6 +804,12 @@ once (and again after new listings), after Company is loaded:
 SELECT Ticker, CompanyId FROM dbo.Company WHERE MarketId = 1;   -- save as config/company_ids.csv
 ```
 
+With SQL Server in Docker, this writes the file directly:
+
+```bash
+{ echo "Ticker,CompanyId"; docker exec -e SQLCMDPASSWORD="$DB_PASSWORD" stock-crawler-mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -d StockDb -h -1 -W -s "," -Q "SET NOCOUNT ON; SELECT Ticker, CompanyId FROM dbo.Company WHERE MarketId = 1 ORDER BY Ticker"; } > config/company_ids.csv
+```
+
 Then switch on `db_output` and `company_ids` in `[market_data]` (or pass them):
 
 ```bash
@@ -779,6 +820,42 @@ python -m stock_crawler market_data --db-output output/market_data/market_data_d
 Tickers without a `CompanyId` are left out and listed in the log. A `CompanyId` used by two
 tickers is refused, because it would break the `(TradeDate, CompanyId)` key. A lower
 `SourcePriority` means a preferred source (`1` for the official bulletin).
+
+### Backup and restore
+
+A backup file (`.bak`) holds the whole database: tables, keys and data. Use one to set up
+another server, or to give the data to someone. It restores on SQL Server 2022 or newer.
+
+**Restore** into the Docker SQL Server (here `stock-crawler-mssql`):
+
+```bash
+export DB_PASSWORD='...'            # the container's SA password
+bash deploy/restore_db.sh           # backups/StockDb.bak; or: bash deploy/restore_db.sh FILE.bak CONTAINER
+```
+
+It checks the file against `StockDb.bak.sha256` (a damaged copy is refused), asks before it
+replaces a `StockDb` that already has data, and prints the row count of every table. After a
+restore, `config/company_ids.csv` from the same machine as the backup matches its CompanyIds.
+
+On another server (e.g. Windows), use SSMS: *Databases → Restore Database… → Device* and pick
+the `.bak`. SSMS puts the files in that server's data folder (*Files* page). In T-SQL:
+
+```sql
+RESTORE DATABASE StockDb FROM DISK = N'C:\backup\StockDb.bak' WITH CHECKSUM,
+    MOVE 'StockDb' TO N'C:\SQLData\StockDb.mdf', MOVE 'StockDb_log' TO N'C:\SQLData\StockDb_log.ldf';
+```
+
+Logins are not part of a backup: create users on the new server as needed.
+
+**Back up.** The database uses the SIMPLE recovery model (its data can always be reloaded from
+the CSV files), so the log does not grow without log backups. Set it once on a new database:
+`ALTER DATABASE StockDb SET RECOVERY SIMPLE`. Then:
+
+```bash
+SQLCMDPASSWORD="$DB_PASSWORD" docker exec -e SQLCMDPASSWORD stock-crawler-mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -Q "BACKUP DATABASE StockDb TO DISK = '/var/opt/mssql/data/StockDb.bak' WITH INIT, CHECKSUM; RESTORE VERIFYONLY FROM DISK = '/var/opt/mssql/data/StockDb.bak' WITH CHECKSUM"
+mkdir -p backups && docker cp stock-crawler-mssql:/var/opt/mssql/data/StockDb.bak backups/StockDb.bak
+sha256sum backups/StockDb.bak > backups/StockDb.bak.sha256     # macOS: shasum -a 256
+```
 
 ### By hand, with `BULK INSERT`
 
@@ -849,6 +926,15 @@ nvarchar to numeric", "would be truncated".** A value doesn't fit your table: an
 not in the parent table (see [IDs](#ids-that-must-match-your-database)), or a column type
 too small for the data. That table was rolled back, and the others were loaded. Run with
 `-v` to see the SQL.
+
+**`setup_ubuntu.sh`: pip "Could not install packages … files.pythonhosted.org".** The network
+blocks PyPI's download server. Install the same libraries from Ubuntu's archive and let the
+`.venv` use them:
+
+```bash
+sudo apt-get install -y python3-pyodbc python3-pytest python3-httpx python3-openpyxl python3-requests python3-xlrd python3-truststore tzdata
+rm -rf .venv && python3 -m venv --system-site-packages .venv && .venv/bin/python -m pytest -q
+```
 
 **"Cannot read config/config.toml".** Run the command from the project folder, or pass
 `--config PATH`.

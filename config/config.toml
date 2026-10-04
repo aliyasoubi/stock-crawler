@@ -85,7 +85,7 @@ out_dir = "output/market_index"
 
 
 [sovereign]                 # Türkiye macro data  ->  output/sovereign/macro_sovereign_tr.csv
-market_id = 90              # MarketId written to every row
+market_id = 1               # MarketId written to every row (Türkiye; must be in config/markets.csv)
 evds_url = "https://evds3.tcmb.gov.tr/igmevdsms-dis"
 treasury_url = "https://www.hmb.gov.tr/portal/v2/pages"
 output = "output/sovereign/macro_sovereign_tr.csv"
@@ -96,6 +96,6 @@ output = "output/sovereign/macro_sovereign_tr.csv"
 [load_db]                   # output/*.csv  ->  SQL Server tables (inserts new rows, updates changed ones)
 # ODBC connection string. Keep the password out of this file: export DB_PASSWORD=... instead.
 # Windows login instead of a password: replace UID=... with Trusted_Connection=yes
-connection = "DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;DATABASE=StockDb;UID=sa;Encrypt=yes;TrustServerCertificate=yes"
+connection = "DRIVER={ODBC Driver 18 for SQL Server};SERVER=127.0.0.1,1433;DATABASE=StockDb;UID=sa;Encrypt=yes;TrustServerCertificate=yes"
 tables_csv = "config/db_tables.csv"   # which CSV goes into which table, and the key columns
 # tables = ["MarketIndexData", "MacroSovereign"]   # only these (default: every row of tables_csv)

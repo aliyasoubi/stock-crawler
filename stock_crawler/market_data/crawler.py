@@ -113,8 +113,16 @@ def read_bulletin(data: bytes) -> list[list[str]]:
         if not traded or ticker in seen:  # untraded days have zero prices
             continue
         seen.add(ticker)
-        rows.append([ticker, row[header["TRADE DATE"]], *(row[header[name]] for name in COLUMNS)])
+        rows.append([ticker, iso_date(row[header["TRADE DATE"]]), *(row[header[name]] for name in COLUMNS)])
     return rows
+
+
+def iso_date(text: str) -> str:
+    """TRADE DATE as YYYY-MM-DD. Twelve bulletins of May-June 2020 write it as 21.05.2020."""
+    if "." not in text:
+        return text
+    day, month, year = text.split(".")
+    return date(int(year), int(month), int(day)).isoformat()
 
 
 def is_fx_file(body: bytes) -> bool:

@@ -46,6 +46,9 @@ PRICES = ("TradeDate,MarketId,Ticker,ClosePrice,Volume,IsActive,LoadedAt,SourceP
 @pytest.fixture
 def db():
     pyodbc = pytest.importorskip("pyodbc")
+    # No connection pooling: a pooled connection keeps the manual-commit mode load_db left it
+    # in, although autocommit=True is asked for, and its CREATE TABLE would block load_db.
+    pyodbc.pooling = False
     connection = pyodbc.connect(loader.connection_string(CONNECTION, os.environ.get(loader.PASSWORD_ENV)),
                                 autocommit=True)
     connection.execute(DROP)

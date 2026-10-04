@@ -1,5 +1,6 @@
 """load_db: CSV -> #stage -> table, checked with a fake cursor. Offline, no SQL Server needed."""
 from pathlib import Path
+import re
 import sys
 from types import SimpleNamespace
 
@@ -9,6 +10,7 @@ from stock_crawler.load_db import loader
 from stock_crawler.load_db.loader import LoadError, Table
 
 TABLES_CSV = Path(__file__).resolve().parent.parent / "config" / "db_tables.csv"
+CREATE_TABLES_SQL = Path(__file__).resolve().parent.parent / "deploy" / "create_tables.sql"
 
 
 class FakeCursor:
@@ -53,6 +55,16 @@ def test_shipped_tables_csv_has_keys_for_every_table():
     assert tables[0].name == "dbo.Market"  # parents first
     assert all(t.keys for t in tables)
     assert {t.name: t.keys for t in tables}["dbo.MarketData"] == ["TradeDate", "CompanyId"]
+
+
+def test_create_tables_sql_matches_the_tables_csv():
+    """deploy/create_tables.sql creates exactly the tables in db_tables.csv, each with its key columns."""
+    created = dict(re.findall(r"CREATE TABLE (\S+) \((.*?)\);\n", CREATE_TABLES_SQL.read_text(encoding="utf-8"), re.S))
+    tables = loader.read_tables(TABLES_CSV)
+    assert sorted(created) == sorted(t.name for t in tables)
+    for table in tables:
+        columns = {line.split()[0] for line in created[table.name].splitlines()[1:] if line.strip()}
+        assert set(table.keys) <= columns, table.name
 
 
 def test_quote_escapes_brackets_and_splits_schema():

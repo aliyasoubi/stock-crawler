@@ -31,7 +31,6 @@ if ! dpkg -s msodbcsql18 >/dev/null 2>&1; then
 fi
 
 python3 -m venv .venv
-.venv/bin/pip install --upgrade pip
 .venv/bin/pip install -r requirements-dev.txt
 .venv/bin/python -c "import pyodbc; print('ODBC drivers:', pyodbc.drivers())"
 .venv/bin/python -m pytest -q

@@ -12,6 +12,7 @@ __pycache__/
 output/
 cache/
 logs/
+backups/
 nohup.out
 
 # Your own data files referenced from config.toml (uncomment if you add them):

@@ -7,7 +7,7 @@ import zipfile
 
 from stock_crawler.companies.parsers import parse_financial_currency
 from stock_crawler.fundamentals import crawler as fundamentals
-from stock_crawler.market_data.crawler import COLUMNS, read_bulletin
+from stock_crawler.market_data.crawler import COLUMNS, iso_date, read_bulletin
 from stock_crawler.market_index import crawler as market_index
 from stock_crawler.market_index.export import write_data_csv
 from stock_crawler.market_index.models import IndexInfo
@@ -30,6 +30,13 @@ def test_market_data_bulletin_values_copied():
     assert parsed[:2] == ["ABCDE", "2016-01-04"]
     assert parsed[2 + list(COLUMNS).index("CLOSING PRICE")] == ".376"
     assert parsed[2 + list(COLUMNS).index("CHANGE TO PREVIOUS CLOSING (%)")] == "-.5"
+
+
+def test_market_data_bulletin_date_written_as_iso():
+    """Some 2020 bulletins write 1.06.2020; SQL Server and the other files need 2020-06-01."""
+    assert iso_date("1.06.2020") == "2020-06-01"
+    assert iso_date("21.05.2020") == "2020-05-21"
+    assert iso_date("2016-01-04") == "2016-01-04"
 
 
 def test_fundamentals_values_not_scaled():
