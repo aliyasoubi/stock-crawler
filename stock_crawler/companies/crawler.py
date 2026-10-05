@@ -20,6 +20,7 @@ from pathlib import Path
 import re
 import tempfile
 import time
+from typing import Callable
 from urllib.parse import urljoin
 
 from ..http_client import FetchError, HttpClient, NotFound
@@ -50,6 +51,12 @@ class Company:
 def is_kap_page(body: bytes) -> bool:
     """KAP sometimes answers HTTP 200 with an empty or truncated body while throttling."""
     return len(body) > 20_000 and b"</html>" in body[-4096:] and b"sirket-bilgileri" in body
+
+
+def is_profile_page(body: bytes) -> bool:
+    """A KAP company profile. While throttling, KAP also answers with a ~70 KB page shell that
+    has no profile in it; every real profile has the head-office address."""
+    return is_kap_page(body) and "Merkez Adresi".encode() in body
 
 
 # ---------------------------------------------------------------------- directory
@@ -124,18 +131,18 @@ class PageCache:
         self.max_age = max_age_days * 86400
         directory.mkdir(parents=True, exist_ok=True)
 
-    def get(self, url: str, name: str) -> str | None:
+    def get(self, url: str, name: str, validate: Callable[[bytes], bool] = is_kap_page) -> str | None:
         """Page text, or None if KAP has no such page (HTTP 404)."""
         path = self.directory / name
         try:
             if time.time() - path.stat().st_mtime < self.max_age:
                 body = path.read_bytes()
-                if is_kap_page(body):
+                if validate(body):
                     return body.decode("utf-8")
         except FileNotFoundError:
             pass
         try:
-            body = self.http.get(url, validate=is_kap_page)
+            body = self.http.get(url, validate=validate)
         except NotFound:
             LOG.info("No KAP page at %s", url)
             return None
@@ -151,7 +158,7 @@ def fetch_details(cache: PageCache, site: str, profile_path: str) -> tuple[str |
     identifier = slug.split("-")[0]
     if not identifier.isdecimal():
         return None, None
-    profile = cache.get(urljoin(site, profile_path), f"{identifier}_profile.html")
+    profile = cache.get(urljoin(site, profile_path), f"{identifier}_profile.html", is_profile_page)
     financial = cache.get(urljoin(site, FINANCIAL_PREFIX + slug), f"{identifier}_financial.html")
     return (parse_profile_sector(profile) if profile else None,
             parse_financial_currency(financial) if financial else None)
