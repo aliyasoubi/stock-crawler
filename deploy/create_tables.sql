@@ -4,7 +4,7 @@
 --
 -- With SQL Server in Docker (see README section 9):
 --   docker cp deploy/create_tables.sql stock-crawler-mssql:/tmp/create_tables.sql
---   docker exec -e SQLCMDPASSWORD="$DB_PASSWORD" stock-crawler-mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -d StockDb -i /tmp/create_tables.sql
+--   docker exec -e SQLCMDPASSWORD="$DB_PASSWORD" stock-crawler-mssql /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U sa -C -b -d StockDb -i /tmp/create_tables.sql
 SET XACT_ABORT ON;
 BEGIN TRANSACTION;
 

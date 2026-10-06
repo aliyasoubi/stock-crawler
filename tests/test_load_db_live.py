@@ -1,6 +1,6 @@
 """load_db against a real SQL Server. Skipped unless LOAD_DB_TEST_CONNECTION is set:
 
-    export LOAD_DB_TEST_CONNECTION="DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;DATABASE=LoadDbTest;UID=sa;Encrypt=yes;TrustServerCertificate=yes"
+    export LOAD_DB_TEST_CONNECTION="DRIVER={ODBC Driver 18 for SQL Server};SERVER=127.0.0.1,1433;DATABASE=LoadDbTest;UID=sa;Encrypt=yes;TrustServerCertificate=yes"
     export DB_PASSWORD='...'
     .venv/bin/python -m pytest tests/test_load_db_live.py -v
 

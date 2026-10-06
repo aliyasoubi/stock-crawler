@@ -81,7 +81,8 @@ stock-crawler/
 ├── deploy/
 │   ├── setup_ubuntu.sh        Ubuntu: Python, ODBC driver for SQL Server, .venv, tests
 │   ├── create_tables.sql      the SQL Server tables load_db fills, for a new database
-│   └── restore_db.sh          restores a StockDb backup (.bak) into the Docker SQL Server
+│   ├── restore_db.sh          restores a StockDb backup (.bak) into the Docker SQL Server
+│   └── restore_on_windows.sql restores a StockDb backup in SSMS (Windows or any SQL Server)
 ├── config/                    everything you are expected to edit
 │   ├── config.toml            source URLs, period (years), IDs, output paths
 │   ├── markets.csv            rows for the Market table (market_index)
@@ -659,6 +660,22 @@ never creates, alters or empties a table. For a new, empty database,
 4. Try it without changing anything: `python -m stock_crawler load_db --dry-run` loads every
    table, logs the counts and rolls back.
 
+### SQL Server in Docker
+
+Use SQL Server **2019** (`mcr.microsoft.com/mssql/server:2019-latest`) wherever backups are
+made, so they also restore on SQL Server 2019 servers. A backup made on 2022 cannot be
+restored on 2019. Express is free for production use (10 GB per database). Keep the data
+on a named volume, so it survives a new container:
+
+```bash
+docker run -d --name stock-crawler-mssql --restart unless-stopped -e ACCEPT_EULA=Y -e MSSQL_PID=Express -e MSSQL_SA_PASSWORD="$DB_PASSWORD" -p 127.0.0.1:1433:1433 -v stock-crawler-mssql-2019-data:/var/opt/mssql mcr.microsoft.com/mssql/server:2019-latest
+```
+
+`ACCEPT_EULA=Y` accepts Microsoft's SQL Server licence. The password needs 8+ characters from
+three of: upper case, lower case, digits, symbols. A new database on Express closes itself
+when idle; switch that off once: `ALTER DATABASE StockDb SET AUTO_CLOSE OFF`. In commands, use
+`-S 127.0.0.1` rather than `localhost`, which can try IPv6 first and time out in a container.
+
 ### On Ubuntu: set up, test, schedule
 
 **1. Set up.** In the project folder (e.g. `/opt/stock-crawler`):
@@ -689,10 +706,10 @@ says "password validation failed") and every connection times out:
 
 ```bash
 export DB_PASSWORD='Choose-A-Str0ng-One'
-docker run -d --name mssql-test -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$DB_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
+docker run -d --name mssql-test -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$DB_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2019-latest
 sleep 30   # first start-up
-.venv/bin/python -c "import os, pyodbc; pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;UID=sa;TrustServerCertificate=yes;PWD=' + os.environ['DB_PASSWORD'], autocommit=True).execute('CREATE DATABASE LoadDbTest')"
-export LOAD_DB_TEST_CONNECTION="DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;DATABASE=LoadDbTest;UID=sa;Encrypt=yes;TrustServerCertificate=yes"
+.venv/bin/python -c "import os, pyodbc; pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER=127.0.0.1,1433;UID=sa;TrustServerCertificate=yes;PWD=' + os.environ['DB_PASSWORD'], autocommit=True).execute('CREATE DATABASE LoadDbTest')"
+export LOAD_DB_TEST_CONNECTION="DRIVER={ODBC Driver 18 for SQL Server};SERVER=127.0.0.1,1433;DATABASE=LoadDbTest;UID=sa;Encrypt=yes;TrustServerCertificate=yes"
 .venv/bin/python -m pytest tests/test_load_db_live.py -v
 docker rm -f mssql-test   # when done
 ```
@@ -708,7 +725,7 @@ named `stock-crawler-mssql` and a database `StockDb`:
 
 ```bash
 docker cp deploy/create_tables.sql stock-crawler-mssql:/tmp/create_tables.sql
-docker exec -e SQLCMDPASSWORD="$DB_PASSWORD" stock-crawler-mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -d StockDb -i /tmp/create_tables.sql
+docker exec -e SQLCMDPASSWORD="$DB_PASSWORD" stock-crawler-mssql /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U sa -C -b -d StockDb -i /tmp/create_tables.sql
 ```
 
 Elsewhere, open the file in SSMS or Azure Data Studio and run it in your database. It
@@ -808,7 +825,7 @@ SELECT Ticker, CompanyId FROM dbo.Company WHERE MarketId = 1;   -- save as confi
 With SQL Server in Docker, this writes the file directly:
 
 ```bash
-{ echo "Ticker,CompanyId"; docker exec -e SQLCMDPASSWORD="$DB_PASSWORD" stock-crawler-mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -d StockDb -h -1 -W -s "," -Q "SET NOCOUNT ON; SELECT Ticker, CompanyId FROM dbo.Company WHERE MarketId = 1 ORDER BY Ticker"; } > config/company_ids.csv
+{ echo "Ticker,CompanyId"; docker exec -e SQLCMDPASSWORD="$DB_PASSWORD" stock-crawler-mssql /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U sa -C -d StockDb -h -1 -W -s "," -Q "SET NOCOUNT ON; SELECT Ticker, CompanyId FROM dbo.Company WHERE MarketId = 1 ORDER BY Ticker"; } > config/company_ids.csv
 ```
 
 Then switch on `db_output` and `company_ids` in `[market_data]` (or pass them):
@@ -825,7 +842,9 @@ tickers is refused, because it would break the `(TradeDate, CompanyId)` key. A l
 ### Backup and restore
 
 A backup file (`.bak`) holds the whole database: tables, keys and data. Use one to set up
-another server, or to give the data to someone. It restores on SQL Server 2022 or newer.
+another server, or to give the data to someone. A backup restores only on the SQL Server
+version that made it or a newer one, never an older one. This project uses SQL Server 2019,
+so its backups restore on 2019, 2022 and later; see [SQL Server in Docker](#sql-server-in-docker).
 
 **Restore** into the Docker SQL Server (here `stock-crawler-mssql`):
 
@@ -838,13 +857,17 @@ It checks the file against `StockDb.bak.sha256` (a damaged copy is refused), ask
 replaces a `StockDb` that already has data, and prints the row count of every table. After a
 restore, `config/company_ids.csv` from the same machine as the backup matches its CompanyIds.
 
-On another server (e.g. Windows), use SSMS: *Databases → Restore Database… → Device* and pick
-the `.bak`. SSMS puts the files in that server's data folder (*Files* page). In T-SQL:
+On another server (e.g. Windows with SSMS), use `deploy/restore_on_windows.sql`:
 
-```sql
-RESTORE DATABASE StockDb FROM DISK = N'C:\backup\StockDb.bak' WITH CHECKSUM,
-    MOVE 'StockDb' TO N'C:\SQLData\StockDb.mdf', MOVE 'StockDb_log' TO N'C:\SQLData\StockDb_log.ldf';
-```
+1. Copy `StockDb.bak` into SQL Server's backup folder (`SELECT SERVERPROPERTY('InstanceDefaultBackupPath')`,
+   usually `C:\Program Files\Microsoft SQL Server\MSSQL15.<instance>\MSSQL\Backup`). SQL Server
+   cannot read your own folders such as Downloads ("Operating system error 5").
+2. Open the script in SSMS and press Execute (F5). It puts the files in the server's default
+   data and log folders, stops if `StockDb` already exists (set `@replace = 1` to replace it),
+   and shows the row count of every table.
+
+Or by hand: *Databases → Restore Database… → Device*, pick the `.bak`, and on the *Files* page
+tick *Relocate all files to folder*.
 
 Logins are not part of a backup: create users on the new server as needed.
 
@@ -853,7 +876,7 @@ the CSV files), so the log does not grow without log backups. Set it once on a n
 `ALTER DATABASE StockDb SET RECOVERY SIMPLE`. Then:
 
 ```bash
-SQLCMDPASSWORD="$DB_PASSWORD" docker exec -e SQLCMDPASSWORD stock-crawler-mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -Q "BACKUP DATABASE StockDb TO DISK = '/var/opt/mssql/data/StockDb.bak' WITH INIT, CHECKSUM; RESTORE VERIFYONLY FROM DISK = '/var/opt/mssql/data/StockDb.bak' WITH CHECKSUM"
+SQLCMDPASSWORD="$DB_PASSWORD" docker exec -e SQLCMDPASSWORD stock-crawler-mssql /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U sa -C -b -Q "BACKUP DATABASE StockDb TO DISK = '/var/opt/mssql/data/StockDb.bak' WITH INIT, CHECKSUM; RESTORE VERIFYONLY FROM DISK = '/var/opt/mssql/data/StockDb.bak' WITH CHECKSUM"
 mkdir -p backups && docker cp stock-crawler-mssql:/var/opt/mssql/data/StockDb.bak backups/StockDb.bak
 sha256sum backups/StockDb.bak > backups/StockDb.bak.sha256     # macOS: shasum -a 256
 ```
@@ -936,6 +959,11 @@ blocks PyPI's download server. Install the same libraries from Ubuntu's archive 
 sudo apt-get install -y python3-pyodbc python3-pytest python3-httpx python3-openpyxl python3-requests python3-xlrd python3-truststore tzdata
 rm -rf .venv && python3 -m venv --system-site-packages .venv && .venv/bin/python -m pytest -q
 ```
+
+**RESTORE: "The database was backed up on a server running version 16.00 … incompatible with
+this server, which is running version 15.00".** The backup comes from a newer SQL Server (16 =
+2022, 15 = 2019). Backups only restore on the same or a newer version: make it on SQL Server
+2019 (see [SQL Server in Docker](#sql-server-in-docker)).
 
 **"Cannot read config/config.toml".** Run the command from the project folder, or pass
 `--config PATH`.

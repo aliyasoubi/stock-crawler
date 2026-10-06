@@ -7,7 +7,8 @@
 #   bash deploy/restore_db.sh FILE.bak CONTAINER
 #
 # It checks the file against FILE.bak.sha256 if that exists, and asks before replacing a
-# StockDb that already has data. The backup needs SQL Server 2022 or newer.
+# StockDb that already has data. A backup restores only on the SQL Server version that made it
+# or a newer one (this project uses 2019).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 BACKUP=${1:-backups/StockDb.bak}
@@ -17,7 +18,7 @@ SQLCMD=/opt/mssql-tools18/bin/sqlcmd
 fail() { echo "STOPPED: $*" >&2; exit 1; }
 sql() {  # sql "T-SQL": run it as sa; the password reaches sqlcmd through the environment only
     SQLCMDPASSWORD="$DB_PASSWORD" docker exec -e SQLCMDPASSWORD "$CONTAINER" "$SQLCMD" \
-        -S localhost -U sa -C -b -W "$@"
+        -S 127.0.0.1 -U sa -C -b -W "$@"
 }
 
 [ -n "${DB_PASSWORD:-}" ] || fail "set DB_PASSWORD to the container's SA password first"
