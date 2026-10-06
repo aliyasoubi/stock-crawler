@@ -8,8 +8,7 @@
 # How many years of history to fetch, e.g. 1, 2, 5 or 10. Used by market_data,
 # fundamentals, market_index and sovereign (companies is always today's list).
 # A section can override it with its own `years = ...`.
-#   daily data (market_data, market_index):     from the same day N years ago
-#   quarterly/annual data (fundamentals, sovereign): from 1 January N years ago
+# Every command starts on 1 January N years ago: years = 10 in 2026 is 2016-01-01 to today.
 years = 5
 
 # Commands run, in this order, by `python -m stock_crawler all`.

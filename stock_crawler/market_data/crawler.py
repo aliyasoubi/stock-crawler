@@ -28,7 +28,7 @@ from typing import Callable
 import xml.etree.ElementTree as ET
 from zipfile import BadZipFile, ZipFile
 
-from ..dates import years_before
+from ..dates import years_start
 from ..http_client import FetchError, HttpClient, NotFound
 
 OUTPUT_CSV = Path("output/market_data/market_data.csv")
@@ -321,7 +321,7 @@ def run(args: argparse.Namespace) -> int:
     tickers = None if args.all_equities else read_tickers(args.companies)
     company_ids = read_company_ids(args.company_ids) if args.db_output else {}  # fail before fetching
     end = args.end or date.today()
-    start = args.start or years_before(end, args.years)
+    start = args.start or years_start(end, args.years)
     days = [start + timedelta(n) for n in range((end - start).days + 1)]
     days = [d for d in days if d.weekday() < 5]
     LOG.info("%s to %s: %s weekdays, %s", start, end, len(days),
@@ -394,7 +394,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                     help="CSV with a Ticker column, from the companies crawler (default: %(default)s)")
     ap.add_argument("--all-equities", action="store_true",
                     help="Every share in the bulletins, including delisted ones; ignores --companies")
-    ap.add_argument("--years", type=int, default=5, help="How many years back from --end (default: 5)")
+    ap.add_argument("--years", type=int, default=5, help="Years of history: from 1 January, that many years before --end's year (default: 5)")
     ap.add_argument("--start", type=date.fromisoformat, help="First day, YYYY-MM-DD (overrides --years)")
     ap.add_argument("--end", type=date.fromisoformat, help="Last day, YYYY-MM-DD (default: today)")
     ap.add_argument("--no-usd", action="store_true", help="Skip the TCMB USD/TRY rate and USD prices")

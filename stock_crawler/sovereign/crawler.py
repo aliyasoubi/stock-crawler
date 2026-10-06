@@ -8,6 +8,7 @@ from pathlib import Path
 
 import requests
 
+from ..dates import years_start
 from .evds_client import BASE_URL as EVDS_URL, EvdsClient, EvdsError
 from .fields import FIELDS, PeriodType
 from .pipeline import build_rows, coverage_report
@@ -69,7 +70,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.ca_bundle:
         use_os_trust_store()
-    start = args.start or date(args.end.year - args.years, 1, 1)
+    start = args.start or years_start(args.end, args.years)
     verify = args.ca_bundle or True
     sources = {
         "evds": EvdsSource(EvdsClient(verify=verify, base_url=args.evds_url)),

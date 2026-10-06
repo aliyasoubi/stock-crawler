@@ -148,13 +148,14 @@ it with its own `years`, and `--years N` on the command line overrides both. `--
 
 | Command | What `years = N` means | Example: N = 5 on 2026-09-26 | Earliest data |
 |---|---|---|---|
-| `market_data` | from the same day N years ago | 2021-09-26 → today | – (logs a warning if the first bulletin is later than asked) |
-| `market_index` | from the same day N years ago | 2021-09-26 → today | 2000 for XU100 |
-| `fundamentals` | fiscal years from N years ago to the current year | FY 2021 → FY 2026 | FY 2016 (KAP's item search) |
+| `market_data` | from 1 January N years ago | 2021-01-01 → today | – (logs a warning if the first bulletin is later than asked) |
+| `market_index` | from 1 January N years ago | 2021-01-01 → today | 2000 for XU100 |
+| `fundamentals` | fiscal years from N years ago to the current year (1 January N years ago) | FY 2021 → FY 2026 | FY 2016 (KAP's item search) |
 | `sovereign` | from 1 January N years ago; only periods that have ended | 2021-01-01 → last complete month/quarter/year | 20 years fills every column |
 | `companies` | not used: always today's listed companies | | |
 
-Quarterly and annual data start on 1 January so the first year is complete.
+Every command starts on 1 January so the first year is complete: `years = 10` in 2026 means
+2016-01-01 to today (ten full years plus this year so far).
 
 Every run writes the whole requested period and replaces the previous CSV. The only
 exception is `fundamentals --update`, which merges into it.

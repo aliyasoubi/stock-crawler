@@ -4,9 +4,7 @@ from __future__ import annotations
 from datetime import date
 
 
-def years_before(day: date, years: int) -> date:
-    """The same calendar day `years` years earlier (28 February for 29 February)."""
-    try:
-        return day.replace(year=day.year - years)
-    except ValueError:  # 29 February
-        return day.replace(year=day.year - years, day=28)
+def years_start(end: date, years: int) -> date:
+    """First day of a `years`-year period ending at `end`: 1 January, `years` years before
+    `end`'s year, so the first year is complete. 10 years to 2026-10-06 start on 2016-01-01."""
+    return date(end.year - years, 1, 1)

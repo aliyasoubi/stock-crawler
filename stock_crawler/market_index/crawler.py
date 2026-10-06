@@ -33,7 +33,7 @@ from zoneinfo import ZoneInfo
 
 import requests
 
-from ..dates import years_before
+from ..dates import years_start
 from .export import DATA_FILE, MARKET_FILE, MASTER_FILE, write_data_csv, write_market_csv, write_master_csv
 from .http_client import BlockedError, Throttle, build_session, get_json
 from .models import IndexInfo, MarketIndexData, load_index_map, load_markets
@@ -88,7 +88,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                                 description="Crawl Borsa Istanbul daily index closes into CSV.")
     p.add_argument("-i", "--indices", nargs="+", metavar="CODE",
                    help="index codes to fetch (default: all in --indices-csv)")
-    p.add_argument("--years", type=int, default=5, help="how many years back from --end (default: 5)")
+    p.add_argument("--years", type=int, default=5, help="years of history: from 1 January, that many years before --end's year (default: 5)")
     p.add_argument("--start", type=date.fromisoformat,
                    help="first trade date, YYYY-MM-DD (overrides --years)")
     p.add_argument("--end", type=date.fromisoformat, default=today,
@@ -112,7 +112,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     args = p.parse_args(argv)
     if args.years < 1:
         p.error("--years must be at least 1")
-    args.start = args.start or years_before(args.end, args.years)
+    args.start = args.start or years_start(args.end, args.years)
     if args.start > args.end:
         p.error("--start must be on or before --end")
     return args

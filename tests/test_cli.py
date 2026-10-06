@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from stock_crawler import cli
-from stock_crawler.dates import years_before
+from stock_crawler.dates import years_start
 from stock_crawler.fundamentals import crawler as fundamentals
 from stock_crawler.market_index import crawler as market_index
 
@@ -43,7 +43,7 @@ def test_shipped_config_is_accepted_by_every_command(command):
 def test_command_line_wins_over_config():
     config = cli.load_config(CONFIG)
     args = market_index.parse_args(cli.config_argv("market_index", config) + ["--years", "1", "--end", "2026-09-25"])
-    assert args.years == 1 and args.start == date(2025, 9, 25)
+    assert args.years == 1 and args.start == date(2025, 1, 1)
 
 
 def test_unknown_config_section_is_rejected(tmp_path):
@@ -57,14 +57,14 @@ def test_run_all_rejects_unknown_command():
     assert cli.run_all({"run_all": ["companies", "prices"]}, []) == 2
 
 
-def test_years_before_handles_leap_day():
-    assert years_before(date(2024, 2, 29), 1) == date(2023, 2, 28)
-    assert years_before(date(2026, 9, 26), 5) == date(2021, 9, 26)
+def test_years_start_on_1_january():
+    assert years_start(date(2026, 10, 6), 10) == date(2016, 1, 1)
+    assert years_start(date(2024, 2, 29), 1) == date(2023, 1, 1)
 
 
 def test_market_index_start_from_years():
     args = market_index.parse_args(["--years", "2", "--end", "2026-09-25"])
-    assert args.start == date(2024, 9, 25)
+    assert args.start == date(2024, 1, 1)
     args = market_index.parse_args(["--years", "2", "--start", "2026-01-01", "--end", "2026-09-25"])
     assert args.start == date(2026, 1, 1)  # --start overrides --years
 
